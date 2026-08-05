@@ -1,0 +1,29 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Profil figé localement (npm run seed, ou export JSON déposé manuellement) —
+# jamais commité : le dépôt ne doit pas embarquer de données de démonstration
+# dans son propre build de production (voir README, section Persistance).
+/public/data.json
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

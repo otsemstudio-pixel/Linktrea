@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import "./styles/tokens.css";
+
+/*
+ * Pont entre les tokens de preset (variables CSS qui changent avec
+ * [data-preset]) et les utilitaires Tailwind. Les indirections
+ * --color-ink -> var(--ink) permettent à bg-ink / text-paper etc. de
+ * suivre le changement de preset au runtime.
+ */
+@theme {
+  --color-ink: var(--ink);
+  --color-ink-raised: var(--ink-raised);
+  --color-paper: var(--paper);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-up: var(--up);
+  --color-down: var(--down);
+
+  --font-mono: var(--font-mono);
+  --font-sans: var(--font-sans);
+
+  --font-size-hero: var(--text-hero);
+  --font-size-label: var(--text-label);
+  --tracking-label: var(--label-tracking);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-sans);
+}
+
+/* Rails scrollables (bandeau tickers, certificats) : scroll natif, pas de barre visible. */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

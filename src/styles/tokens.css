@@ -1,0 +1,87 @@
+/*
+ * Polices auto-hébergées (perf + vie privée) : uniquement le sous-ensemble
+ * "latin" (couvre les diacritiques français : é, è, à, ç, ô...) et les
+ * graisses réellement utilisées. Les fichiers /400.css etc. sans préfixe
+ * embarquent aussi cyrillique/grec/vietnamien — inutile ici, ~150 fichiers
+ * de plus pour rien.
+ */
+@import '@fontsource/jetbrains-mono/latin-400.css';
+@import '@fontsource/jetbrains-mono/latin-500.css';
+@import '@fontsource/jetbrains-mono/latin-700.css';
+@import '@fontsource/ibm-plex-mono/latin-400.css';
+@import '@fontsource/ibm-plex-mono/latin-500.css';
+@import '@fontsource/ibm-plex-mono/latin-700.css';
+@import '@fontsource/inter-tight/latin-400.css';
+@import '@fontsource/inter-tight/latin-500.css';
+@import '@fontsource/inter-tight/latin-600.css';
+@import '@fontsource/inter-tight/latin-700.css';
+@import '@fontsource/geist/latin-400.css';
+@import '@fontsource/geist/latin-500.css';
+@import '@fontsource/geist/latin-600.css';
+@import '@fontsource/geist/latin-700.css';
+
+/*
+ * Structure de tokens commune aux 4 presets. Le nom "--accent" remplace le
+ * "--amber" du plan initial : un seul nom de variable pour les 4 presets
+ * évite toute logique conditionnelle par preset dans les composants.
+ *
+ * --muted et --down ont été légèrement éclaircis par rapport au plan de
+ * design initial (Phase 2) : vérification WCAG AA (Phase 6) a montré qu'ils
+ * passaient sous 4.5:1 sur --ink et --ink-raised. Ajustement minimal en
+ * luminosité, teinte et saturation conservées.
+ */
+:root {
+  --text-hero: clamp(40px, 14vw, 72px);
+  --text-label: 10px;
+  --label-tracking: 0.14em;
+
+  font-variant-numeric: tabular-nums;
+}
+
+[data-preset='terminal'] {
+  --ink: #0d0e0c;
+  --ink-raised: #16181c;
+  --paper: #edeae3;
+  --muted: #838077;
+  --accent: #e4a93c;
+  --up: #4c9e6a;
+  --down: #c9624c;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-sans: 'Inter Tight', system-ui, sans-serif;
+}
+
+[data-preset='ledger'] {
+  --ink: #0b0f14;
+  --ink-raised: #141a22;
+  --paper: #e8e4d9;
+  --muted: #878174;
+  --accent: #c9a24b;
+  --up: #5c9a6f;
+  --down: #c46754;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-sans: 'Geist', system-ui, sans-serif;
+}
+
+[data-preset='vault'] {
+  --ink: #0e1113;
+  --ink-raised: #181d21;
+  --paper: #e4e7e6;
+  --muted: #7d8589;
+  --accent: #6fa8c7;
+  --up: #4f9e70;
+  --down: #c66959;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-sans: 'Geist', system-ui, sans-serif;
+}
+
+[data-preset='tape'] {
+  --ink: #0f0d0a;
+  --ink-raised: #1a1613;
+  --paper: #f0ead6;
+  --muted: #8a8172;
+  --accent: #3f9c93;
+  --up: #5aa05b;
+  --down: #c85a35;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-sans: 'Inter Tight', system-ui, sans-serif;
+}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr" data-preset="terminal">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d0e0c" />
+    <title>Ledger</title>
+    <!--
+      Ces balises sont des valeurs de repli statiques, remplacées côté
+      client par useDocumentMeta() une fois le profil chargé (voir
+      src/lib/useDocumentMeta.ts). Un crawler qui n'exécute pas de JS
+      verra ces valeurs génériques, pas celles du profil — limite assumée
+      d'un site 100% frontend sans rendu serveur (décision de la Phase 1).
+    -->
+    <meta name="description" content="Portefeuille professionnel présenté façon relevé financier." />
+    <meta property="og:type" content="profile" />
+    <meta property="og:title" content="Ledger" />
+    <meta property="og:description" content="Portefeuille professionnel présenté façon relevé financier." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Ledger" />
+    <meta name="twitter:description" content="Portefeuille professionnel présenté façon relevé financier." />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
