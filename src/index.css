@@ -33,6 +33,10 @@ body {
   background: var(--ink);
   color: var(--paper);
   font-family: var(--font-sans);
+  /* overflow-wrap est héritée : ce seul réglage protège tout texte saisi
+     par l'utilisateur (bio, description, intitulé...) contre un débordement
+     horizontal si une chaîne ne contient aucun espace où couper. */
+  overflow-wrap: break-word;
 }
 
 /* Rails scrollables (bandeau tickers, certificats) : scroll natif, pas de barre visible. */
