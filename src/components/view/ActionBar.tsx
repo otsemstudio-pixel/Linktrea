@@ -1,14 +1,16 @@
 import { useState } from 'react'
-import { Mail, Share2 } from 'lucide-react'
-import type { Ticker } from '@/types'
+import { Mail, Share2, Image as ImageIcon } from 'lucide-react'
+import type { Profile } from '@/types'
+import { downloadShareCard } from '@/lib/shareCard'
 
 type Props = {
-  tickers: Ticker[]
+  profile: Profile
 }
 
-export default function ActionBar({ tickers }: Props) {
+export default function ActionBar({ profile }: Props) {
   const [toast, setToast] = useState<string | null>(null)
-  const emailTicker = tickers.find((t) => t.platform === 'email')
+  const [generatingCard, setGeneratingCard] = useState(false)
+  const emailTicker = profile.tickers.find((t) => t.platform === 'email')
 
   function showToast(message: string) {
     setToast(message)
@@ -30,6 +32,17 @@ export default function ActionBar({ tickers }: Props) {
       showToast('Lien copié')
     } catch {
       showToast("Impossible de copier le lien")
+    }
+  }
+
+  async function handleGenerateCard() {
+    setGeneratingCard(true)
+    try {
+      await downloadShareCard(profile)
+    } catch {
+      showToast('Impossible de générer la carte')
+    } finally {
+      setGeneratingCard(false)
     }
   }
 
@@ -57,6 +70,15 @@ export default function ActionBar({ tickers }: Props) {
         >
           <Share2 size={16} aria-hidden="true" />
           Partager
+        </button>
+        <button
+          type="button"
+          onClick={handleGenerateCard}
+          disabled={generatingCard}
+          className="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-md border border-ink-raised text-sm disabled:opacity-50 active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+        >
+          <ImageIcon size={16} aria-hidden="true" />
+          {generatingCard ? 'Génération…' : 'Carte'}
         </button>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { decodeProfile } from '@/lib/codec'
 import { loadPublicProfile } from '@/lib/loadPublicProfile'
 import ProfileView from '@/components/ProfileView'
 import EmptyState from '@/components/view/EmptyState'
+import ProfileSkeleton from '@/components/view/ProfileSkeleton'
 import type { Profile } from '@/types'
 
 type State = { status: 'loading' } | { status: 'ready'; profile: Profile } | { status: 'empty' }
@@ -13,9 +14,9 @@ export default function ViewPage() {
   const [state, setState] = useState<State>({ status: 'loading' })
 
   useEffect(() => {
-    // Preset neutre pendant la résolution — ProfileView reprendra la main
-    // avec le vrai preset du profil dès qu'il sera trouvé.
-    document.documentElement.dataset.preset = 'terminal'
+    // Fond neutre pendant la résolution — ProfileView reprendra la main
+    // avec le vrai fond du profil dès qu'il sera trouvé.
+    document.documentElement.dataset.background = 'graphite'
   }, [])
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export default function ViewPage() {
     }
   }, [payload])
 
-  if (state.status === 'loading') return null
+  if (state.status === 'loading') return <ProfileSkeleton />
   if (state.status === 'empty') return <EmptyState />
   return <ProfileView profile={state.profile} />
 }

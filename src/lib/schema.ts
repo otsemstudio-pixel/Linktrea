@@ -59,8 +59,24 @@ const tickerSchema = z.object({
 })
 
 const themeConfigSchema = z.object({
-  preset: z.enum(['terminal', 'ledger', 'vault', 'tape']),
+  background: z.enum(['graphite', 'encre', 'papier', 'onyx']),
   accent: z.string(),
+  fontDuo: z.enum([
+    'institutionnel',
+    'terminal',
+    'editorial',
+    'suisse',
+    'brut',
+    'classique',
+    'technique',
+    'moderne',
+    'compact',
+    'elegant',
+    'journal',
+    'machine',
+    'geometrique',
+    'humaniste',
+  ]),
   motion: z.enum(['full', 'reduced']),
 })
 

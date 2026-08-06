@@ -1,7 +1,7 @@
 // Statistiques dérivées de l'état réel du Profile — rien n'est stocké en
 // dur : le nombre d'années, les allocations par catégorie et la tendance
 // de la sparkline se recalculent à chaque rendu à partir des données brutes.
-import type { Holding, Position } from '@/types'
+import type { Holding, Position, Profile } from '@/types'
 
 function parseYearMonth(value: string): number {
   const [year, month] = value.split('-').map(Number)
@@ -78,4 +78,17 @@ export function initials(fullName: string): string {
 
 export function weightSum(holdings: Holding[]): number {
   return holdings.reduce((sum, h) => sum + h.weight, 0)
+}
+
+// Un profil "vide" (Phase 4) : rien de significatif saisi — pas seulement
+// aucune position/compétence, mais aucun nom non plus, ce qui distingue un
+// profil fraîchement créé d'un profil réel mais partiellement rempli (celui-
+// ci doit s'afficher normalement, avec les états vides par section).
+export function isProfileEmpty(profile: Profile): boolean {
+  return (
+    !profile.identity.fullName.trim() &&
+    profile.positions.length === 0 &&
+    profile.holdings.length === 0 &&
+    profile.certificates.length === 0
+  )
 }

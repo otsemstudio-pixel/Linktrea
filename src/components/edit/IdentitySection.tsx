@@ -66,10 +66,22 @@ export default function IdentitySection() {
         {photoError && <p className="mt-2 text-xs text-down">{photoError}</p>}
       </div>
 
-      <TextField label="Nom complet" registration={register('identity.fullName')} error={formState.errors.identity?.fullName?.message} />
+      <TextField
+        label="Nom complet"
+        registration={register('identity.fullName')}
+        placeholder="Aya Koffi N’Guessan"
+        error={formState.errors.identity?.fullName?.message}
+      />
       <TextField label="Headline" registration={register('identity.headline')} placeholder="Analyste financière · Abidjan" />
-      <TextField label="Localisation" registration={register('identity.location')} />
-      <TextAreaField label="Bio" registration={register('identity.bio')} value={bio} maxLength={280} rows={4} />
+      <TextField label="Localisation" registration={register('identity.location')} placeholder="Abidjan, Côte d’Ivoire" />
+      <TextAreaField
+        label="Bio"
+        registration={register('identity.bio')}
+        value={bio}
+        maxLength={280}
+        rows={4}
+        placeholder="Analyste financière spécialisée en modélisation et allocation de portefeuille. 8 ans à accompagner PME et institutionnels sur la BRVM."
+      />
       <SelectField label="Disponibilité" registration={register('identity.availability')} options={AVAILABILITY_OPTIONS} />
     </>
   )

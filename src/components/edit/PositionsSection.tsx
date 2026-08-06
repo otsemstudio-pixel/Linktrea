@@ -46,7 +46,8 @@ function HighlightsList({ control, index }: { control: Control<Profile>; index: 
         <div key={hIndex} className="flex gap-2 mb-2">
           <input
             {...register(`positions.${index}.highlights.${hIndex}`)}
-            className="flex-1 min-h-11 rounded-md border border-ink-raised bg-ink px-3 text-sm text-paper focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+            placeholder="18 émetteurs suivis sur la BRVM"
+            className="flex-1 min-h-11 rounded-md border border-ink-raised bg-surface-inset px-3 text-sm text-paper focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 focus:border-accent"
           />
           <button
             type="button"
@@ -100,8 +101,8 @@ function PositionCard({ position, index, control, onRemove }: CardProps) {
           <GripVertical size={16} aria-hidden="true" />
         </button>
         <div className="flex-1">
-          <TextField label="Rôle" registration={register(`positions.${index}.role`)} />
-          <TextField label="Société" registration={register(`positions.${index}.company`)} />
+          <TextField label="Rôle" registration={register(`positions.${index}.role`)} placeholder="Analyste financière senior" />
+          <TextField label="Société" registration={register(`positions.${index}.company`)} placeholder="CGF Bourse" />
         </div>
       </div>
 
@@ -115,7 +116,7 @@ function PositionCard({ position, index, control, onRemove }: CardProps) {
             disabled={endDate === null}
             value={endDate ?? ''}
             onChange={(e) => setValue(`positions.${index}.endDate`, e.target.value, { shouldDirty: true })}
-            className="w-full min-h-11 rounded-md border border-ink-raised bg-ink px-3 text-sm text-paper disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+            className="w-full min-h-11 rounded-md border border-ink-raised bg-surface-inset px-3 text-sm text-paper disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 focus:border-accent"
           />
         </label>
       </div>
@@ -130,7 +131,13 @@ function PositionCard({ position, index, control, onRemove }: CardProps) {
         Poste en cours
       </label>
 
-      <TextAreaField label="Description" registration={register(`positions.${index}.description`)} value="" rows={2} />
+      <TextAreaField
+        label="Description"
+        registration={register(`positions.${index}.description`)}
+        value=""
+        rows={2}
+        placeholder="Couverture actions et obligataire sur la BRVM pour une clientèle institutionnelle."
+      />
 
       <HighlightsList control={control} index={index} />
 
@@ -166,7 +173,11 @@ export default function PositionsSection() {
 
   return (
     <>
-      {fields.length === 0 && <p className="text-sm text-muted mb-4">Aucune position pour le moment.</p>}
+      {fields.length === 0 && (
+        <p className="text-sm text-muted mb-4">
+          Ajoutez votre poste actuel pour commencer — société, dates, quelques résultats chiffrés.
+        </p>
+      )}
 
       <Reorder.Group axis="y" values={fields} onReorder={handleReorder} as="div">
         {fields.map((field, index) => (

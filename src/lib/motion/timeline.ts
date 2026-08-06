@@ -1,5 +1,5 @@
 // Chorégraphie d'arrivée (Phase 4) — délais fixes en secondes, identiques
-// pour tous les presets. Seules durée et easing varient (voir presetProfiles).
+// pour tous les fonds. Seules durée et easing varient (voir backgroundMotionProfiles).
 export const INTRO_TIMELINE = {
   background: 0,
   identity: 0.12,

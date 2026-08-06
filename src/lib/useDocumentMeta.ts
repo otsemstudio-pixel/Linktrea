@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
-import type { Profile } from '@/types'
-import { PRESET_COLORS } from './presetColors'
+import type { Profile, BackgroundId } from '@/types'
+import { BACKGROUNDS } from './theme/backgrounds'
+import { resolveAccent } from './theme/accent'
 
 function setMetaTag(attr: 'name' | 'property', key: string, content: string) {
   let el = document.querySelector(`meta[${attr}="${key}"]`)
@@ -19,6 +20,15 @@ function setMetaTag(attr: 'name' | 'property', key: string, content: string) {
 // celles-ci. Corriger ça demanderait du pré-rendu ou un serveur, hors
 // périmètre. Ça reste utile pour l'onglet du navigateur et les crawlers
 // modernes qui exécutent du JS.
+//
+// og:image pointe TOUJOURS vers l'image statique de repli
+// (public/og-default.png, voir scripts/render-og-image.mjs), jamais vers
+// identity.photo : ce champ est un data: URI (voir photo.ts), et og:image
+// doit être une URL http(s) réelle — la quasi-totalité des robots de partage
+// (Facebook, LinkedIn, Slack, WhatsApp) ignorent silencieusement un data:
+// URI. Une carte de partage générée par profil (voir shareCard.ts) n'existe
+// que dans le navigateur de son auteur, pas à une URL que ces robots
+// peuvent atteindre — nécessiterait un rendu serveur, hors périmètre.
 export function useDocumentMeta(profile: Profile, enabled = true) {
   useEffect(() => {
     if (!enabled) return
@@ -26,6 +36,12 @@ export function useDocumentMeta(profile: Profile, enabled = true) {
     const headline = profile.identity.headline
     const title = headline ? `${name} · ${headline}` : name
     const description = profile.identity.bio || `Portefeuille professionnel de ${name}, présenté façon relevé financier.`
+    // BASE_URL est relatif ("./", voir vite.config.ts — nécessaire pour que
+    // le même build serve aussi bien à la racine d'un domaine que dans un
+    // sous-dossier GitHub Pages) : le concaténer directement après l'origine
+    // produit une URL invalide ("https://host./og-default.png"). new URL()
+    // le résout correctement quel que soit le chemin du document courant.
+    const ogImage = new URL(`${import.meta.env.BASE_URL}og-default.png`, document.baseURI).href
 
     document.title = title
     setMetaTag('name', 'description', description)
@@ -33,15 +49,12 @@ export function useDocumentMeta(profile: Profile, enabled = true) {
     setMetaTag('property', 'og:description', description)
     setMetaTag('property', 'og:type', 'profile')
     setMetaTag('property', 'og:url', window.location.href)
-    setMetaTag('name', 'twitter:card', profile.identity.photo ? 'summary_large_image' : 'summary')
+    setMetaTag('property', 'og:image', ogImage)
+    setMetaTag('name', 'twitter:card', 'summary_large_image')
     setMetaTag('name', 'twitter:title', title)
     setMetaTag('name', 'twitter:description', description)
-
-    if (profile.identity.photo) {
-      setMetaTag('property', 'og:image', profile.identity.photo)
-      setMetaTag('name', 'twitter:image', profile.identity.photo)
-    }
-  }, [profile.identity.fullName, profile.identity.headline, profile.identity.bio, profile.identity.photo, enabled])
+    setMetaTag('name', 'twitter:image', ogImage)
+  }, [profile.identity.fullName, profile.identity.headline, profile.identity.bio, enabled])
 }
 
 function faviconDataUri(ink: string, accent: string): string {
@@ -49,11 +62,12 @@ function faviconDataUri(ink: string, accent: string): string {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
-// Favicon et theme-color accordés au preset actif (Phase 6).
-export function useFaviconAndThemeColor(preset: keyof typeof PRESET_COLORS, enabled = true) {
+// Favicon et theme-color accordés au fond + à l'accent actifs (Phase 6).
+export function useFaviconAndThemeColor(background: BackgroundId, accent: string, enabled = true) {
   useEffect(() => {
     if (!enabled) return
-    const { ink, accent } = PRESET_COLORS[preset]
+    const ink = BACKGROUNDS[background].base
+    const { hex: resolvedAccent } = resolveAccent(accent, background)
 
     let link = document.querySelector<HTMLLinkElement>("link[rel='icon']")
     if (!link) {
@@ -62,8 +76,8 @@ export function useFaviconAndThemeColor(preset: keyof typeof PRESET_COLORS, enab
       document.head.appendChild(link)
     }
     link.setAttribute('type', 'image/svg+xml')
-    link.setAttribute('href', faviconDataUri(ink, accent))
+    link.setAttribute('href', faviconDataUri(ink, resolvedAccent))
 
     setMetaTag('name', 'theme-color', ink)
-  }, [preset, enabled])
+  }, [background, accent, enabled])
 }

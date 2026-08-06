@@ -51,7 +51,11 @@ export default function TickersSection() {
 
   return (
     <>
-      {fields.length === 0 && <p className="text-sm text-muted mb-4">Aucun réseau pour le moment.</p>}
+      {fields.length === 0 && (
+        <p className="text-sm text-muted mb-4">
+          Ajoutez un premier réseau — LinkedIn, site web ou email de contact.
+        </p>
+      )}
 
       {fields.map((field, index) => (
         <TickerRow key={field.id} index={index} onRemove={() => remove(index)} />

@@ -33,18 +33,29 @@ export default function EditorActionBar({ profile, onPreview, onGenerateLink, on
       {importError && <p className="text-center text-xs text-down py-1.5 px-4">{importError}</p>}
       <div className="grid grid-cols-4 lg:grid-cols-3 gap-1 p-2 lg:mx-auto lg:max-w-[1400px] lg:px-8">
         {/* Redondant en desktop : l'aperçu est déjà visible en direct dans le panneau de droite. */}
-        <button type="button" onClick={onPreview} className="lg:hidden min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md text-xs focus-visible:outline-2 focus-visible:outline-accent">
+        <button
+          type="button"
+          onClick={onPreview}
+          className="lg:hidden min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md text-xs text-muted focus-visible:outline-2 focus-visible:outline-accent"
+        >
           <Eye size={16} aria-hidden="true" />
           Aperçu
         </button>
-        <button type="button" onClick={onGenerateLink} className="min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md text-xs focus-visible:outline-2 focus-visible:outline-accent">
+        {/* Action principale du parcours (Phase 5) : c'est le lien partageable
+            qui est le but final, pas l'aperçu ni l'export — seul bouton mis
+            en avant à l'accent. */}
+        <button
+          type="button"
+          onClick={onGenerateLink}
+          className="min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md bg-accent-subtle text-accent text-xs font-medium focus-visible:outline-2 focus-visible:outline-accent"
+        >
           <Link2 size={16} aria-hidden="true" />
           Lien
         </button>
         <button
           type="button"
           onClick={() => downloadProfileJson(profile)}
-          className="min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md text-xs focus-visible:outline-2 focus-visible:outline-accent"
+          className="min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md text-xs text-muted focus-visible:outline-2 focus-visible:outline-accent"
         >
           <Download size={16} aria-hidden="true" />
           Exporter
@@ -52,7 +63,7 @@ export default function EditorActionBar({ profile, onPreview, onGenerateLink, on
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md text-xs focus-visible:outline-2 focus-visible:outline-accent"
+          className="min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md text-xs text-muted focus-visible:outline-2 focus-visible:outline-accent"
         >
           <Upload size={16} aria-hidden="true" />
           Importer

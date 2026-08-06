@@ -44,7 +44,7 @@ function buildFixtureProfile(): Profile {
   profile.tickers = [
     { id: 'tick-1', platform: 'linkedin', handle: 'test-fixture', url: 'https://linkedin.com/in/test-fixture' },
   ]
-  profile.theme = { preset: 'ledger', accent: '#E4A93C', motion: 'full' }
+  profile.theme = { background: 'encre', accent: '#E4A93C', fontDuo: 'editorial', motion: 'full' }
   return profile
 }
 

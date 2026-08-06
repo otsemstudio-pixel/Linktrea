@@ -46,7 +46,7 @@ export default function PublishSection() {
           value={slugInput}
           onChange={(e) => setSlugInput(e.target.value.toLowerCase())}
           placeholder="jean-david"
-          className="w-full min-h-11 rounded-md border border-ink-raised bg-ink px-3 text-sm text-paper focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+          className="w-full min-h-11 rounded-md border border-ink-raised bg-surface-inset px-3 text-sm text-paper focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 focus:border-accent"
         />
       </label>
 

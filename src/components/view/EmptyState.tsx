@@ -1,20 +1,11 @@
-import { Link } from 'react-router-dom'
+import { createEmptyProfile } from '@/lib/emptyProfile'
+import PublicEmptyProfileGhost from './PublicEmptyProfileGhost'
 
-// "Un état vide dit ce qu'il faut faire, il ne s'excuse pas" (plan Phase 3).
+// Aucun profil du tout (ni payload ni data.json) — même traitement que le
+// profil publié mais vide (voir PublicEmptyProfileGhost) : un visiteur qui
+// découvre le produit sans contenu à montrer ne doit jamais voir un écran
+// vide, il doit voir ce que le produit produit. Pas de thème réel à
+// reprendre ici (aucun profil n'existe), donc le thème par défaut.
 export default function EmptyState() {
-  return (
-    <div className="min-h-dvh flex flex-col items-center justify-center gap-4 px-6 text-center bg-ink text-paper font-sans">
-      <p className="text-label uppercase tracking-label text-muted">Ledger</p>
-      <h1 className="text-2xl font-semibold">Aucun profil pour le moment</h1>
-      <p className="text-sm text-muted max-w-xs">
-        Créez votre profil pour obtenir votre relevé et le lien à partager.
-      </p>
-      <Link
-        to="/edit"
-        className="min-h-11 px-5 inline-flex items-center rounded-md bg-accent text-ink font-medium text-sm active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-paper focus-visible:-outline-offset-2"
-      >
-        Créer mon profil
-      </Link>
-    </div>
-  )
+  return <PublicEmptyProfileGhost theme={createEmptyProfile().theme} />
 }

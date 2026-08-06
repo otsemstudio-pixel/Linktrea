@@ -26,17 +26,22 @@ export default function HoldingsSection() {
         </p>
       )}
 
-      {fields.length === 0 && <p className="text-sm text-muted mb-4">Aucune compétence pour le moment.</p>}
+      {fields.length === 0 && (
+        <p className="text-sm text-muted mb-4">
+          Ajoutez une première compétence avec son poids dans votre allocation.
+        </p>
+      )}
 
       {fields.map((field, index) => (
         <div key={field.id} className="rounded-lg border border-ink-raised bg-ink-raised/40 p-4 mb-3">
-          <TextField label="Compétence" registration={register(`holdings.${index}.label`)} />
+          <TextField label="Compétence" registration={register(`holdings.${index}.label`)} placeholder="Modélisation financière" />
           <TextField label="Catégorie" registration={register(`holdings.${index}.category`)} placeholder="Analyse, Outils, Marchés..." />
           <SliderField label="Poids" registration={register(`holdings.${index}.weight`, { valueAsNumber: true })} value={holdings[index]?.weight ?? 0} />
           <TextField
             label="Années d'expérience"
             registration={register(`holdings.${index}.years`, { valueAsNumber: true })}
             type="number"
+            placeholder="8"
           />
           <button
             type="button"

@@ -56,12 +56,28 @@ export type Ticker = {
   url: string
 }
 
-export type ThemePreset = 'terminal' | 'ledger' | 'vault' | 'tape'
+export type BackgroundId = 'graphite' | 'encre' | 'papier' | 'onyx'
+export type FontDuoId =
+  | 'institutionnel'
+  | 'terminal'
+  | 'editorial'
+  | 'suisse'
+  | 'brut'
+  | 'classique'
+  | 'technique'
+  | 'moderne'
+  | 'compact'
+  | 'elegant'
+  | 'journal'
+  | 'machine'
+  | 'geometrique'
+  | 'humaniste'
 export type MotionPreference = 'full' | 'reduced'
 
 export type ThemeConfig = {
-  preset: ThemePreset
+  background: BackgroundId
   accent: string
+  fontDuo: FontDuoId
   motion: MotionPreference
 }
 

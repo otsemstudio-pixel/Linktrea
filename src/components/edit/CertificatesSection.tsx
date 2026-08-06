@@ -13,12 +13,16 @@ export default function CertificatesSection() {
 
   return (
     <>
-      {fields.length === 0 && <p className="text-sm text-muted mb-4">Aucun certificat pour le moment.</p>}
+      {fields.length === 0 && (
+        <p className="text-sm text-muted mb-4">
+          Ajoutez un diplôme ou une certification, avec un lien de vérification si possible.
+        </p>
+      )}
 
       {fields.map((field, index) => (
         <div key={field.id} className="rounded-lg border border-ink-raised bg-ink-raised/40 p-4 mb-3">
-          <TextField label="Titre" registration={register(`certificates.${index}.title`)} />
-          <TextField label="Institution" registration={register(`certificates.${index}.institution`)} />
+          <TextField label="Titre" registration={register(`certificates.${index}.title`)} placeholder="Licence Finance" />
+          <TextField label="Institution" registration={register(`certificates.${index}.institution`)} placeholder="ESATIC" />
           <TextField label="Année" registration={register(`certificates.${index}.year`)} placeholder="2023" />
           <TextField
             label="URL de vérification"

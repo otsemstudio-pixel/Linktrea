@@ -1,87 +1,81 @@
 /*
- * Polices auto-hébergées (perf + vie privée) : uniquement le sous-ensemble
- * "latin" (couvre les diacritiques français : é, è, à, ç, ô...) et les
- * graisses réellement utilisées. Les fichiers /400.css etc. sans préfixe
- * embarquent aussi cyrillique/grec/vietnamien — inutile ici, ~150 fichiers
- * de plus pour rien.
- */
-@import '@fontsource/jetbrains-mono/latin-400.css';
-@import '@fontsource/jetbrains-mono/latin-500.css';
-@import '@fontsource/jetbrains-mono/latin-700.css';
-@import '@fontsource/ibm-plex-mono/latin-400.css';
-@import '@fontsource/ibm-plex-mono/latin-500.css';
-@import '@fontsource/ibm-plex-mono/latin-700.css';
-@import '@fontsource/inter-tight/latin-400.css';
-@import '@fontsource/inter-tight/latin-500.css';
-@import '@fontsource/inter-tight/latin-600.css';
-@import '@fontsource/inter-tight/latin-700.css';
-@import '@fontsource/geist/latin-400.css';
-@import '@fontsource/geist/latin-500.css';
-@import '@fontsource/geist/latin-600.css';
-@import '@fontsource/geist/latin-700.css';
-
-/*
- * Structure de tokens commune aux 4 presets. Le nom "--accent" remplace le
- * "--amber" du plan initial : un seul nom de variable pour les 4 presets
- * évite toute logique conditionnelle par preset dans les composants.
+ * Aucune police n'est importée statiquement ici (refonte design Phase 2) :
+ * avec 14 duos possibles, charger toutes leurs polices au chargement de la
+ * page contredirait exactement l'objectif ("une seule paire chargée à la
+ * fois"). Le duo actif est injecté dynamiquement au runtime par
+ * src/lib/theme/loadFontDuo.ts, qui ne récupère jamais que les fichiers du
+ * duo réellement sélectionné. Les polices auto-hébergées restent en
+ * sous-ensemble "latin" (couvre les diacritiques français), voir ce même
+ * fichier.
  *
- * --muted et --down ont été légèrement éclaircis par rapport au plan de
- * design initial (Phase 2) : vérification WCAG AA (Phase 6) a montré qu'ils
- * passaient sous 4.5:1 sur --ink et --ink-raised. Ajustement minimal en
- * luminosité, teinte et saturation conservées.
+ * Structure de tokens commune aux 4 fonds (refonte design Phase 1). Remplace
+ * l'ancien système de 4 presets figés : ici seul le fond est prédéfini
+ * (--surface-0/1/2/-inset, --fg, --fg-muted, --up, --down, ci-dessous,
+ * générés en OKLCH — voir scripts/derive-theme-tokens.mjs). L'accent et le
+ * duo typographique, eux, sont libres : ils sont résolus et appliqués au
+ * runtime par src/lib/theme/useAppliedTheme.ts. Le bloc :root ci-dessous ne
+ * fournit qu'un repli (accent ambre, duo "Suisse") — la valeur réelle du
+ * profil prend le relais dès le premier rendu, et font-display: swap (déjà
+ * actif dans le CSS généré par @fontsource) absorbe la bascule.
  */
 :root {
   --text-hero: clamp(40px, 14vw, 72px);
   --text-label: 10px;
-  --label-tracking: 0.14em;
+  --label-tracking: 0.12em;
+
+  --accent: oklch(77.2% 0.1390 78.9);
+  --accent-hover: oklch(85.2% 0.1390 78.9);
+  --accent-border: oklch(77.2% 0.0764 78.9 / 55%);
+  --accent-subtle: oklch(77.2% 0.1390 78.9 / 12%);
+
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --font-sans: 'Inter Tight', -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   font-variant-numeric: tabular-nums;
 }
 
-[data-preset='terminal'] {
-  --ink: #0d0e0c;
-  --ink-raised: #16181c;
-  --paper: #edeae3;
-  --muted: #838077;
-  --accent: #e4a93c;
-  --up: #4c9e6a;
-  --down: #c9624c;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --font-sans: 'Inter Tight', system-ui, sans-serif;
+/* GENERATED BACKGROUNDS — voir scripts/derive-theme-tokens.mjs, ne pas éditer à la main */
+[data-background='graphite'] {
+  --surface-0: oklch(16.2% 0.0044 128.8);
+  --surface-1: oklch(21.2% 0.0044 128.8);
+  --surface-2: oklch(26.7% 0.0044 128.8);
+  --surface-inset: oklch(12.7% 0.0044 128.8);
+  --fg: oklch(93.0% 0.0018 128.8);
+  --fg-muted: oklch(58.0% 0.0027 128.8);
+  --up: oklch(62.0% 0.1300 152.0);
+  --down: oklch(65.0% 0.1500 27.0);
 }
 
-[data-preset='ledger'] {
-  --ink: #0b0f14;
-  --ink-raised: #141a22;
-  --paper: #e8e4d9;
-  --muted: #878174;
-  --accent: #c9a24b;
-  --up: #5c9a6f;
-  --down: #c46754;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --font-sans: 'Geist', system-ui, sans-serif;
+[data-background='encre'] {
+  --surface-0: oklch(16.9% 0.0245 265.2);
+  --surface-1: oklch(21.9% 0.0245 265.2);
+  --surface-2: oklch(27.4% 0.0245 265.2);
+  --surface-inset: oklch(13.4% 0.0245 265.2);
+  --fg: oklch(93.0% 0.0098 265.2);
+  --fg-muted: oklch(59.0% 0.0147 265.2);
+  --up: oklch(62.0% 0.1300 152.0);
+  --down: oklch(65.0% 0.1500 27.0);
 }
 
-[data-preset='vault'] {
-  --ink: #0e1113;
-  --ink-raised: #181d21;
-  --paper: #e4e7e6;
-  --muted: #7d8589;
-  --accent: #6fa8c7;
-  --up: #4f9e70;
-  --down: #c66959;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --font-sans: 'Geist', system-ui, sans-serif;
+[data-background='papier'] {
+  --surface-0: oklch(93.2% 0.0144 84.6);
+  --surface-1: oklch(98.2% 0.0144 84.6);
+  --surface-2: oklch(100.0% 0.0144 84.6);
+  --surface-inset: oklch(89.7% 0.0144 84.6);
+  --fg: oklch(18.0% 0.0058 84.6);
+  --fg-muted: oklch(38.0% 0.0086 84.6);
+  --up: oklch(42.0% 0.1300 152.0);
+  --down: oklch(45.0% 0.1500 27.0);
 }
 
-[data-preset='tape'] {
-  --ink: #0f0d0a;
-  --ink-raised: #1a1613;
-  --paper: #f0ead6;
-  --muted: #8a8172;
-  --accent: #3f9c93;
-  --up: #5aa05b;
-  --down: #c85a35;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --font-sans: 'Inter Tight', system-ui, sans-serif;
+[data-background='onyx'] {
+  --surface-0: oklch(0.0% 0.0000 0.0);
+  --surface-1: oklch(14.0% 0.0000 0.0);
+  --surface-2: oklch(25.0% 0.0000 0.0);
+  --surface-inset: oklch(0.0% 0.0000 0.0);
+  --fg: oklch(93.0% 0.0000 0.0);
+  --fg-muted: oklch(58.0% 0.0000 0.0);
+  --up: oklch(62.0% 0.1300 152.0);
+  --down: oklch(65.0% 0.1500 27.0);
 }
+/* END GENERATED BACKGROUNDS */

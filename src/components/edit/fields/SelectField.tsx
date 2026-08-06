@@ -12,7 +12,7 @@ export default function SelectField({ label, registration, options }: Props) {
       <span className="text-label uppercase tracking-label text-muted block mb-1.5">{label}</span>
       <select
         {...registration}
-        className="w-full min-h-11 rounded-md border border-ink-raised bg-ink px-3 text-sm text-paper focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+        className="w-full min-h-11 rounded-md border border-ink-raised bg-surface-inset px-3 text-sm text-paper focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 focus:border-accent"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

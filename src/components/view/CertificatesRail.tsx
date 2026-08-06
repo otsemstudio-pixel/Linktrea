@@ -1,5 +1,6 @@
-import { Award, ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import type { Certificate } from '@/types'
+import CertificateSeal from './CertificateSeal'
 
 type Props = {
   certificates: Certificate[]
@@ -19,9 +20,9 @@ export default function CertificatesRail({ certificates }: Props) {
               key={cert.id}
               className="snap-start shrink-0 w-56 rounded-lg border border-ink-raised bg-ink-raised/40 p-4"
             >
-              <Award size={18} className="text-accent" aria-hidden="true" />
+              <CertificateSeal />
               <p className="mt-2 font-medium text-sm leading-snug">{cert.title}</p>
-              <p className="text-xs text-muted mt-0.5">
+              <p className="text-xs text-muted mt-0.5 font-mono">
                 {cert.institution} · {cert.year}
               </p>
               {cert.credentialUrl && (

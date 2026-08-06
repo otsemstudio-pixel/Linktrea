@@ -16,7 +16,7 @@ export default function TextField({ label, registration, type = 'text', placehol
         {...registration}
         type={type}
         placeholder={placeholder}
-        className="w-full min-h-11 rounded-md border border-ink-raised bg-ink px-3 text-sm text-paper focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+        className="w-full min-h-11 rounded-md border border-ink-raised bg-surface-inset px-3 text-sm text-paper focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 focus:border-accent"
       />
       {error && <span className="block mt-1 text-xs text-down">{error}</span>}
     </label>

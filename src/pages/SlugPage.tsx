@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { getProfileStore } from '@/lib/store'
 import ProfileView from '@/components/ProfileView'
 import PublicProfileNotFound from '@/components/view/PublicProfileNotFound'
+import ProfileSkeleton from '@/components/view/ProfileSkeleton'
 import type { Profile } from '@/types'
 
 type State = { status: 'loading' } | { status: 'ready'; profile: Profile } | { status: 'not-found' }
@@ -15,7 +16,7 @@ export default function SlugPage() {
   const [state, setState] = useState<State>({ status: 'loading' })
 
   useEffect(() => {
-    document.documentElement.dataset.preset = 'terminal'
+    document.documentElement.dataset.background = 'graphite'
   }, [])
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function SlugPage() {
     }
   }, [slug])
 
-  if (state.status === 'loading') return null
+  if (state.status === 'loading') return <ProfileSkeleton />
   if (state.status === 'not-found') return <PublicProfileNotFound />
   return <ProfileView profile={state.profile} />
 }

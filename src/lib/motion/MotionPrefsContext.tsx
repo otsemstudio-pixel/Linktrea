@@ -1,28 +1,28 @@
 import { createContext, useContext } from 'react'
 import { useReducedMotion } from 'motion/react'
-import type { MotionPreference, ThemePreset } from '@/types'
-import { PRESET_MOTION_PROFILES, type PresetMotionProfile } from './presetProfiles'
+import type { MotionPreference, BackgroundId } from '@/types'
+import { BACKGROUND_MOTION_PROFILES, type MotionProfile } from './backgroundMotionProfiles'
 
 type MotionPrefs = {
   reduced: boolean
-  profile: PresetMotionProfile
+  profile: MotionProfile
 }
 
 const MotionPrefsContext = createContext<MotionPrefs>({
   reduced: false,
-  profile: PRESET_MOTION_PROFILES.terminal,
+  profile: BACKGROUND_MOTION_PROFILES.graphite,
 })
 
 type ProviderProps = {
-  preset: ThemePreset
+  background: BackgroundId
   themeMotion: MotionPreference
   children: React.ReactNode
 }
 
-export function MotionPrefsProvider({ preset, themeMotion, children }: ProviderProps) {
+export function MotionPrefsProvider({ background, themeMotion, children }: ProviderProps) {
   const osReduced = useReducedMotion()
   const reduced = Boolean(osReduced) || themeMotion === 'reduced'
-  const profile = PRESET_MOTION_PROFILES[preset]
+  const profile = BACKGROUND_MOTION_PROFILES[background]
 
   return <MotionPrefsContext.Provider value={{ reduced, profile }}>{children}</MotionPrefsContext.Provider>
 }

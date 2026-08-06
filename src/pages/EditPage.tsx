@@ -16,10 +16,12 @@ import CertificatesSection from '@/components/edit/CertificatesSection'
 import TickersSection from '@/components/edit/TickersSection'
 import AppearanceSection from '@/components/edit/AppearanceSection'
 import EditorActionBar from '@/components/edit/EditorActionBar'
+import EditorSkeleton from '@/components/edit/EditorSkeleton'
 import ShareLinkModal from '@/components/edit/ShareLinkModal'
 import PreviewOverlay from '@/components/edit/PreviewOverlay'
 import DesktopPreviewPanel from '@/components/edit/DesktopPreviewPanel'
 import { useFaviconAndThemeColor } from '@/lib/useDocumentMeta'
+import { useAppliedTheme } from '@/lib/theme/useAppliedTheme'
 import { useAuth } from '@/lib/auth/AuthContext'
 
 const STORAGE_MODE = import.meta.env.VITE_STORAGE_MODE === 'supabase' ? 'supabase' : 'local'
@@ -46,13 +48,12 @@ export default function EditPage() {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [linkModalOpen, setLinkModalOpen] = useState(false)
 
-  const activePreset = profile.theme?.preset ?? 'terminal'
+  const activeBackground = profile.theme?.background ?? 'graphite'
+  const activeAccent = profile.theme?.accent ?? '#E4A93C'
+  const activeFontDuo = profile.theme?.fontDuo ?? 'suisse'
 
-  useEffect(() => {
-    document.documentElement.dataset.preset = activePreset
-  }, [activePreset])
-
-  useFaviconAndThemeColor(activePreset)
+  useAppliedTheme(activeBackground, activeAccent, activeFontDuo)
+  useFaviconAndThemeColor(activeBackground, activeAccent)
   useEffect(() => {
     document.title = 'Éditeur · Ledger'
   }, [])
@@ -60,10 +61,10 @@ export default function EditPage() {
   // Le temps que loadMine() résolve (chargement du vrai profil depuis le
   // store) — sans ça, la brève fenêtre de chargement afficherait un
   // formulaire vide avant que les vraies valeurs n'arrivent.
-  if (isLoading) return null
+  if (isLoading) return <EditorSkeleton />
 
   return (
-    <MotionPrefsProvider preset={activePreset} themeMotion={profile.theme?.motion ?? 'full'}>
+    <MotionPrefsProvider background={activeBackground} themeMotion={profile.theme?.motion ?? 'full'}>
       <FormProvider {...methods}>
         <div className="min-h-dvh bg-ink text-paper font-sans pb-24 lg:pb-10">
           <div className="lg:mx-auto lg:flex lg:max-w-[1400px] lg:items-start lg:gap-8 lg:px-8 lg:pt-8">
@@ -95,16 +96,16 @@ export default function EditPage() {
                   <CollapsibleSection title="Publier">
                     <PublishSection />
                   </CollapsibleSection>
-                  <CollapsibleSection title="Positions">
+                  <CollapsibleSection title="Positions" count={profile.positions?.length ?? 0}>
                     <PositionsSection />
                   </CollapsibleSection>
-                  <CollapsibleSection title="Compétences">
+                  <CollapsibleSection title="Compétences" count={profile.holdings?.length ?? 0}>
                     <HoldingsSection />
                   </CollapsibleSection>
-                  <CollapsibleSection title="Certificats">
+                  <CollapsibleSection title="Certificats" count={profile.certificates?.length ?? 0}>
                     <CertificatesSection />
                   </CollapsibleSection>
-                  <CollapsibleSection title="Réseaux">
+                  <CollapsibleSection title="Réseaux" count={profile.tickers?.length ?? 0}>
                     <TickersSection />
                   </CollapsibleSection>
                   <CollapsibleSection title="Apparence">

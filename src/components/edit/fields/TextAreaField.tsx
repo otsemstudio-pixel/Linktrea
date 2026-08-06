@@ -6,10 +6,11 @@ type Props = {
   value?: string
   maxLength?: number
   rows?: number
+  placeholder?: string
   error?: string
 }
 
-export default function TextAreaField({ label, registration, value, maxLength, rows = 3, error }: Props) {
+export default function TextAreaField({ label, registration, value, maxLength, rows = 3, placeholder, error }: Props) {
   return (
     <label className="block mb-4">
       <span className="flex justify-between items-baseline mb-1.5">
@@ -24,7 +25,8 @@ export default function TextAreaField({ label, registration, value, maxLength, r
         {...registration}
         rows={rows}
         maxLength={maxLength}
-        className="w-full rounded-md border border-ink-raised bg-ink px-3 py-2 text-sm text-paper resize-none focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+        placeholder={placeholder}
+        className="w-full rounded-md border border-ink-raised bg-surface-inset px-3 py-2 text-sm text-paper resize-none focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 focus:border-accent"
       />
       {error && <span className="block mt-1 text-xs text-down">{error}</span>}
     </label>

@@ -24,7 +24,7 @@ function tickerContent(ticker: Ticker) {
 }
 
 const TICKER_ITEM_CLASS =
-  'shrink-0 flex items-center gap-2 px-4 py-2.5 min-h-11 border-r border-ink font-mono text-xs whitespace-nowrap'
+  'shrink-0 flex items-center gap-2 px-4 py-2.5 min-h-11 border-r border-ink-raised font-mono text-xs whitespace-nowrap'
 
 function TickerItem({ ticker }: { ticker: Ticker }) {
   return (
@@ -74,7 +74,7 @@ export default function TickerBanner({ tickers }: Props) {
 
   if (reduced) {
     return (
-      <div role="list" aria-label="Réseaux" className="flex overflow-x-auto scrollbar-none border-b border-ink-raised bg-ink-raised">
+      <div role="list" aria-label="Réseaux" className="flex overflow-x-auto scrollbar-none bg-ink/90">
         {tickers.map((t) => (
           <TickerItem key={t.id} ticker={t} />
         ))}
@@ -86,7 +86,7 @@ export default function TickerBanner({ tickers }: Props) {
     <div
       role="list"
       aria-label="Réseaux"
-      className="overflow-hidden border-b border-ink-raised bg-ink-raised"
+      className="overflow-hidden bg-ink/90"
       onPointerDown={() => controls.stop()}
       onPointerUp={() =>
         halfWidth > 0 &&

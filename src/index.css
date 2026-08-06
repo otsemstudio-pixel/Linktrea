@@ -2,17 +2,25 @@
 @import "./styles/tokens.css";
 
 /*
- * Pont entre les tokens de preset (variables CSS qui changent avec
- * [data-preset]) et les utilitaires Tailwind. Les indirections
- * --color-ink -> var(--ink) permettent à bg-ink / text-paper etc. de
- * suivre le changement de preset au runtime.
+ * Pont entre les tokens de fond/accent (variables CSS qui changent avec
+ * [data-background] et l'accent appliqué au runtime, voir
+ * src/lib/theme/useAppliedTheme.ts) et les utilitaires Tailwind. Les
+ * indirections --color-ink -> var(--surface-0) permettent à bg-ink /
+ * text-paper etc. de suivre le changement de thème sans toucher aux classes
+ * utilisées dans les composants — seuls les tokens sources ont changé de nom
+ * lors de la refonte design (Phase 1), pas les classes qui les consomment.
  */
 @theme {
-  --color-ink: var(--ink);
-  --color-ink-raised: var(--ink-raised);
-  --color-paper: var(--paper);
-  --color-muted: var(--muted);
+  --color-ink: var(--surface-0);
+  --color-ink-raised: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-inset: var(--surface-inset);
+  --color-paper: var(--fg);
+  --color-muted: var(--fg-muted);
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-border: var(--accent-border);
+  --color-accent-subtle: var(--accent-subtle);
   --color-up: var(--up);
   --color-down: var(--down);
 
@@ -24,14 +32,24 @@
   --tracking-label: var(--label-tracking);
 }
 
+/*
+ * color-scheme suit le fond actif, pas une valeur fixe : "dark" forcerait
+ * les contrôles natifs (scrollbar, <input type="color">...) en rendu sombre
+ * même sur le fond clair Papier. [data-background='papier'] la repasse à
+ * "light" ci-dessous.
+ */
 html {
   color-scheme: dark;
 }
 
+html[data-background='papier'] {
+  color-scheme: light;
+}
+
 body {
   margin: 0;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--surface-0);
+  color: var(--fg);
   font-family: var(--font-sans);
   /* overflow-wrap est héritée : ce seul réglage protège tout texte saisi
      par l'utilisateur (bio, description, intitulé...) contre un débordement
@@ -45,4 +63,39 @@ body {
 }
 .scrollbar-none::-webkit-scrollbar {
   display: none;
+}
+
+/*
+ * Balayage des squelettes de chargement (Phase 4) — un bandeau clair qui
+ * traverse le bloc plutôt qu'un indicateur circulaire générique, pour que le
+ * squelette laisse deviner la forme du contenu final pendant qu'il charge.
+ * Statique sous prefers-reduced-motion (voir motion-reduce: dans les
+ * composants qui l'utilisent), pas seulement plus lent.
+ */
+@keyframes skeleton-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  /* surface-2, pas surface-1 : l'écart avec le fond de page (surface-0) est
+     trop faible pour rester lisible sur un bloc plat sans texte ni icône
+     pour ancrer le regard, contrairement au reste de l'UI. */
+  background: var(--surface-2);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--fg) 8%, transparent), transparent);
+  animation: skeleton-sweep 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+    display: none;
+  }
 }

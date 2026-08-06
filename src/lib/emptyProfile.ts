@@ -15,8 +15,9 @@ export function createEmptyProfile(): Profile {
     certificates: [],
     tickers: [],
     theme: {
-      preset: 'terminal',
+      background: 'graphite',
       accent: '#E4A93C',
+      fontDuo: 'suisse',
       motion: 'full',
     },
   }
