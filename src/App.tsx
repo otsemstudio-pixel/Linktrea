@@ -3,6 +3,8 @@ import { HashRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'motion/react'
 import ViewPage from '@/pages/ViewPage'
 import PageTransition from '@/components/PageTransition'
+import RequireAuth from '@/components/RequireAuth'
+import { AuthProvider } from '@/lib/auth/AuthContext'
 
 // / est la page publique — c'est elle que la quasi-totalité des visiteurs
 // charge. /edit embarque react-hook-form, le résolveur zod et les sections
@@ -10,8 +12,11 @@ import PageTransition from '@/components/PageTransition'
 // quelqu'un qui ne fait que consulter un profil. Les pages /debug ne font
 // partie d'aucun parcours public, même traitement.
 const EditPage = lazy(() => import('@/pages/EditPage'))
+const LoginPage = lazy(() => import('@/pages/LoginPage'))
 const DebugCodecPage = lazy(() => import('@/pages/DebugCodecPage'))
 const DebugThemePage = lazy(() => import('@/pages/DebugThemePage'))
+const DebugStorePage = lazy(() => import('@/pages/DebugStorePage'))
+const SlugPage = lazy(() => import('@/pages/SlugPage'))
 
 function AnimatedRoutes() {
   const location = useLocation()
@@ -26,7 +31,19 @@ function AnimatedRoutes() {
           element={
             <PageTransition>
               <Suspense fallback={null}>
-                <EditPage />
+                <RequireAuth>
+                  <EditPage />
+                </RequireAuth>
+              </Suspense>
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PageTransition>
+              <Suspense fallback={null}>
+                <LoginPage />
               </Suspense>
             </PageTransition>
           }
@@ -47,6 +64,26 @@ function AnimatedRoutes() {
             </Suspense>
           }
         />
+        <Route
+          path="/debug/store"
+          element={
+            <Suspense fallback={null}>
+              <DebugStorePage />
+            </Suspense>
+          }
+        />
+        {/* Doit rester la DERNIÈRE route : dynamique sur un seul segment,
+            elle matcherait n'importe quel chemin fixe déclaré après elle. */}
+        <Route
+          path="/:slug"
+          element={
+            <PageTransition>
+              <Suspense fallback={null}>
+                <SlugPage />
+              </Suspense>
+            </PageTransition>
+          }
+        />
       </Routes>
     </AnimatePresence>
   )
@@ -54,8 +91,10 @@ function AnimatedRoutes() {
 
 export default function App() {
   return (
-    <HashRouter>
-      <AnimatedRoutes />
-    </HashRouter>
+    <AuthProvider>
+      <HashRouter>
+        <AnimatedRoutes />
+      </HashRouter>
+    </AuthProvider>
   )
 }

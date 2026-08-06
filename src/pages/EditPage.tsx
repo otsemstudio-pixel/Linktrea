@@ -3,11 +3,13 @@ import { useForm, FormProvider, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Profile } from '@/types'
 import { profileSchema } from '@/lib/schema'
-import { readDraft, useDraftAutosave } from '@/lib/draft'
 import { createEmptyProfile } from '@/lib/emptyProfile'
+import { getProfileStore } from '@/lib/store'
+import { useProfileStoreAutosave } from '@/lib/store/useProfileStoreAutosave'
 import { MotionPrefsProvider } from '@/lib/motion/MotionPrefsContext'
 import CollapsibleSection from '@/components/edit/CollapsibleSection'
 import IdentitySection from '@/components/edit/IdentitySection'
+import PublishSection from '@/components/edit/PublishSection'
 import PositionsSection from '@/components/edit/PositionsSection'
 import HoldingsSection from '@/components/edit/HoldingsSection'
 import CertificatesSection from '@/components/edit/CertificatesSection'
@@ -18,17 +20,28 @@ import ShareLinkModal from '@/components/edit/ShareLinkModal'
 import PreviewOverlay from '@/components/edit/PreviewOverlay'
 import DesktopPreviewPanel from '@/components/edit/DesktopPreviewPanel'
 import { useFaviconAndThemeColor } from '@/lib/useDocumentMeta'
+import { useAuth } from '@/lib/auth/AuthContext'
+
+const STORAGE_MODE = import.meta.env.VITE_STORAGE_MODE === 'supabase' ? 'supabase' : 'local'
 
 export default function EditPage() {
+  const { signOut } = useAuth()
   const methods = useForm<Profile>({
     resolver: zodResolver(profileSchema),
-    defaultValues: readDraft() ?? createEmptyProfile(),
+    defaultValues: async () => {
+      const store = await getProfileStore()
+      return (await store.loadMine()) ?? createEmptyProfile()
+    },
     mode: 'onBlur',
   })
 
-  const { control, reset } = methods
+  const {
+    control,
+    reset,
+    formState: { isLoading },
+  } = methods
   const profile = useWatch({ control }) as Profile
-  const saveStatus = useDraftAutosave(profile)
+  const { status: saveStatus, error: saveError } = useProfileStoreAutosave(profile)
 
   const [previewOpen, setPreviewOpen] = useState(false)
   const [linkModalOpen, setLinkModalOpen] = useState(false)
@@ -44,6 +57,11 @@ export default function EditPage() {
     document.title = 'Éditeur · Ledger'
   }, [])
 
+  // Le temps que loadMine() résolve (chargement du vrai profil depuis le
+  // store) — sans ça, la brève fenêtre de chargement afficherait un
+  // formulaire vide avant que les vraies valeurs n'arrivent.
+  if (isLoading) return null
+
   return (
     <MotionPrefsProvider preset={activePreset} themeMotion={profile.theme?.motion ?? 'full'}>
       <FormProvider {...methods}>
@@ -52,13 +70,30 @@ export default function EditPage() {
             <div className="lg:min-w-0 lg:flex-1">
               <header className="px-4 py-4 flex justify-between items-center border-b border-ink-raised lg:border lg:rounded-lg lg:px-5 lg:mb-4">
                 <h1 className="font-medium">Éditeur</h1>
-                <span className="text-xs text-muted">{saveStatus === 'saved' ? 'Enregistré' : ''}</span>
+                <div className="flex items-center gap-3">
+                  <span className={`text-xs ${saveStatus === 'error' ? 'text-down' : 'text-muted'}`}>
+                    {saveStatus === 'saved' && 'Enregistré'}
+                    {saveStatus === 'error' && saveError}
+                  </span>
+                  {STORAGE_MODE === 'supabase' && (
+                    <button
+                      type="button"
+                      onClick={() => void signOut()}
+                      className="min-h-11 px-3 text-xs text-muted rounded-md focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+                    >
+                      Déconnexion
+                    </button>
+                  )}
+                </div>
               </header>
 
               <main>
                 <form onSubmit={(e) => e.preventDefault()} className="lg:border lg:rounded-lg">
                   <CollapsibleSection title="Identité" defaultOpen>
                     <IdentitySection />
+                  </CollapsibleSection>
+                  <CollapsibleSection title="Publier">
+                    <PublishSection />
                   </CollapsibleSection>
                   <CollapsibleSection title="Positions">
                     <PositionsSection />

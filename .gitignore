@@ -27,3 +27,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Variables d'environnement — jamais commitées.
+# Seul .env.example est versionné, avec des valeurs factices.
+.env
+.env.local
+.env.*.local
