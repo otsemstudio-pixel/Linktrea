@@ -7,5 +7,6 @@ import PublicEmptyProfileGhost from './PublicEmptyProfileGhost'
 // vide, il doit voir ce que le produit produit. Pas de thème réel à
 // reprendre ici (aucun profil n'existe), donc le thème par défaut.
 export default function EmptyState() {
-  return <PublicEmptyProfileGhost theme={createEmptyProfile().theme} />
+  const fallback = createEmptyProfile()
+  return <PublicEmptyProfileGhost theme={fallback.theme} domain={fallback.domain} appearance={fallback.appearance} />
 }

@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useAnimationControls } from 'motion/react'
-import type { Ticker } from '@/types'
+import type { Ticker, Domain } from '@/types'
 import { PLATFORM_SYMBOLS } from '@/lib/platformSymbols'
 import { pseudoVariation } from '@/lib/tickerVariation'
 import { useMotionPrefs } from '@/lib/motion/MotionPrefsContext'
+import { VOCABULARY } from '@/lib/vocabulary'
 
 type Props = {
+  domain: Domain
   tickers: Ticker[]
 }
 
@@ -49,11 +51,12 @@ function TickerItemVisual({ ticker }: { ticker: Ticker }) {
 // Élément signature. Marquee en transform (jamais scrollLeft ni width),
 // dupliqué pour boucler sans coupure. Se met en pause au toucher — c'est
 // le seul endroit "bruyant" de la page, comme prévu par le plan de design.
-export default function TickerBanner({ tickers }: Props) {
+export default function TickerBanner({ domain, tickers }: Props) {
   const trackRef = useRef<HTMLDivElement>(null)
   const controls = useAnimationControls()
   const { reduced } = useMotionPrefs()
   const [halfWidth, setHalfWidth] = useState(0)
+  const networksLabel = VOCABULARY[domain].networks
 
   useEffect(() => {
     if (trackRef.current) {
@@ -74,7 +77,7 @@ export default function TickerBanner({ tickers }: Props) {
 
   if (reduced) {
     return (
-      <div role="list" aria-label="Réseaux" className="flex overflow-x-auto scrollbar-none bg-ink/90">
+      <div role="list" aria-label={networksLabel} className="flex overflow-x-auto scrollbar-none bg-ink/90">
         {tickers.map((t) => (
           <TickerItem key={t.id} ticker={t} />
         ))}
@@ -85,7 +88,7 @@ export default function TickerBanner({ tickers }: Props) {
   return (
     <div
       role="list"
-      aria-label="Réseaux"
+      aria-label={networksLabel}
       className="overflow-hidden bg-ink/90"
       onPointerDown={() => controls.stop()}
       onPointerUp={() =>

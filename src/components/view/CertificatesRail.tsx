@@ -1,15 +1,19 @@
 import { ExternalLink } from 'lucide-react'
-import type { Certificate } from '@/types'
+import type { Certificate, Domain } from '@/types'
 import CertificateSeal from './CertificateSeal'
+import { VOCABULARY } from '@/lib/vocabulary'
 
 type Props = {
+  domain: Domain
   certificates: Certificate[]
 }
 
-export default function CertificatesRail({ certificates }: Props) {
+export default function CertificatesRail({ domain, certificates }: Props) {
+  const vocabulary = VOCABULARY[domain]
+
   return (
     <section className="py-6 border-t border-ink-raised">
-      <h2 className="text-label uppercase tracking-label text-muted mb-3 px-6 @min-[1024px]:px-0">Actifs certifiés</h2>
+      <h2 className="text-label uppercase tracking-label text-muted mb-3 px-6 @min-[1024px]:px-0">{vocabulary.certifications}</h2>
 
       {certificates.length === 0 ? (
         <p className="text-sm text-muted px-6 @min-[1024px]:px-0">Aucun certificat renseigné pour le moment.</p>
@@ -18,11 +22,19 @@ export default function CertificatesRail({ certificates }: Props) {
           {certificates.map((cert) => (
             <div
               key={cert.id}
-              className="snap-start shrink-0 w-56 rounded-lg border border-ink-raised bg-ink-raised/40 p-4"
+              className="snap-start shrink-0 w-56 rounded-lg p-4"
+              style={{
+                background: 'var(--card-bg)',
+                color: 'var(--card-fg)',
+                borderStyle: 'solid',
+                borderWidth: 'var(--card-border-width)',
+                borderColor: 'var(--card-border-color)',
+                boxShadow: 'var(--card-shadow)',
+              }}
             >
               <CertificateSeal />
               <p className="mt-2 font-medium text-sm leading-snug">{cert.title}</p>
-              <p className="text-xs text-muted mt-0.5 font-mono">
+              <p className="text-xs mt-0.5 font-mono" style={{ color: 'var(--card-fg-muted)' }}>
                 {cert.institution} · {cert.year}
               </p>
               {cert.credentialUrl && (

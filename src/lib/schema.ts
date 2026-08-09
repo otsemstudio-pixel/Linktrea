@@ -58,33 +58,88 @@ const tickerSchema = z.object({
   url: z.string(),
 })
 
+const fontDuoIdSchema = z.enum([
+  'institutionnel',
+  'terminal',
+  'editorial',
+  'suisse',
+  'brut',
+  'classique',
+  'technique',
+  'moderne',
+  'compact',
+  'elegant',
+  'journal',
+  'machine',
+  'geometrique',
+  'humaniste',
+])
+
+const motionPreferenceSchema = z.enum(['full', 'reduced'])
+
 const themeConfigSchema = z.object({
   background: z.enum(['graphite', 'encre', 'papier', 'onyx']),
   accent: z.string(),
-  fontDuo: z.enum([
-    'institutionnel',
-    'terminal',
-    'editorial',
-    'suisse',
-    'brut',
-    'classique',
-    'technique',
-    'moderne',
-    'compact',
-    'elegant',
-    'journal',
-    'machine',
-    'geometrique',
-    'humaniste',
-  ]),
-  motion: z.enum(['full', 'reduced']),
+  fontDuo: fontDuoIdSchema,
+  motion: motionPreferenceSchema,
 })
 
+const domainSchema = z.enum(['finance'])
+
+const galleryThemeIdSchema = z.enum([
+  'ledger',
+  'bourse',
+  'capital',
+  'sceau',
+  'lingot',
+  'devise',
+  'titre',
+  'reserve',
+  'coffre',
+  'rente',
+  'placement',
+  'guilde',
+])
+
+const buttonStyleSchema = z.enum(['solid', 'outline', 'elevated'])
+const headerLayoutSchema = z.enum(['classic', 'banner', 'seal'])
+
+const customThemeSettingsSchema = z.object({
+  background: z.string(),
+  buttonColor: z.string(),
+  buttonTextColor: z.string(),
+  pageTextColor: z.string(),
+  headingColor: z.string(),
+  pageFontDuo: fontDuoIdSchema,
+  headingFontFamily: z.string().nullable(),
+  buttonStyle: buttonStyleSchema,
+  headerLayout: headerLayoutSchema,
+})
+
+// z.discriminatedUnion sur 'kind' — cohérent avec AppearanceConfig
+// (src/types/profile.ts), et permet à zod de ne valider que la branche
+// (gallery/custom) réellement présente dans le payload.
+const appearanceConfigSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('gallery'),
+    themeId: galleryThemeIdSchema,
+    animatedBackground: z.boolean(),
+    motion: motionPreferenceSchema,
+  }),
+  z.object({
+    kind: z.literal('custom'),
+    settings: customThemeSettingsSchema,
+    motion: motionPreferenceSchema,
+  }),
+])
+
 export const profileSchema = z.object({
+  domain: domainSchema,
   identity: identitySchema,
   positions: z.array(positionSchema),
   holdings: z.array(holdingSchema),
   certificates: z.array(certificateSchema),
   tickers: z.array(tickerSchema),
   theme: themeConfigSchema,
+  appearance: appearanceConfigSchema,
 })

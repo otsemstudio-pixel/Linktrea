@@ -1,15 +1,22 @@
 import { motion } from 'motion/react'
-import type { Identity, Ticker } from '@/types'
+import type { Identity, Ticker, Domain, HeaderLayout } from '@/types'
 import { initials } from '@/lib/deriveStats'
 import { useMotionPrefs } from '@/lib/motion/MotionPrefsContext'
 import { INTRO_TIMELINE } from '@/lib/motion/timeline'
-import { guillochePaths, GUILLOCHE_EXTENT } from '@/lib/svg/guilloche'
+import type { ResolvedAnimation } from '@/lib/theme/resolveAppearance'
+import { useBackgroundAnimation } from '@/lib/motion/useBackgroundAnimation'
+import { sealOutlinePath } from '@/lib/svg/guilloche'
+import AmbientSparkline from './AmbientSparkline'
+import GuillochePattern from './GuillochePattern'
 import SocialLinksRow from './SocialLinksRow'
 import TickerBanner from './TickerBanner'
 
 type Props = {
+  domain: Domain
   identity: Identity
   tickers: Ticker[]
+  headerLayout: HeaderLayout
+  resolvedAnimation: ResolvedAnimation
 }
 
 const AVAILABILITY_COPY: Record<Identity['availability'], string> = {
@@ -18,89 +25,154 @@ const AVAILABILITY_COPY: Record<Identity['availability'], string> = {
   closed: 'Non disponible actuellement',
 }
 
-// Signature visuelle du projet (Phase 3) : la même trame de guillochis que
-// les sceaux de certificats, à très faible opacité — lisible comme "document
-// financier officiel" sans jamais concurrencer le contenu.
-function GuillochePattern() {
-  const e = GUILLOCHE_EXTENT
-  return (
-    <svg
-      viewBox={`${-e} ${-e} ${e * 2} ${e * 2}`}
-      preserveAspectRatio="xMidYMid slice"
-      className="absolute inset-0 size-full text-accent opacity-[0.06]"
+function Avatar({ identity, size }: { identity: Identity; size: string }) {
+  return identity.photo ? (
+    <img src={identity.photo} alt={identity.fullName} className={`${size} rounded-full object-cover`} />
+  ) : (
+    <div
       aria-hidden="true"
+      className={`${size} rounded-full bg-ink text-paper flex items-center justify-center font-mono text-2xl`}
     >
-      {guillochePaths().map((d, i) => (
-        <path key={i} d={d} fill="none" stroke="currentColor" strokeWidth="0.35" />
-      ))}
-    </svg>
+      {initials(identity.fullName) || '—'}
+    </div>
   )
 }
 
-export default function IdentityHeader({ identity, tickers }: Props) {
-  const { reduced, profile } = useMotionPrefs()
-
+// Médaillon Classique (refonte v1) — anneau fin à la couleur d'accent.
+function ClassicMedallion({ identity }: { identity: Identity }) {
   return (
-    <motion.header
-      initial={{ opacity: 0, y: reduced ? 0 : 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: INTRO_TIMELINE.identity, duration: 0.4 * profile.durationScale, ease: profile.ease }}
-      className="relative overflow-hidden bg-ink-raised @min-[1024px]:rounded-lg"
-    >
-      {/* Fond perdu : texture + dégradé, sous le contenu, jamais interactifs. */}
-      <GuillochePattern />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-b from-accent-subtle to-transparent"
-      />
+    <div className="rounded-full border-2 border-accent p-1">
+      <Avatar identity={identity} size="size-24" />
+    </div>
+  )
+}
 
-      <div className="relative flex flex-col items-center text-center px-6 pt-10 pb-6">
-        <div className="rounded-full border-2 border-accent p-1">
-          {identity.photo ? (
-            <img src={identity.photo} alt={identity.fullName} className="size-24 rounded-full object-cover" />
-          ) : (
-            <div
-              aria-hidden="true"
-              className="size-24 rounded-full bg-ink text-paper flex items-center justify-center font-mono text-2xl"
-            >
-              {initials(identity.fullName) || '—'}
-            </div>
-          )}
-        </div>
+// Cadre Sceau (refonte v2, Phase 5) — bordure dentelée générée par la même
+// fonction que CertificateSeal.tsx, à une autre échelle : renforce le
+// registre "document officiel" en reliant visuellement l'en-tête aux
+// certificats plutôt que d'inventer un second motif.
+function SealMedallion({ identity }: { identity: Identity }) {
+  return (
+    <div className="relative size-28">
+      <svg viewBox="0 0 100 100" className="absolute inset-0 size-full text-accent" aria-hidden="true">
+        <path d={sealOutlinePath(50, 50, 48, 41, 22)} fill="none" stroke="currentColor" strokeWidth="1.4" />
+      </svg>
+      <div className="absolute inset-[9%] rounded-full overflow-hidden">
+        <Avatar identity={identity} size="size-full" />
+      </div>
+    </div>
+  )
+}
 
-        <h1 className="mt-4 text-[32px] leading-tight font-semibold tracking-tight">
-          {identity.fullName || 'Nom à renseigner'}
-        </h1>
+function IdentityText({ identity, tickers }: { identity: Identity; tickers: Ticker[] }) {
+  return (
+    <>
+      <h1 className="mt-4 text-[32px] leading-tight font-semibold tracking-tight font-heading">
+        {identity.fullName || 'Nom à renseigner'}
+      </h1>
 
-        <p className="mt-1 text-xs text-muted">
-          {[identity.headline, identity.location].filter(Boolean).join(' · ')}
-        </p>
+      <p className="mt-1 text-xs text-muted">
+        {[identity.headline, identity.location].filter(Boolean).join(' · ')}
+      </p>
 
-        {identity.bio && <p className="mt-3 text-sm max-w-xs text-paper/90">{identity.bio}</p>}
+      {identity.bio && <p className="mt-3 text-sm max-w-xs text-paper/90">{identity.bio}</p>}
 
-        <div className="mt-3 inline-flex items-center gap-2 min-h-11 px-3 rounded-full border border-paper/15 text-xs">
-          <span
-            aria-hidden="true"
-            className={
-              'size-2 rounded-full ' +
-              (identity.availability === 'open'
-                ? 'bg-up'
-                : identity.availability === 'busy'
-                  ? 'bg-accent'
-                  : 'bg-muted')
-            }
-          />
-          <span>{AVAILABILITY_COPY[identity.availability]}</span>
-        </div>
-
-        <SocialLinksRow tickers={tickers} />
+      <div className="mt-3 inline-flex items-center gap-2 min-h-11 px-3 rounded-full border border-paper/15 text-xs">
+        <span
+          aria-hidden="true"
+          className={
+            'size-2 rounded-full ' +
+            (identity.availability === 'open'
+              ? 'bg-up'
+              : identity.availability === 'busy'
+                ? 'bg-accent'
+                : 'bg-muted')
+          }
+        />
+        <span>{AVAILABILITY_COPY[identity.availability]}</span>
       </div>
 
-      {/* Bande de tickers "par-dessus" le bloc, en bas de l'en-tête — surface
-          distincte (surface-0) pour lire comme posée sur le fond de l'en-tête,
-          pas comme une continuation de celui-ci. */}
+      <SocialLinksRow tickers={tickers} />
+    </>
+  )
+}
+
+export default function IdentityHeader({ domain, identity, tickers, headerLayout, resolvedAnimation }: Props) {
+  const animation = useBackgroundAnimation(resolvedAnimation)
+  // Sparkline ambiante : rendue uniquement dans les layouts qui ont un
+  // véritable bloc de fond derrière l'en-tête (Classique, Bandeau) — Sceau
+  // est explicitement "sans bandeau de fond" (Phase 5), y ajouter une
+  // sparkline y contredirait sa propre identité minimaliste.
+  const showAmbientSparkline = animation.kind === 'sparkline' && animation.active
+  const { reduced, profile } = useMotionPrefs()
+  const motionProps = {
+    initial: { opacity: 0, y: reduced ? 0 : 12 },
+    animate: { opacity: 1, y: 0 },
+    transition: { delay: INTRO_TIMELINE.identity, duration: 0.4 * profile.durationScale, ease: profile.ease },
+  }
+
+  // Sceau : centré, sans bandeau de fond ni guillochis en arrière-plan — le
+  // motif "document officiel" vient du cadre dentelé lui-même, pas d'une
+  // texture supplémentaire derrière (voir le prompt v2 : "sans bandeau de
+  // fond"). Le bloc reste néanmoins une carte élevée, cohérente avec le
+  // reste de l'interface.
+  if (headerLayout === 'seal') {
+    return (
+      <motion.header
+        {...motionProps}
+        className="flex flex-col items-center text-center px-6 pt-10 pb-6 bg-ink-raised @min-[1024px]:rounded-lg overflow-hidden"
+      >
+        <SealMedallion identity={identity} />
+        <IdentityText identity={identity} tickers={tickers} />
+        <div className="w-full -mx-6 mt-3">
+          <TickerBanner domain={domain} tickers={tickers} />
+        </div>
+      </motion.header>
+    )
+  }
+
+  // Bandeau : bloc à fond perdu pleine largeur en haut (même trame de
+  // guillochis + dégradé que Classique, à un autre endroit), bande de
+  // tickers intégrée dans ce bandeau, photo en médaillon superposée à
+  // cheval sur la limite via une marge négative — pas de positionnement
+  // absolu, la moitié haute du médaillon (size-24 = 96px, soit 48px) tombe
+  // exactement sur le bord grâce à -mt-12.
+  if (headerLayout === 'banner') {
+    return (
+      <motion.header {...motionProps} className="relative overflow-hidden @min-[1024px]:rounded-lg">
+        <div className="relative h-32 overflow-hidden bg-ink-raised">
+          <GuillochePattern />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-accent-subtle to-transparent" />
+          {showAmbientSparkline && <AmbientSparkline />}
+          <div className="absolute inset-x-0 top-0">
+            <TickerBanner domain={domain} tickers={tickers} />
+          </div>
+        </div>
+        <div className="relative -mt-12 flex flex-col items-center text-center px-6 pb-6 bg-ink-raised">
+          <div className="rounded-full border-2 border-accent p-1 bg-ink-raised">
+            <Avatar identity={identity} size="size-24" />
+          </div>
+          <IdentityText identity={identity} tickers={tickers} />
+        </div>
+      </motion.header>
+    )
+  }
+
+  // Classique (par défaut) — layout de la refonte v1, inchangé hormis la
+  // sparkline ambiante optionnelle (thème Placement).
+  return (
+    <motion.header {...motionProps} className="relative overflow-hidden bg-ink-raised @min-[1024px]:rounded-lg">
+      <GuillochePattern />
+      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-accent-subtle to-transparent" />
+      {showAmbientSparkline && <AmbientSparkline />}
+
+      <div className="relative flex flex-col items-center text-center px-6 pt-10 pb-6">
+        <ClassicMedallion identity={identity} />
+        <IdentityText identity={identity} tickers={tickers} />
+      </div>
+
       <div className="relative">
-        <TickerBanner tickers={tickers} />
+        <TickerBanner domain={domain} tickers={tickers} />
       </div>
     </motion.header>
   )

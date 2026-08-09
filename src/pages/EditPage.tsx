@@ -48,12 +48,16 @@ export default function EditPage() {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [linkModalOpen, setLinkModalOpen] = useState(false)
 
-  const activeBackground = profile.theme?.background ?? 'graphite'
   const activeAccent = profile.theme?.accent ?? '#E4A93C'
-  const activeFontDuo = profile.theme?.fontDuo ?? 'suisse'
+  const activeAppearance: Profile['appearance'] = profile.appearance ?? {
+    kind: 'gallery',
+    themeId: 'ledger',
+    animatedBackground: false,
+    motion: 'full',
+  }
 
-  useAppliedTheme(activeBackground, activeAccent, activeFontDuo)
-  useFaviconAndThemeColor(activeBackground, activeAccent)
+  const resolvedBackground = useAppliedTheme(activeAppearance, activeAccent)
+  useFaviconAndThemeColor(resolvedBackground.hex, activeAccent)
   useEffect(() => {
     document.title = 'Éditeur · Ledger'
   }, [])
@@ -64,7 +68,7 @@ export default function EditPage() {
   if (isLoading) return <EditorSkeleton />
 
   return (
-    <MotionPrefsProvider background={activeBackground} themeMotion={profile.theme?.motion ?? 'full'}>
+    <MotionPrefsProvider themeMotion={profile.theme?.motion ?? 'full'}>
       <FormProvider {...methods}>
         <div className="min-h-dvh bg-ink text-paper font-sans pb-24 lg:pb-10">
           <div className="lg:mx-auto lg:flex lg:max-w-[1400px] lg:items-start lg:gap-8 lg:px-8 lg:pt-8">

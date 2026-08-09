@@ -1,10 +1,17 @@
 import { useState } from 'react'
-import type { BackgroundId, FontDuoId } from '@/types'
-import { BACKGROUNDS, BACKGROUND_IDS } from '@/lib/theme/backgrounds'
+import type { AppearanceConfig, FontDuoId } from '@/types'
 import { ACCENT_SUGGESTIONS } from '@/lib/theme/accentSuggestions'
 import { resolveAccent, accentCssTokens } from '@/lib/theme/accent'
+import { hexToOklch } from '@/lib/theme/color'
 import { FONT_DUOS, FONT_DUO_IDS } from '@/lib/theme/fontDuos'
 import { useAppliedTheme } from '@/lib/theme/useAppliedTheme'
+
+const BACKGROUND_PRESETS = [
+  { label: 'Graphite', hex: '#0D0E0C' },
+  { label: 'Encre', hex: '#0A0F1A' },
+  { label: 'Papier', hex: '#EDE8DE' },
+  { label: 'Onyx', hex: '#000000' },
+]
 
 const SURFACE_ROWS: { token: string; label: string }[] = [
   { token: '--surface-0', label: 'Fond principal' },
@@ -25,7 +32,7 @@ const ACCENT_ROWS: { token: string; label: string }[] = [
 ]
 
 export default function DebugThemePage() {
-  const [background, setBackground] = useState<BackgroundId>('graphite')
+  const [backgroundHex, setBackgroundHex] = useState('#0D0E0C')
   const [accent, setAccent] = useState('#E4A93C')
   const [fontDuo, setFontDuo] = useState<FontDuoId>('suisse')
   // Comme accent stocke déjà la valeur corrigée, re-résoudre après coup
@@ -33,49 +40,76 @@ export default function DebugThemePage() {
   // du choix, pas le recalculer depuis l'état déjà corrigé.
   const [lastAdjusted, setLastAdjusted] = useState(false)
 
-  useAppliedTheme(background, accent, fontDuo)
-  const resolved = resolveAccent(accent, background)
-  const tokens = accentCssTokens(resolved.color, background)
+  // Enveloppé en thème Personnalisé (refonte v2, Phase 2) : le fond est
+  // désormais une couleur libre, plus l'un de 4 BackgroundId fixes — cette
+  // page de debug pilote useAppliedTheme exactement comme le ferait le vrai
+  // mode Personnalisé de l'éditeur.
+  const appearance: AppearanceConfig = {
+    kind: 'custom',
+    settings: {
+      background: backgroundHex,
+      buttonColor: accent,
+      buttonTextColor: '#0D0E0C',
+      pageTextColor: '#E7E8E7',
+      headingColor: '#E7E8E7',
+      pageFontDuo: fontDuo,
+      headingFontFamily: null,
+      buttonStyle: 'solid',
+      headerLayout: 'classic',
+    },
+    motion: 'full',
+  }
+
+  useAppliedTheme(appearance, accent)
+  const isLight = hexToOklch(backgroundHex).l > 0.5
+  const resolved = resolveAccent(accent, backgroundHex)
+  const tokens = accentCssTokens(resolved.color, isLight)
 
   function pickAccent(hex: string) {
-    const next = resolveAccent(hex, background)
+    const next = resolveAccent(hex, backgroundHex)
     setAccent(next.hex)
     setLastAdjusted(next.adjusted)
   }
 
-  function pickBackground(id: BackgroundId) {
-    setBackground(id)
-    const next = resolveAccent(accent, id)
+  function pickBackground(hex: string) {
+    setBackgroundHex(hex)
+    const next = resolveAccent(accent, hex)
     setAccent(next.hex)
     setLastAdjusted(next.adjusted)
   }
 
   return (
-    <div data-background={background} className="min-h-dvh bg-ink text-paper p-6 font-sans">
+    <div className="min-h-dvh bg-ink text-paper p-6 font-sans">
       <h1 className="text-2xl font-semibold mb-1">Debug — thème</h1>
       <p className="text-muted text-sm mb-6">
-        Page de vérification visuelle des 4 fonds + accent libre (refonte design Phase 1). Ne fait pas partie du
-        site public.
+        Page de vérification visuelle du fond libre + accent (refonte v2, Phase 2). Ne fait pas partie du site
+        public.
       </p>
 
       <section className="mb-8">
         <h2 className="text-label uppercase tracking-label text-muted mb-3">Fond</h2>
-        <div className="flex gap-2 mb-2 flex-wrap">
-          {BACKGROUND_IDS.map((id) => (
+        <div className="flex gap-2 mb-2 flex-wrap items-center">
+          {BACKGROUND_PRESETS.map((preset) => (
             <button
-              key={id}
-              onClick={() => pickBackground(id)}
-              className="min-h-11 px-4 rounded-md border capitalize"
+              key={preset.hex}
+              onClick={() => pickBackground(preset.hex)}
+              className="min-h-11 px-4 rounded-md border"
               style={{
-                borderColor: id === background ? 'var(--accent)' : 'var(--muted)',
-                color: id === background ? 'var(--accent)' : 'var(--paper)',
+                borderColor: preset.hex === backgroundHex ? 'var(--accent)' : 'var(--muted)',
+                color: preset.hex === backgroundHex ? 'var(--accent)' : 'var(--paper)',
               }}
             >
-              {BACKGROUNDS[id].label}
+              {preset.label}
             </button>
           ))}
+          <input
+            type="color"
+            value={backgroundHex}
+            onChange={(e) => pickBackground(e.target.value)}
+            className="h-11 w-14 rounded-md border border-ink-raised bg-transparent p-0.5"
+          />
         </div>
-        <p className="text-xs text-muted">{BACKGROUNDS[background].character}</p>
+        <p className="text-xs text-muted font-mono">{backgroundHex}</p>
       </section>
 
       <section className="mb-8">

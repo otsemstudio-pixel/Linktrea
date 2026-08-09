@@ -7,42 +7,26 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { hexToOklch, oklchToCss, ensureAccentContrast } from '../src/lib/theme/color.ts'
+import { oklchToCss } from '../src/lib/theme/color.ts'
+import { deriveSurfaceTokens } from '../src/lib/theme/deriveSurfaces.ts'
 import { BACKGROUNDS, BACKGROUND_IDS } from '../src/lib/theme/backgrounds.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const tokensPath = path.join(__dirname, '../src/styles/tokens.css')
 
-function clamp01(n) {
-  return Math.min(1, Math.max(0, n))
-}
-
 function deriveBlock(id) {
-  const { base: hex, isLight } = BACKGROUNDS[id]
-  const base = hexToOklch(hex)
-  const nearBlack = base.l < 0.03
-
-  const surface0 = base
-  const surface1 = { ...base, l: nearBlack ? 0.14 : clamp01(base.l + 0.05) }
-  const surface2 = { ...base, l: nearBlack ? 0.25 : clamp01(base.l + 0.105) }
-  const surfaceInset = { ...base, l: clamp01(base.l - 0.035) }
-
-  // Cible AAA (7:1) pour le texte principal, AA (4.5:1) pour le reste —
-  // mêmes seuils que l'ancien système de presets, voir tokens.css d'origine.
-  const fg = ensureAccentContrast({ l: isLight ? 0.18 : 0.93, c: base.c * 0.4, h: base.h }, hex, 7).color
-  const muted = ensureAccentContrast({ l: isLight ? 0.38 : 0.58, c: base.c * 0.6, h: base.h }, hex, 4.5).color
-  const up = ensureAccentContrast({ l: isLight ? 0.42 : 0.62, c: 0.13, h: 152 }, hex, 4.5).color
-  const down = ensureAccentContrast({ l: isLight ? 0.45 : 0.65, c: 0.15, h: 27 }, hex, 4.5).color
+  const { base: hex } = BACKGROUNDS[id]
+  const t = deriveSurfaceTokens(hex)
 
   return `[data-background='${id}'] {
-  --surface-0: ${oklchToCss(surface0)};
-  --surface-1: ${oklchToCss(surface1)};
-  --surface-2: ${oklchToCss(surface2)};
-  --surface-inset: ${oklchToCss(surfaceInset)};
-  --fg: ${oklchToCss(fg)};
-  --fg-muted: ${oklchToCss(muted)};
-  --up: ${oklchToCss(up)};
-  --down: ${oklchToCss(down)};
+  --surface-0: ${oklchToCss(t.surface0)};
+  --surface-1: ${oklchToCss(t.surface1)};
+  --surface-2: ${oklchToCss(t.surface2)};
+  --surface-inset: ${oklchToCss(t.surfaceInset)};
+  --fg: ${oklchToCss(t.fg)};
+  --fg-muted: ${oklchToCss(t.fgMuted)};
+  --up: ${oklchToCss(t.up)};
+  --down: ${oklchToCss(t.down)};
 }`
 }
 

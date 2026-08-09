@@ -8,7 +8,9 @@ import type { Profile } from '@/types'
 import { sortedHoldings, yearsOfExperience, initials } from './deriveStats'
 import { guillochePaths, GUILLOCHE_EXTENT } from './svg/guilloche'
 import { FONT_DUOS } from './theme/fontDuos'
+import { resolveAppearanceBackground, resolveAppearanceFontDuo } from './theme/resolveAppearance'
 import { slugify } from './slug'
+import { VOCABULARY } from './vocabulary'
 
 const SIZE = 1080
 const MARGIN = 90
@@ -72,11 +74,28 @@ export async function generateShareCard(profile: Profile): Promise<Blob> {
   const muted = readThemeColor('--fg-muted', '#7a7b79')
   const accent = readThemeColor('--accent', '#e4a93c')
 
-  const duo = FONT_DUOS[profile.theme.fontDuo]
+  // Le duo réellement affiché dépend du thème (Galerie ou Personnalisé), pas
+  // de l'ancien champ plat theme.fontDuo — voir resolveAppearanceFontDuo,
+  // même source que useAppliedTheme, pour que la carte exportée corresponde
+  // exactement à ce que le visiteur voit sur la page.
+  const duo = FONT_DUOS[resolveAppearanceFontDuo(profile.appearance).pageFontDuo]
   await ensureFontsLoaded(duo.titleFamily, duo.monoFamily)
 
-  // Fond
-  ctx.fillStyle = bg
+  // Fond — reflète le vrai traitement du thème actif (Phase 2 : aplat,
+  // dégradé ou texture), pas seulement --surface-0. Pour aplat et texture,
+  // --surface-0 EST déjà la couleur de base exacte (deriveSurfaceTokens ne
+  // la modifie pas), donc `bg` suffit ; seul le dégradé (Bourse, Lingot,
+  // Rente) a besoin d'un vrai gradient canvas — sinon la carte exportée
+  // pour ces thèmes affichait un aplat sans rapport avec la page.
+  const backgroundTreatment = resolveAppearanceBackground(profile.appearance).treatment
+  if (backgroundTreatment.kind === 'gradient') {
+    const gradient = ctx.createLinearGradient(0, 0, 0, SIZE)
+    gradient.addColorStop(0, backgroundTreatment.from)
+    gradient.addColorStop(1, backgroundTreatment.to)
+    ctx.fillStyle = gradient
+  } else {
+    ctx.fillStyle = bg
+  }
   ctx.fillRect(0, 0, SIZE, SIZE)
 
   // Guillochis — même signature visuelle que l'en-tête et les sceaux
@@ -149,9 +168,10 @@ export async function generateShareCard(profile: Profile): Promise<Blob> {
   // Chiffre clé
   y += 150
   const years = yearsOfExperience(profile.positions)
+  const keyMetricUnit = VOCABULARY[profile.domain].keyMetricUnit.toUpperCase()
   ctx.fillStyle = fg
   ctx.font = `600 140px "${duo.monoFamily}"`
-  ctx.fillText(`${years} ANS`, SIZE / 2, y)
+  ctx.fillText(`${years} ${keyMetricUnit}`, SIZE / 2, y)
 
   // Trois compétences principales
   const topHoldings = sortedHoldings(profile.holdings).slice(0, 3)

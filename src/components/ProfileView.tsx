@@ -4,6 +4,7 @@ import { yearsOfExperience, totalPositions, totalHoldings, experienceTrend, isPr
 import { MotionPrefsProvider } from '@/lib/motion/MotionPrefsContext'
 import { useDocumentMeta, useFaviconAndThemeColor } from '@/lib/useDocumentMeta'
 import { useAppliedTheme } from '@/lib/theme/useAppliedTheme'
+import { resolveAppearanceHeaderLayout, resolveAppearanceAnimation } from '@/lib/theme/resolveAppearance'
 import IdentityHeader from '@/components/view/IdentityHeader'
 import KeyMetric from '@/components/view/KeyMetric'
 import AllocationSection from '@/components/view/AllocationSection'
@@ -11,6 +12,7 @@ import PositionsHistory from '@/components/view/PositionsHistory'
 import CertificatesRail from '@/components/view/CertificatesRail'
 import ActionBar from '@/components/view/ActionBar'
 import PublicEmptyProfileGhost from '@/components/view/PublicEmptyProfileGhost'
+import AppliedBackgroundLayer from '@/components/view/AppliedBackgroundLayer'
 
 type Props = {
   profile: Profile
@@ -35,33 +37,43 @@ function Main({ standalone, children, ...rest }: LandmarkProps) {
 }
 
 export default function ProfileView({ profile, standalone = true }: Props) {
-  useAppliedTheme(profile.theme.background, profile.theme.accent, profile.theme.fontDuo, standalone)
+  const resolvedBackground = useAppliedTheme(profile.appearance, profile.theme.accent, standalone)
 
   useDocumentMeta(profile, standalone)
-  useFaviconAndThemeColor(profile.theme.background, profile.theme.accent, standalone)
+  useFaviconAndThemeColor(resolvedBackground.hex, profile.theme.accent, standalone)
 
   // Uniquement pour la page publique réelle : l'aperçu de l'éditeur
   // (standalone=false) doit toujours montrer le contenu tel quel, y compris
   // vide — l'utilisateur est déjà en train de le remplir, un appel à l'action
   // "Créez votre profil" n'y aurait aucun sens.
   if (standalone && isProfileEmpty(profile)) {
-    return <PublicEmptyProfileGhost theme={profile.theme} />
+    return <PublicEmptyProfileGhost theme={profile.theme} domain={profile.domain} appearance={profile.appearance} />
   }
 
   const years = yearsOfExperience(profile.positions)
   const trend = experienceTrend(profile.holdings)
+  const headerLayout = resolveAppearanceHeaderLayout(profile.appearance)
+  const resolvedAnimation = resolveAppearanceAnimation(profile.appearance)
 
   return (
-    <MotionPrefsProvider background={profile.theme.background} themeMotion={profile.theme.motion}>
-      <div className="@container min-h-dvh bg-ink text-paper font-sans pb-24 @min-[1024px]:pb-10">
+    <MotionPrefsProvider themeMotion={profile.theme.motion}>
+      <div className="relative @container min-h-dvh bg-ink text-paper font-sans pb-24 @min-[1024px]:pb-10">
+        <AppliedBackgroundLayer treatment={resolvedBackground.treatment} resolvedAnimation={resolvedAnimation} />
         <div className="@min-[1024px]:mx-auto @min-[1024px]:max-w-[1120px] @min-[1024px]:grid @min-[1024px]:grid-cols-[360px_1fr] @min-[1024px]:items-start @min-[1024px]:gap-10 @min-[1024px]:px-10 @min-[1024px]:pt-10">
           <Aside
             standalone={standalone}
             aria-label="Résumé du profil"
             className="@min-[1024px]:sticky @min-[1024px]:top-10 @min-[1024px]:flex @min-[1024px]:flex-col @min-[1024px]:gap-6"
           >
-            <IdentityHeader identity={profile.identity} tickers={profile.tickers} />
+            <IdentityHeader
+              domain={profile.domain}
+              identity={profile.identity}
+              tickers={profile.tickers}
+              headerLayout={headerLayout}
+              resolvedAnimation={resolvedAnimation}
+            />
             <KeyMetric
+              domain={profile.domain}
               years={years}
               positionsCount={totalPositions(profile.positions)}
               holdingsCount={totalHoldings(profile.holdings)}
@@ -71,9 +83,14 @@ export default function ProfileView({ profile, standalone = true }: Props) {
           </Aside>
 
           <Main standalone={standalone} className="@min-[1024px]:min-w-0">
-            <AllocationSection holdings={profile.holdings} accent={profile.theme.accent} background={profile.theme.background} />
-            <PositionsHistory positions={profile.positions} />
-            <CertificatesRail certificates={profile.certificates} />
+            <AllocationSection
+              domain={profile.domain}
+              holdings={profile.holdings}
+              accent={profile.theme.accent}
+              background={resolvedBackground.hex}
+            />
+            <PositionsHistory domain={profile.domain} positions={profile.positions} />
+            <CertificatesRail domain={profile.domain} certificates={profile.certificates} />
           </Main>
         </div>
       </div>

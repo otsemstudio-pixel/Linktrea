@@ -43,14 +43,18 @@ export function sortedPositions(positions: Position[]): Position[] {
 // Courbe de progression pour la sparkline : nombre cumulé de compétences
 // acquises, ordonnées par ancienneté (years) croissante. Purement dérivé
 // des holdings existants, aucune donnée inventée.
+//
+// Toujours au moins 2 points : Sparkline (KeyMetric.tsx) positionne le i-ème
+// point à `i / (trend.length - 1)`, une division par zéro avec un seul point
+// (profil à exactement une compétence) qui produit un chemin SVG NaN —
+// repéré en testant les Phases 5 et 6 avec des profils de démonstration
+// minimaux. Un point unique devient donc une petite montée depuis 0, comme
+// le cas déjà géré à 0 compétence.
 export function experienceTrend(holdings: Holding[]): number[] {
   if (holdings.length === 0) return [0, 0]
   const byAge = [...holdings].sort((a, b) => b.years - a.years)
-  const points: number[] = []
-  for (let i = 0; i < byAge.length; i++) {
-    points.push(i + 1)
-  }
-  return points
+  const points = byAge.map((_, i) => i + 1)
+  return points.length > 1 ? points : [0, points[0]]
 }
 
 export function totalPositions(positions: Position[]): number {

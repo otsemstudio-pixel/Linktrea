@@ -1,6 +1,7 @@
 import type { Profile } from '@/types'
 
 export const demoProfile: Profile = {
+  domain: 'finance',
   identity: {
     fullName: 'Aya Koffi N’Guessan',
     headline: 'Analyste financière senior · Marchés & gestion d’actifs',
@@ -116,6 +117,12 @@ export const demoProfile: Profile = {
     background: 'graphite',
     accent: '#E4A93C',
     fontDuo: 'suisse',
+    motion: 'full',
+  },
+  appearance: {
+    kind: 'gallery',
+    themeId: 'ledger',
+    animatedBackground: false,
     motion: 'full',
   },
 }

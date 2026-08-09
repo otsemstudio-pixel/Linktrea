@@ -21,7 +21,15 @@ export default function SocialLinksRow({ tickers }: Props) {
           href={ticker.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="group relative aspect-square min-h-11 flex items-center justify-center rounded-lg border border-paper/15 font-mono text-[10px] text-muted active:scale-95 active:text-accent active:border-accent focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 transition-transform"
+          className="group relative aspect-square min-h-11 flex items-center justify-center rounded-lg font-mono text-[10px] active:scale-95 focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 transition-transform"
+          style={{
+            background: 'var(--card-bg)',
+            color: 'var(--card-fg-muted)',
+            borderStyle: 'solid',
+            borderWidth: 'var(--card-border-width)',
+            borderColor: 'var(--card-border-color)',
+            boxShadow: 'var(--card-shadow)',
+          }}
         >
           {PLATFORM_SYMBOLS[ticker.platform]}
           <span

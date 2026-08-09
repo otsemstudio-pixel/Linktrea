@@ -101,6 +101,17 @@ export function contrastRatio(hexA: string, hexB: string): number {
   return (lighter + 0.05) / (darker + 0.05)
 }
 
+// Choisit, entre un encre quasi noire et un papier quasi blanc, celle qui
+// offre le plus grand contraste sur `hex` (refonte v2, Phase 4) — utilisé
+// pour le texte du style "Plein" des thèmes de la Galerie, qui ne proposent
+// pas de couleur de texte de bouton indépendante (contrairement au mode
+// Personnalisé, où buttonTextColor est un réglage direct).
+export function bestTextOn(hex: string): string {
+  const dark = '#0D0E0C'
+  const light = '#F7F2E8'
+  return contrastRatio(dark, hex) >= contrastRatio(light, hex) ? dark : light
+}
+
 export type ContrastResult = { color: Oklch; adjusted: boolean }
 
 /**

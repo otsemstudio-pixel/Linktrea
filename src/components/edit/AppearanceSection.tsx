@@ -1,19 +1,339 @@
 import { useEffect, useState } from 'react'
 import { useFormContext, useWatch } from 'react-hook-form'
 import { Check } from 'lucide-react'
-import type { Profile, BackgroundId, FontDuoId } from '@/types'
-import { BACKGROUNDS, BACKGROUND_IDS } from '@/lib/theme/backgrounds'
+import type { Profile, GalleryThemeId, ButtonStyle, HeaderLayout, CustomThemeSettings } from '@/types'
 import { ACCENT_SUGGESTIONS } from '@/lib/theme/accentSuggestions'
 import { resolveAccent } from '@/lib/theme/accent'
+import { ensureReadableTextColor } from '@/lib/theme/deriveSurfaces'
+import { oklchToHex } from '@/lib/theme/color'
 import { FONT_DUOS, FONT_DUO_IDS } from '@/lib/theme/fontDuos'
+import { GALLERY_THEMES, GALLERY_THEME_IDS, type BackgroundTreatment } from '@/lib/theme/galleryThemes'
+import { resolveAppearanceBackground } from '@/lib/theme/resolveAppearance'
+import { BUTTON_STYLE_LABELS, HEADER_LAYOUT_LABELS, customSettingsFromTheme } from '@/lib/theme/appearance'
 
 const ADJUSTED_NOTICE_DURATION_MS = 4000
+const BUTTON_STYLES: ButtonStyle[] = ['solid', 'outline', 'elevated']
+const HEADER_LAYOUTS: HeaderLayout[] = ['classic', 'banner', 'seal']
+
+function treatmentPreviewStyle(treatment: BackgroundTreatment): React.CSSProperties {
+  if (treatment.kind === 'flat') return { background: treatment.base }
+  if (treatment.kind === 'gradient') return { background: `linear-gradient(to bottom, ${treatment.from}, ${treatment.to})` }
+  // texture : pas de rendu du guillochis dans une vignette de 90px — l'aplat
+  // suffit à distinguer visuellement le thème dans la grille.
+  return { background: treatment.base, backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 2px, transparent 2px 6px)' }
+}
+
+// Sélecteur Galerie / Personnalisé (refonte v2, Phases 1-6) — le fond, la
+// typographie, le style de boutons/cartes, le layout d'en-tête et le fond
+// animé sont tous réels : choisir un thème nommé ou une couleur libre change
+// immédiatement l'aperçu (voir useAppliedTheme et IdentityHeader.tsx,
+// pilotés par profile.appearance). Seul l'accent reste un pont vers
+// profile.theme — aucune Phase du prompt ne lui donne de valeur propre par
+// thème.
+function ThemeGallerySection() {
+  const { control, setValue, getValues } = useFormContext<Profile>()
+  const appearance = useWatch({ control, name: 'appearance' })
+  const [adjustedNotice, setAdjustedNotice] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!adjustedNotice) return
+    const timer = setTimeout(() => setAdjustedNotice(null), ADJUSTED_NOTICE_DURATION_MS)
+    return () => clearTimeout(timer)
+  }, [adjustedNotice])
+
+  function switchToGallery() {
+    if (appearance.kind === 'gallery') return
+    setValue(
+      'appearance',
+      { kind: 'gallery', themeId: 'ledger', animatedBackground: false, motion: appearance.motion },
+      { shouldDirty: true },
+    )
+  }
+
+  function switchToCustom() {
+    if (appearance.kind === 'custom') return
+    const currentTheme = getValues('theme')
+    setValue(
+      'appearance',
+      { kind: 'custom', settings: customSettingsFromTheme(appearance, currentTheme), motion: appearance.motion },
+      { shouldDirty: true },
+    )
+  }
+
+  function selectGalleryTheme(themeId: GalleryThemeId) {
+    if (appearance.kind !== 'gallery') return
+    // Un thème qui a un fond animé l'affiche par défaut (voir le prompt v2 :
+    // l'interrupteur "Fond animé" sert à le FIGER, pas à l'activer) ; un
+    // thème sans fond animé n'a de toute façon aucun effet visuel de ce
+    // booléen — le forcer à false évite juste de garder un état sans objet.
+    const animatedBackground = GALLERY_THEMES[themeId].animationKind !== null
+    setValue('appearance', { ...appearance, themeId, animatedBackground }, { shouldDirty: true })
+  }
+
+  function updateSettings(patch: Partial<CustomThemeSettings>) {
+    if (appearance.kind !== 'custom') return
+    setValue('appearance', { ...appearance, settings: { ...appearance.settings, ...patch } }, { shouldDirty: true })
+  }
+
+  // Fond libre : dérive les surfaces en direct (voir useAppliedTheme) mais
+  // doit aussi revalider le texte de page et des titres, choisis par
+  // l'utilisateur — un texte lisible sur l'ancien fond peut ne plus l'être
+  // sur le nouveau. Jamais après coup : au moment même du choix.
+  function pickBackground(hex: string) {
+    if (appearance.kind !== 'custom') return
+    const page = ensureReadableTextColor(appearance.settings.pageTextColor, hex)
+    const heading = ensureReadableTextColor(appearance.settings.headingColor, hex)
+    setValue(
+      'appearance',
+      {
+        ...appearance,
+        settings: {
+          ...appearance.settings,
+          background: hex,
+          pageTextColor: page.adjusted ? oklchToHex(page.color) : appearance.settings.pageTextColor,
+          headingColor: heading.adjusted ? oklchToHex(heading.color) : appearance.settings.headingColor,
+        },
+      },
+      { shouldDirty: true },
+    )
+    if (page.adjusted || heading.adjusted) setAdjustedNotice('Texte ajusté pour la lisibilité sur ce fond.')
+  }
+
+  function pickTextColor(key: 'pageTextColor' | 'headingColor', hex: string) {
+    if (appearance.kind !== 'custom') return
+    const result = ensureReadableTextColor(hex, appearance.settings.background)
+    updateSettings({ [key]: result.adjusted ? oklchToHex(result.color) : hex })
+    if (result.adjusted) setAdjustedNotice('Ajusté pour la lisibilité.')
+  }
+
+  return (
+    <div className="mb-6 pb-6 border-b border-ink-raised">
+      <span className="text-label uppercase tracking-label text-muted block mb-2">Thème</span>
+
+      <div className="flex gap-1 p-1 rounded-md bg-ink mb-4 w-fit">
+        <button
+          type="button"
+          onClick={switchToGallery}
+          aria-pressed={appearance.kind === 'gallery'}
+          className="min-h-9 px-3 rounded text-sm"
+          style={{
+            background: appearance.kind === 'gallery' ? 'var(--accent-subtle)' : 'transparent',
+            color: appearance.kind === 'gallery' ? 'var(--accent)' : 'var(--paper)',
+          }}
+        >
+          Galerie
+        </button>
+        <button
+          type="button"
+          onClick={switchToCustom}
+          aria-pressed={appearance.kind === 'custom'}
+          className="min-h-9 px-3 rounded text-sm"
+          style={{
+            background: appearance.kind === 'custom' ? 'var(--accent-subtle)' : 'transparent',
+            color: appearance.kind === 'custom' ? 'var(--accent)' : 'var(--paper)',
+          }}
+        >
+          Personnalisé
+        </button>
+      </div>
+
+      {appearance.kind === 'gallery' ? (
+        <>
+          <div className="grid grid-cols-3 gap-2">
+            {GALLERY_THEME_IDS.map((id) => {
+              const meta = GALLERY_THEMES[id]
+              const selected = appearance.themeId === id
+              const textOnPreview = meta.background.kind === 'flat' && meta.background.base === '#EDE8DE' ? '#13110F' : '#E7E8E7'
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => selectGalleryTheme(id)}
+                  aria-pressed={selected}
+                  className="aspect-square rounded-lg border flex flex-col items-center justify-center gap-1 text-xs overflow-hidden"
+                  style={{ borderColor: selected ? 'var(--accent)' : 'var(--ink-raised)', ...treatmentPreviewStyle(meta.background) }}
+                >
+                  {selected && <Check size={13} style={{ color: textOnPreview }} aria-hidden="true" />}
+                  <span style={{ color: textOnPreview }}>{meta.name}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Réservé aux 4 thèmes qui déclarent un animationKind (Phase 6) —
+              n'affiche pas un interrupteur sans effet sur les 8 autres. */}
+          {GALLERY_THEMES[appearance.themeId].animationKind !== null && (
+            <label className="flex items-center gap-2 min-h-11 text-sm mt-3">
+              <input
+                type="checkbox"
+                checked={appearance.animatedBackground}
+                onChange={(e) =>
+                  setValue('appearance', { ...appearance, animatedBackground: e.target.checked }, { shouldDirty: true })
+                }
+                className="size-4 accent-[var(--accent)]"
+              />
+              Fond animé
+            </label>
+          )}
+        </>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <label className="flex items-center gap-3 min-h-11">
+            <span className="text-sm flex-1">Fond</span>
+            <input
+              type="color"
+              value={appearance.settings.background}
+              onChange={(e) => pickBackground(e.target.value)}
+              className="h-9 w-14 rounded-md border border-ink-raised bg-transparent p-0.5 shrink-0"
+            />
+          </label>
+
+          {(
+            [
+              ['buttonColor', 'Couleur des boutons/cartes'],
+              ['buttonTextColor', 'Couleur du texte des boutons'],
+            ] as const
+          ).map(([key, label]) => (
+            <label key={key} className="flex items-center gap-3 min-h-11">
+              <span className="text-sm flex-1">{label}</span>
+              <input
+                type="color"
+                value={appearance.settings[key]}
+                onChange={(e) => updateSettings({ [key]: e.target.value })}
+                className="h-9 w-14 rounded-md border border-ink-raised bg-transparent p-0.5 shrink-0"
+              />
+            </label>
+          ))}
+
+          {(
+            [
+              ['pageTextColor', 'Couleur du texte de page'],
+              ['headingColor', 'Couleur des titres'],
+            ] as const
+          ).map(([key, label]) => (
+            <label key={key} className="flex items-center gap-3 min-h-11">
+              <span className="text-sm flex-1">{label}</span>
+              <input
+                type="color"
+                value={appearance.settings[key]}
+                onChange={(e) => pickTextColor(key, e.target.value)}
+                className="h-9 w-14 rounded-md border border-ink-raised bg-transparent p-0.5 shrink-0"
+              />
+            </label>
+          ))}
+
+          {adjustedNotice && (
+            <p className="text-xs text-muted -mt-2" role="status">
+              {adjustedNotice}
+            </p>
+          )}
+
+          <div>
+            <span className="text-label uppercase tracking-label text-muted block mb-2">Police de page</span>
+            {/* Aperçus en image statique, comme au Niveau 1 (Galerie) : afficher
+                ce sélecteur ne doit jamais charger les 14 paires de polices —
+                seul le duo réellement choisi est récupéré, voir loadFontDuo.ts. */}
+            <div className="grid grid-cols-2 gap-2">
+              {FONT_DUO_IDS.map((id) => {
+                const def = FONT_DUOS[id]
+                const selected = appearance.settings.pageFontDuo === id
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => updateSettings({ pageFontDuo: id })}
+                    aria-pressed={selected}
+                    className="rounded-lg border p-2 text-left min-h-11 flex items-center justify-between gap-2"
+                    style={{ borderColor: selected ? 'var(--accent)' : 'var(--ink-raised)' }}
+                  >
+                    <img
+                      src={`${import.meta.env.BASE_URL}theme/duo-previews/${id}.png`}
+                      alt={`${def.name} — ${def.character}`}
+                      width={140}
+                      height={36}
+                      className="h-9 w-auto"
+                    />
+                    {selected && <Check size={14} className="text-accent shrink-0" aria-hidden="true" />}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="text-xs text-muted mt-2">{FONT_DUOS[appearance.settings.pageFontDuo].character}</p>
+          </div>
+
+          <label className="flex items-center gap-2 min-h-11 text-sm">
+            <input
+              type="checkbox"
+              checked={appearance.settings.headingFontFamily === null}
+              onChange={(e) => updateSettings({ headingFontFamily: e.target.checked ? null : '' })}
+              className="size-4 accent-[var(--accent)]"
+            />
+            Police des titres identique à la police de page
+          </label>
+          {appearance.settings.headingFontFamily !== null && (
+            <label className="block">
+              <span className="text-label uppercase tracking-label text-muted block mb-1.5">Police des titres</span>
+              <input
+                type="text"
+                value={appearance.settings.headingFontFamily}
+                onChange={(e) => updateSettings({ headingFontFamily: e.target.value })}
+                placeholder="Nom de la police"
+                className="w-full min-h-11 rounded-md border border-ink-raised bg-ink px-3 text-sm text-paper focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+              />
+            </label>
+          )}
+
+          <div>
+            <span className="text-label uppercase tracking-label text-muted block mb-2">Style des boutons</span>
+            <div className="grid grid-cols-3 gap-2">
+              {BUTTON_STYLES.map((style) => (
+                <button
+                  key={style}
+                  type="button"
+                  onClick={() => updateSettings({ buttonStyle: style })}
+                  aria-pressed={appearance.settings.buttonStyle === style}
+                  className="min-h-11 rounded-md border text-sm"
+                  style={{ borderColor: appearance.settings.buttonStyle === style ? 'var(--accent)' : 'var(--ink-raised)' }}
+                >
+                  {BUTTON_STYLE_LABELS[style]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="text-label uppercase tracking-label text-muted block mb-2">Layout d'en-tête</span>
+            <div className="grid grid-cols-3 gap-2">
+              {HEADER_LAYOUTS.map((layout) => (
+                <button
+                  key={layout}
+                  type="button"
+                  onClick={() => updateSettings({ headerLayout: layout })}
+                  aria-pressed={appearance.settings.headerLayout === layout}
+                  className="min-h-11 rounded-md border text-sm"
+                  style={{ borderColor: appearance.settings.headerLayout === layout ? 'var(--accent)' : 'var(--ink-raised)' }}
+                >
+                  {HEADER_LAYOUT_LABELS[layout]}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <p className="text-xs text-muted mt-4">
+        Le fond, la typographie, le style de boutons/cartes et le layout d'en-tête pilotent déjà l'aperçu, en
+        Galerie comme en Personnalisé. Le fond animé reste propre à 4 thèmes de la Galerie — sans équivalent
+        en Personnalisé.
+      </p>
+    </div>
+  )
+}
 
 export default function AppearanceSection() {
   const { control, setValue } = useFormContext<Profile>()
-  const background = useWatch({ control, name: 'theme.background' })
+  const appearance = useWatch({ control, name: 'appearance' })
   const accent = useWatch({ control, name: 'theme.accent' })
-  const fontDuo = useWatch({ control, name: 'theme.fontDuo' })
   const motion = useWatch({ control, name: 'theme.motion' })
 
   // Message transitoire "ajusté pour la lisibilité" — pas un état dérivé de
@@ -29,57 +349,21 @@ export default function AppearanceSection() {
     return () => clearTimeout(timer)
   }, [adjustedNotice])
 
-  function selectBackground(id: BackgroundId) {
-    setValue('theme.background', id, { shouldDirty: true })
-    // Un accent lisible sur l'ancien fond peut ne plus l'être sur le
-    // nouveau (ex. jaune clair lisible sur Graphite, illisible sur Papier)
-    // — on le revalide immédiatement, jamais après coup.
-    const resolved = resolveAccent(accent, id)
-    setValue('theme.accent', resolved.hex, { shouldDirty: true })
-    setAdjustedNotice(resolved.adjusted)
-  }
+  // L'accent reste un pont partagé par tous les thèmes de la Galerie tant
+  // que la Phase 4 (style de boutons) ne donne pas sa propre couleur à
+  // chacun — corrigé contre le fond RÉSOLU de profile.appearance, pas contre
+  // l'ancien theme.background qui ne pilote plus rien.
+  const referenceBackground = resolveAppearanceBackground(appearance).hex
 
   function pickAccent(hex: string) {
-    const resolved = resolveAccent(hex, background)
+    const resolved = resolveAccent(hex, referenceBackground)
     setValue('theme.accent', resolved.hex, { shouldDirty: true })
     setAdjustedNotice(resolved.adjusted)
-  }
-
-  function selectFontDuo(id: FontDuoId) {
-    setValue('theme.fontDuo', id, { shouldDirty: true })
   }
 
   return (
     <>
-      <span className="text-label uppercase tracking-label text-muted block mb-2">Fond</span>
-      <div className="grid grid-cols-2 gap-3 mb-5">
-        {BACKGROUND_IDS.map((id) => {
-          const def = BACKGROUNDS[id]
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => selectBackground(id)}
-              aria-pressed={background === id}
-              className="rounded-lg border p-3 text-left min-h-11 flex items-center gap-3"
-              style={{ borderColor: background === id ? 'var(--accent)' : 'var(--ink-raised)' }}
-            >
-              <span
-                className="size-8 rounded-full border shrink-0"
-                style={{ background: def.base, borderColor: def.isLight ? 'var(--ink-raised)' : 'transparent' }}
-                aria-hidden="true"
-              />
-              <span className="flex flex-col min-w-0">
-                <span className="text-sm flex items-center gap-1.5">
-                  {def.label}
-                  {background === id && <Check size={13} className="text-accent shrink-0" aria-hidden="true" />}
-                </span>
-                <span className="text-xs text-muted truncate">{def.character}</span>
-              </span>
-            </button>
-          )
-        })}
-      </div>
+      <ThemeGallerySection />
 
       <span className="text-label uppercase tracking-label text-muted block mb-2">Accent</span>
       <div className="grid grid-cols-6 gap-2 mb-3">
@@ -121,37 +405,7 @@ export default function AppearanceSection() {
         </p>
       )}
 
-      <span className="text-label uppercase tracking-label text-muted block mb-2 mt-5">Typographie</span>
-      {/* Aperçus en image statique (public/theme/duo-previews) : afficher ce
-          sélecteur ne doit jamais charger les 14 paires de polices — seul le
-          duo réellement choisi est récupéré, voir loadFontDuo.ts. */}
-      <div className="grid grid-cols-2 gap-2 mb-1">
-        {FONT_DUO_IDS.map((id) => {
-          const def = FONT_DUOS[id]
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => selectFontDuo(id)}
-              aria-pressed={fontDuo === id}
-              className="rounded-lg border p-2 text-left min-h-11 flex items-center justify-between gap-2"
-              style={{ borderColor: fontDuo === id ? 'var(--accent)' : 'var(--ink-raised)' }}
-            >
-              <img
-                src={`${import.meta.env.BASE_URL}theme/duo-previews/${id}.png`}
-                alt={`${def.name} — ${def.character}`}
-                width={140}
-                height={36}
-                className="h-9 w-auto"
-              />
-              {fontDuo === id && <Check size={14} className="text-accent shrink-0" aria-hidden="true" />}
-            </button>
-          )
-        })}
-      </div>
-      <p className="text-xs text-muted mb-4">{FONT_DUOS[fontDuo].character}</p>
-
-      <label className="flex items-center gap-2 min-h-11 text-sm mt-4">
+      <label className="flex items-center gap-2 min-h-11 text-sm mt-5">
         <input
           type="checkbox"
           checked={motion === 'reduced'}

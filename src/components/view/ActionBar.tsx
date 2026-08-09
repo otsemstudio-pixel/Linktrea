@@ -57,7 +57,15 @@ export default function ActionBar({ profile }: Props) {
         {emailTicker && (
           <a
             href={emailTicker.url}
-            className="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-md bg-accent text-ink font-medium text-sm active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-paper focus-visible:-outline-offset-2"
+            className="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-md font-medium text-sm active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-paper focus-visible:-outline-offset-2"
+            style={{
+              background: 'var(--button-bg)',
+              color: 'var(--button-fg)',
+              borderStyle: 'solid',
+              borderWidth: 'var(--button-border-width)',
+              borderColor: 'var(--button-border-color)',
+              boxShadow: 'var(--button-shadow)',
+            }}
           >
             <Mail size={16} aria-hidden="true" />
             Contacter

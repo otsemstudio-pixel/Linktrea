@@ -6,9 +6,7 @@
 //    « l'utilisateur ne doit jamais pouvoir produire un profil illisible ».
 // 2) accentCssTokens() dérive les variantes d'usage (survol, bordure, fond
 //    translucide) depuis l'accent déjà corrigé.
-import type { BackgroundId } from '@/types'
 import { hexToOklch, oklchToHex, oklchToCss, ensureAccentContrast, type Oklch } from './color'
-import { BACKGROUNDS } from './backgrounds'
 
 export type ResolvedAccent = {
   hex: string
@@ -16,10 +14,14 @@ export type ResolvedAccent = {
   adjusted: boolean
 }
 
-export function resolveAccent(accentHex: string, backgroundId: BackgroundId): ResolvedAccent {
-  const background = BACKGROUNDS[backgroundId]
+// Généralisé à un fond hex libre (refonte v2, Phase 2) — accepte aussi bien
+// l'un des 4 fonds fixes que la couleur libre du mode Personnalisé ou celle
+// (fixe mais propre à chaque thème) d'un thème de la Galerie. Ce n'est plus
+// qu'une question de "quelle couleur de fond réelle est à l'écran", pas de
+// "quel des 4 BackgroundId est actif".
+export function resolveAccent(accentHex: string, backgroundHex: string): ResolvedAccent {
   const requested = hexToOklch(accentHex)
-  const { color, adjusted } = ensureAccentContrast(requested, background.base, 4.5)
+  const { color, adjusted } = ensureAccentContrast(requested, backgroundHex, 4.5)
   return { hex: oklchToHex(color), color, adjusted }
 }
 
@@ -30,12 +32,11 @@ export type AccentCssTokens = {
   accentSubtle: string
 }
 
-export function accentCssTokens(color: Oklch, backgroundId: BackgroundId): AccentCssTokens {
-  const background = BACKGROUNDS[backgroundId]
+export function accentCssTokens(color: Oklch, backgroundIsLight: boolean): AccentCssTokens {
   // Le survol s'éloigne du fond pour rester perceptible : plus clair sur
   // fond sombre, plus sombre sur fond clair — même logique directionnelle
   // que ensureAccentContrast.
-  const hoverDirection = background.isLight ? -1 : 1
+  const hoverDirection = backgroundIsLight ? -1 : 1
   const hover: Oklch = { ...color, l: Math.min(1, Math.max(0, color.l + hoverDirection * 0.08)) }
   const border: Oklch = { ...color, c: color.c * 0.55 }
 

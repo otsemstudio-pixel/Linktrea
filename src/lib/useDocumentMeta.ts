@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
-import type { Profile, BackgroundId } from '@/types'
-import { BACKGROUNDS } from './theme/backgrounds'
+import type { Profile } from '@/types'
 import { resolveAccent } from './theme/accent'
 
 function setMetaTag(attr: 'name' | 'property', key: string, content: string) {
@@ -63,11 +62,13 @@ function faviconDataUri(ink: string, accent: string): string {
 }
 
 // Favicon et theme-color accordés au fond + à l'accent actifs (Phase 6).
-export function useFaviconAndThemeColor(background: BackgroundId, accent: string, enabled = true) {
+// `backgroundHex` est désormais une couleur libre (refonte v2, Phase 2),
+// résolue en amont par useAppliedTheme via resolveAppearanceBackground.
+export function useFaviconAndThemeColor(backgroundHex: string, accent: string, enabled = true) {
   useEffect(() => {
     if (!enabled) return
-    const ink = BACKGROUNDS[background].base
-    const { hex: resolvedAccent } = resolveAccent(accent, background)
+    const ink = backgroundHex
+    const { hex: resolvedAccent } = resolveAccent(accent, backgroundHex)
 
     let link = document.querySelector<HTMLLinkElement>("link[rel='icon']")
     if (!link) {
@@ -79,5 +80,5 @@ export function useFaviconAndThemeColor(background: BackgroundId, accent: string
     link.setAttribute('href', faviconDataUri(ink, resolvedAccent))
 
     setMetaTag('name', 'theme-color', ink)
-  }, [background, accent, enabled])
+  }, [backgroundHex, accent, enabled])
 }

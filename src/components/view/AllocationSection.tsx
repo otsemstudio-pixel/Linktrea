@@ -1,16 +1,20 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { ChevronDown } from 'lucide-react'
-import type { Holding, BackgroundId } from '@/types'
+import type { Holding, Domain } from '@/types'
 import { categoryAllocations, sortedHoldings, weightSum } from '@/lib/deriveStats'
 import { useMotionPrefs } from '@/lib/motion/MotionPrefsContext'
 import { INTRO_TIMELINE } from '@/lib/motion/timeline'
 import { resolveAccent, accentAllocationShades } from '@/lib/theme/accent'
+import { VOCABULARY } from '@/lib/vocabulary'
 
 type Props = {
+  domain: Domain
   holdings: Holding[]
   accent: string
-  background: BackgroundId
+  // Couleur de fond résolue (hex) — libre depuis la refonte v2 Phase 2, plus
+  // limitée aux 4 BackgroundId fixes. Voir resolveAppearanceBackground().
+  background: string
 }
 
 // Le remplissage "se fait" visuellement via scaleX (transform), jamais via
@@ -136,15 +140,16 @@ function DonutRing({
 
 const DETAIL_STAGGER = 0.04
 
-export default function AllocationSection({ holdings, accent, background }: Props) {
+export default function AllocationSection({ domain, holdings, accent, background }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [active, setActive] = useState<number | null>(null)
   const { reduced } = useMotionPrefs()
+  const vocabulary = VOCABULARY[domain]
 
   if (holdings.length === 0) {
     return (
       <section className="px-6 py-6 border-t border-ink-raised @min-[1024px]:border-t-0 @min-[1024px]:px-0">
-        <h2 className="text-label uppercase tracking-label text-muted mb-3">Allocation</h2>
+        <h2 className="text-label uppercase tracking-label text-muted mb-3">{vocabulary.expertiseBreakdown}</h2>
         <p className="text-sm text-muted">Aucune compétence renseignée pour le moment.</p>
       </section>
     )
@@ -159,7 +164,7 @@ export default function AllocationSection({ holdings, accent, background }: Prop
 
   return (
     <section className="px-6 py-6 border-t border-ink-raised @min-[1024px]:border-t-0 @min-[1024px]:px-0">
-      <h2 className="text-label uppercase tracking-label text-muted mb-4">Allocation</h2>
+      <h2 className="text-label uppercase tracking-label text-muted mb-4">{vocabulary.expertiseBreakdown}</h2>
 
       <div className="flex items-center gap-6 flex-wrap @min-[480px]:flex-nowrap">
         <div className="relative shrink-0">

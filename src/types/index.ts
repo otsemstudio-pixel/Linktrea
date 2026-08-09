@@ -10,5 +10,11 @@ export type {
   FontDuoId,
   MotionPreference,
   ThemeConfig,
+  Domain,
+  ButtonStyle,
+  HeaderLayout,
+  GalleryThemeId,
+  CustomThemeSettings,
+  AppearanceConfig,
   Profile,
 } from './profile'
