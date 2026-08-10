@@ -31,6 +31,7 @@ export function createEmptyProfile(): Profile {
       kind: 'gallery',
       themeId: 'ledger',
       animatedBackground: false,
+      eclatVariant: 'braise',
       motion: 'full',
     },
   }

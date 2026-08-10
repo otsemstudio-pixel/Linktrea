@@ -130,8 +130,19 @@ export type HeaderLayout = 'classic' | 'banner' | 'seal'
 // GalleryThemeMeta.signatureStyle), libre en Personnalisé.
 export type SignatureStyle = 'plain' | 'stamp'
 
+// Variante de dégradé du thème "Éclat" (prompt "Éclat : dégradé chromatique
+// animé") — même arc chromatique orange → rouge → violet pour les cinq,
+// seules la forme, l'intensité et la vitesse changent (voir
+// ECLAT_VARIANT_META dans galleryThemes.ts). Librement changeable à tout
+// moment dans l'éditeur, indépendamment du reste des réglages de thème —
+// pas fixé par thème comme ShapeLanguage/SignatureStyle, puisque c'est
+// justement le seul réglage que ce thème-là propose de personnaliser.
+export type EclatVariant = 'braise' | 'maree' | 'crepuscule' | 'eclipse' | 'nebuleuse'
+
 // Les 12 thèmes minimum du prompt v2 — un mot abstrait du champ lexical
-// financier, jamais descriptif de sa couleur.
+// financier, jamais descriptif de sa couleur. "Éclat" (13e) ajouté par le
+// prompt dédié : plus expressif, mais un choix parmi d'autres de la Galerie,
+// jamais un remplacement du fond par défaut ni superposable aux autres.
 export type GalleryThemeId =
   | 'ledger'
   | 'bourse'
@@ -145,6 +156,7 @@ export type GalleryThemeId =
   | 'rente'
   | 'placement'
   | 'guilde'
+  | 'eclat'
 
 // Langage de forme (personnalisation avancée, Phase 1) — un seul réglage
 // pilote le rayon de tous les coins de l'application publique (cartes,
@@ -172,7 +184,18 @@ export type CustomThemeSettings = {
 }
 
 export type AppearanceConfig =
-  | { kind: 'gallery'; themeId: GalleryThemeId; animatedBackground: boolean; motion: MotionPreference }
+  | {
+      kind: 'gallery'
+      themeId: GalleryThemeId
+      animatedBackground: boolean
+      // Variante du thème "Éclat" — présente pour tous les thèmes de la
+      // Galerie (comme animatedBackground) mais seulement significative
+      // quand themeId === 'eclat' ; inerte sinon. Pas dans CustomThemeSettings
+      // : "Éclat" est exclusif à la Galerie, pas superposable aux autres
+      // thèmes en Personnalisé (voir le prompt).
+      eclatVariant: EclatVariant
+      motion: MotionPreference
+    }
   | { kind: 'custom'; settings: CustomThemeSettings; motion: MotionPreference }
 
 export type Profile = {

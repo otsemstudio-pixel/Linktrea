@@ -72,9 +72,16 @@ export type ResolvedAnimation = {
 
 // Fond animé génératif (refonte v2, Phase 6) — axe exclusif à la Galerie : le
 // mode Personnalisé n'a pas d'équivalent (le prompt ne le prévoit que pour
-// "3-4 thèmes" nommés, pas pour un fond libre).
+// "3-4 thèmes" nommés, pas pour un fond libre). Cas particulier "Éclat"
+// (prompt dédié) : c'est le SEUL thème dont la variante d'animation est
+// choisie librement par la personne (voir EclatVariant dans
+// src/types/profile.ts) plutôt que fixée par le thème — animationKind vaut
+// ici juste la variante par défaut ('braise'), utile pour que l'interrupteur
+// "Fond animé" générique (AppearanceSection.tsx) sache que ce thème EN A un,
+// mais la variante réellement affichée vient d'appearance.eclatVariant.
 export function resolveAppearanceAnimation(appearance: AppearanceConfig): ResolvedAnimation {
   if (appearance.kind !== 'gallery') return { kind: null, enabled: false }
-  const kind = GALLERY_THEMES[appearance.themeId].animationKind
-  return { kind, enabled: kind !== null && appearance.animatedBackground }
+  const meta = GALLERY_THEMES[appearance.themeId]
+  const kind = appearance.themeId === 'eclat' ? appearance.eclatVariant : meta.animationKind
+  return { kind, enabled: meta.animationKind !== null && appearance.animatedBackground }
 }

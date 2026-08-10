@@ -179,7 +179,12 @@ const galleryThemeIdSchema = z.enum([
   'rente',
   'placement',
   'guilde',
+  'eclat',
 ])
+
+// .catch('braise') — même raison que shapeLanguageSchema plus bas : un
+// profil enregistré avant l'ajout du thème "Éclat" n'a jamais eu ce champ.
+const eclatVariantSchema = z.enum(['braise', 'maree', 'crepuscule', 'eclipse', 'nebuleuse']).catch('braise')
 
 const buttonStyleSchema = z.enum(['solid', 'outline', 'elevated'])
 const headerLayoutSchema = z.enum(['classic', 'banner', 'seal'])
@@ -220,6 +225,7 @@ const appearanceConfigSchema = z.discriminatedUnion('kind', [
     kind: z.literal('gallery'),
     themeId: galleryThemeIdSchema,
     animatedBackground: z.boolean(),
+    eclatVariant: eclatVariantSchema,
     motion: motionPreferenceSchema,
   }),
   z.object({

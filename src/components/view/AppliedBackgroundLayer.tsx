@@ -1,8 +1,10 @@
 import type { BackgroundTreatment } from '@/lib/theme/galleryThemes'
 import type { ResolvedAnimation } from '@/lib/theme/resolveAppearance'
 import { useBackgroundAnimation } from '@/lib/motion/useBackgroundAnimation'
+import { isEclatVariant } from '@/lib/theme/eclatGradients'
 import GuillochePattern from './GuillochePattern'
 import NoiseCanvas from './NoiseCanvas'
+import EclatBackgroundLayer from './EclatBackgroundLayer'
 
 type Props = {
   treatment: BackgroundTreatment
@@ -45,6 +47,12 @@ export default function AppliedBackgroundLayer({ treatment, resolvedAnimation }:
             className={`absolute inset-0 bg-white ${animation.active ? 'animate-bg-breath' : ''}`}
             style={animation.active ? undefined : { opacity: 0 }}
           />
+        )}
+        {/* Éclat : calque chromatique animé, posé par-dessus le dégradé
+            sombre fixe ci-dessus (voir GALLERY_THEMES.eclat.background) —
+            toujours rendu, animé ou non (voir EclatBackgroundLayer.tsx). */}
+        {animation.kind && isEclatVariant(animation.kind) && (
+          <EclatBackgroundLayer variant={animation.kind} active={animation.active} />
         )}
       </div>
     )

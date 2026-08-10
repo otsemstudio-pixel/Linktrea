@@ -54,6 +54,7 @@ export default function EditPage() {
     kind: 'gallery',
     themeId: 'ledger',
     animatedBackground: false,
+    eclatVariant: 'braise',
     motion: 'full',
   }
 

@@ -11,6 +11,12 @@ export default function ActionBar({ profile }: Props) {
   const [toast, setToast] = useState<string | null>(null)
   const [generatingCard, setGeneratingCard] = useState(false)
   const emailTicker = profile.tickers.find((t) => t.platform === 'email')
+  // Thème "Éclat" (Phase 3, lisibilité) : la barre desktop translucide
+  // (bg-ink-raised/40) est pensée pour un fond calme — sur le dégradé animé
+  // et vif d'Éclat, elle laisserait passer trop de couleur derrière le
+  // texte des boutons. Reçoit déjà `profile` en entier, pas besoin d'un
+  // prop dédié comme KeyMetric.tsx (qui ne reçoit pas appearance).
+  const vividBackground = profile.appearance.kind === 'gallery' && profile.appearance.themeId === 'eclat'
 
   function showToast(message: string) {
     setToast(message)
@@ -47,7 +53,9 @@ export default function ActionBar({ profile }: Props) {
   }
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-30 border-t border-ink-raised bg-ink/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)] @min-[1024px]:static @min-[1024px]:pb-0 @min-[1024px]:border @min-[1024px]:rounded-[var(--radius-lg)] @min-[1024px]:bg-ink-raised/40">
+    <div
+      className={`fixed bottom-0 inset-x-0 z-30 border-t border-ink-raised bg-ink/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)] @min-[1024px]:static @min-[1024px]:pb-0 @min-[1024px]:border @min-[1024px]:rounded-[var(--radius-lg)] ${vividBackground ? '@min-[1024px]:bg-ink-raised' : '@min-[1024px]:bg-ink-raised/40'}`}
+    >
       {toast && (
         <p role="status" aria-live="polite" className="text-center text-xs text-up py-1.5">
           {toast}

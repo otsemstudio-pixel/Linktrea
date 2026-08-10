@@ -8,6 +8,7 @@ import { ensureReadableTextColor } from '@/lib/theme/deriveSurfaces'
 import { oklchToHex } from '@/lib/theme/color'
 import { FONT_DUOS, FONT_DUO_IDS } from '@/lib/theme/fontDuos'
 import { GALLERY_THEMES, GALLERY_THEME_IDS, type BackgroundTreatment } from '@/lib/theme/galleryThemes'
+import EclatVariantPicker from './EclatVariantPicker'
 import { resolveAppearanceBackground } from '@/lib/theme/resolveAppearance'
 import { shapeTokens } from '@/lib/theme/shape'
 import {
@@ -94,7 +95,7 @@ function ThemeGallerySection() {
     if (appearance.kind === 'gallery') return
     setValue(
       'appearance',
-      { kind: 'gallery', themeId: 'ledger', animatedBackground: false, motion: appearance.motion },
+      { kind: 'gallery', themeId: 'ledger', animatedBackground: false, eclatVariant: 'braise', motion: appearance.motion },
       { shouldDirty: true },
     )
   }
@@ -231,6 +232,16 @@ function ThemeGallerySection() {
               />
               Fond animé
             </label>
+          )}
+
+          {/* Seul "Éclat" propose plusieurs variantes de fond — les 12
+              autres thèmes n'ont rien à choisir ici (voir le prompt : leur
+              fond animé, quand ils en ont un, est fixe). */}
+          {appearance.themeId === 'eclat' && (
+            <EclatVariantPicker
+              value={appearance.eclatVariant}
+              onChange={(eclatVariant) => setValue('appearance', { ...appearance, eclatVariant }, { shouldDirty: true })}
+            />
           )}
         </>
       ) : (

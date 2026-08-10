@@ -10,7 +10,7 @@
 // les thèmes ne proposent pas de réglage de couleur de bouton indépendant,
 // contrairement au mode Personnalisé). Layout d'en-tête choisi parmi les 3 de
 // IdentityHeader.tsx, même logique.
-import type { GalleryThemeId, FontDuoId, ButtonStyle, HeaderLayout, ShapeLanguage, SignatureStyle, PhotoTreatment } from '@/types'
+import type { GalleryThemeId, FontDuoId, ButtonStyle, HeaderLayout, ShapeLanguage, SignatureStyle, PhotoTreatment, EclatVariant } from '@/types'
 
 export type BackgroundTreatment =
   | { kind: 'flat'; base: string }
@@ -20,8 +20,12 @@ export type BackgroundTreatment =
 // Les 4 motifs de fond animé du prompt v2 (Phase 6) — voir
 // AppliedBackgroundLayer.tsx (breath/guilloche/noise) et AmbientSparkline.tsx
 // (sparkline, rendu dans l'en-tête plutôt que le fond de page, voir le
-// prompt : "en arrière-plan de l'en-tête").
-export type AnimatedBackgroundKind = 'breath' | 'guilloche' | 'sparkline' | 'noise'
+// prompt : "en arrière-plan de l'en-tête"). EclatVariant ajouté par le
+// prompt "Éclat" — les 5 variantes de ce thème SONT des motifs de fond animé
+// au même titre que les 4 précédents (voir resolveAppearanceAnimation, qui
+// substitue la variante réellement choisie à la place d'un animationKind
+// fixe uniquement pour ce thème).
+export type AnimatedBackgroundKind = 'breath' | 'guilloche' | 'sparkline' | 'noise' | EclatVariant
 
 export type GalleryThemeMeta = {
   id: GalleryThemeId
@@ -215,6 +219,42 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     photoTreatment: 'muted',
     animationKind: 'noise',
   },
+  // 13e thème, ajouté par le prompt "Éclat : dégradé chromatique animé" —
+  // délibérément plus expressif que les 12 ci-dessus (voir le contexte du
+  // prompt), mais un choix isolé parmi d'autres : rien ci-dessus n'est
+  // modifié par son ajout. Fond de base sombre (dérivation de surfaces,
+  // contraste) — le dégradé chromatique vif est un CALQUE animé posé par-
+  // dessus (voir EclatBackgroundLayer.tsx), pas ce fond lui-même.
+  // animationKind vaut la variante par défaut ('braise') : c'est ce qui
+  // permet à l'interrupteur "Fond animé" déjà existant (AppearanceSection.tsx)
+  // de fonctionner sans changement — resolveAppearanceAnimation() substitue
+  // ensuite la variante RÉELLEMENT choisie (appearance.eclatVariant).
+  eclat: {
+    id: 'eclat',
+    name: 'Éclat',
+    background: { kind: 'gradient', from: '#1F0A05', to: '#0D0E0C' },
+    fontDuo: 'moderne',
+    buttonStyle: 'elevated',
+    headerLayout: 'banner',
+    shape: 'pill',
+    signatureStyle: 'plain',
+    photoTreatment: 'muted',
+    animationKind: 'braise',
+  },
 }
 
 export const GALLERY_THEME_IDS = Object.keys(GALLERY_THEMES) as GalleryThemeId[]
+
+// Métadonnées des 5 variantes du thème "Éclat" — nom affiché + description
+// courte pour le sélecteur (EclatVariantPicker.tsx). Forme/intensité/rythme
+// tels que définis par le prompt ; voir eclatGradients.ts pour les valeurs
+// CSS réelles (dégradés, opacité, classes d'animation).
+export const ECLAT_VARIANT_META: Record<EclatVariant, { name: string; description: string }> = {
+  braise: { name: 'Braise', description: 'Halo radial pulsant, vif' },
+  maree: { name: 'Marée', description: 'Bande diagonale qui glisse, vif' },
+  crepuscule: { name: 'Crépuscule', description: 'Dégradé fixe, teintes assourdies qui tournent' },
+  eclipse: { name: 'Éclipse', description: 'Rotation conique lente, assourdie' },
+  nebuleuse: { name: 'Nébuleuse', description: 'Variation de teinte quasi imperceptible' },
+}
+
+export const ECLAT_VARIANT_IDS = Object.keys(ECLAT_VARIANT_META) as EclatVariant[]

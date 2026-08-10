@@ -56,6 +56,10 @@ export default function ProfileView({ profile, standalone = true }: Props) {
   const headerLayout = resolveAppearanceHeaderLayout(profile.appearance)
   const resolvedAnimation = resolveAppearanceAnimation(profile.appearance)
   const signatureStyle = resolveAppearanceSignatureStyle(profile.appearance)
+  // Thème "Éclat" (Phase 3, lisibilité) — voir le commentaire sur
+  // KeyMetric.tsx : seul thème dont le fond animé est assez vif pour rendre
+  // les cartes translucides risquées, jamais un changement pour les autres.
+  const vividBackground = profile.appearance.kind === 'gallery' && profile.appearance.themeId === 'eclat'
 
   return (
     <MotionPrefsProvider themeMotion={profile.theme.motion}>
@@ -82,6 +86,7 @@ export default function ProfileView({ profile, standalone = true }: Props) {
               positionsCount={totalPositions(profile.positions)}
               holdingsCount={totalHoldings(profile.holdings)}
               trend={trend}
+              vividBackground={vividBackground}
             />
             {/* En pied de profil, juste avant le bouton "Partager" (prompt,
                 Phase 4) — testé aussi entre l'identité et le chiffre clé,

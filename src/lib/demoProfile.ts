@@ -126,6 +126,7 @@ export const demoProfile: Profile = {
     kind: 'gallery',
     themeId: 'ledger',
     animatedBackground: false,
+    eclatVariant: 'braise',
     motion: 'full',
   },
 }

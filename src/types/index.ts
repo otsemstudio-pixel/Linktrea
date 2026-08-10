@@ -16,6 +16,7 @@ export type {
   HeaderLayout,
   ShapeLanguage,
   SignatureStyle,
+  EclatVariant,
   GalleryThemeId,
   CustomThemeSettings,
   AppearanceConfig,

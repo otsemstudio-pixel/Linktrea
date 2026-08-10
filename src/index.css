@@ -135,10 +135,63 @@ body {
   animation: ambient-sparkline-scroll 22s linear infinite;
 }
 
+/*
+ * Thème "Éclat" (prompt dédié, extension Phases 1/6) — dégradé chromatique
+ * animé, 5 variantes. Le dégradé de BASE (voir eclatGradients.ts) couvre
+ * déjà l'arc orange → rouge → violet dans ses stops ; hue-rotate() n'y
+ * ajoute qu'une légère dérive continue (jamais un tour complet de 360°,
+ * qui traverserait vert/bleu/cyan, hors de la palette voulue). Formes
+ * (pulse/glissement/rotation) en transform, jamais en propriété de mise en
+ * page — mêmes garde-fous que les fonds animés ci-dessus (JS = source de
+ * vérité, ce @media n'est qu'une seconde ligne de défense).
+ */
+@keyframes eclat-hue-cycle {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(55deg); }
+}
+@keyframes eclat-pulse {
+  0%, 100% { transform: scale(0.86); }
+  50% { transform: scale(1.14); }
+}
+@keyframes eclat-slide {
+  from { background-position: 0% 50%; }
+  to { background-position: 200% 50%; }
+}
+@keyframes eclat-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Braise — halo radial pulsant, cycle 15-20s, vif. */
+.animate-eclat-braise {
+  animation: eclat-pulse 17s ease-in-out infinite, eclat-hue-cycle 17s linear infinite;
+}
+/* Marée — bande diagonale qui glisse en continu, cycle 18-25s, vif. */
+.animate-eclat-maree {
+  animation: eclat-slide 21s linear infinite, eclat-hue-cycle 21s linear infinite;
+}
+/* Crépuscule — position fixe, seules les teintes tournent, cycle 30-40s, assourdi. */
+.animate-eclat-crepuscule {
+  animation: eclat-hue-cycle 35s linear infinite;
+}
+/* Éclipse — rotation conique lente, cycle 40-60s, assourdi. */
+.animate-eclat-eclipse {
+  animation: eclat-rotate 50s linear infinite, eclat-hue-cycle 50s linear infinite;
+}
+/* Nébuleuse — quasi imperceptible, cycle 60-90s+, très faible opacité. */
+.animate-eclat-nebuleuse {
+  animation: eclat-hue-cycle 75s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-bg-breath,
   .animate-guilloche-pulse,
-  .animate-ambient-sparkline {
+  .animate-ambient-sparkline,
+  .animate-eclat-braise,
+  .animate-eclat-maree,
+  .animate-eclat-crepuscule,
+  .animate-eclat-eclipse,
+  .animate-eclat-nebuleuse {
     animation: none;
   }
 }

@@ -11,6 +11,13 @@ type Props = {
   positionsCount: number
   holdingsCount: number
   trend: number[]
+  // Thème "Éclat" (prompt dédié, Phase 3 — lisibilité par-dessus le fond) :
+  // la carte est normalement translucide (bg-ink-raised/50), pensée pour un
+  // fond calme. Sur le dégradé chromatique animé et vif d'Éclat, cette
+  // transparence laisserait le texte perdre du contraste selon la couleur
+  // qui défile derrière — ce seul thème demande une carte opaque, jamais les
+  // 12 autres (voir ProfileView.tsx, seul appelant qui calcule ce booléen).
+  vividBackground?: boolean
 }
 
 function Sparkline({ trend }: { trend: number[] }) {
@@ -83,7 +90,7 @@ function useCountUp(target: number, reduced: boolean, durationScale: number): nu
   return value
 }
 
-export default function KeyMetric({ domain, years, positionsCount, holdingsCount, trend }: Props) {
+export default function KeyMetric({ domain, years, positionsCount, holdingsCount, trend, vividBackground = false }: Props) {
   const { reduced, profile } = useMotionPrefs()
   const displayedYears = useCountUp(years, reduced, profile.durationScale)
   const hasHoldings = holdingsCount > 0
@@ -91,7 +98,9 @@ export default function KeyMetric({ domain, years, positionsCount, holdingsCount
 
   return (
     <section className="px-6 py-4 @min-[1024px]:px-0">
-      <div className="rounded-[var(--radius-lg)] border border-ink-raised bg-ink-raised/50 p-5">
+      <div
+        className={`rounded-[var(--radius-lg)] border border-ink-raised p-5 ${vividBackground ? 'bg-ink-raised' : 'bg-ink-raised/50'}`}
+      >
         <div className="flex items-start justify-between gap-3">
           <p className="text-label uppercase tracking-label text-muted pt-1">{vocabulary.keyMetric}</p>
           {positionsCount > 0 && (
