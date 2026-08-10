@@ -10,7 +10,7 @@
 // les thèmes ne proposent pas de réglage de couleur de bouton indépendant,
 // contrairement au mode Personnalisé). Layout d'en-tête choisi parmi les 3 de
 // IdentityHeader.tsx, même logique.
-import type { GalleryThemeId, FontDuoId, ButtonStyle, HeaderLayout, ShapeLanguage, SignatureStyle } from '@/types'
+import type { GalleryThemeId, FontDuoId, ButtonStyle, HeaderLayout, ShapeLanguage, SignatureStyle, PhotoTreatment } from '@/types'
 
 export type BackgroundTreatment =
   | { kind: 'flat'; base: string }
@@ -44,6 +44,14 @@ export type GalleryThemeMeta = {
   // (voir le prompt : "Sceau", "Réserve", proche du certificat), jamais
   // systématique.
   signatureStyle: SignatureStyle
+  // Traitement de photo SUGGÉRÉ (correctif "filtres photo étendus") — pas
+  // fixé comme les réglages ci-dessus : identity.photoTreatment reste
+  // éditable à tout moment, Galerie ou Personnalisé (voir le commentaire sur
+  // PhotoTreatment dans src/types/profile.ts). N'est appliqué qu'au choix
+  // d'un thème quand identity.photoTreatment vaut encore 'none' (voir
+  // selectGalleryTheme() dans AppearanceSection.tsx) — une suggestion pour
+  // qui n'a encore rien choisi, jamais un remplacement d'un choix déjà fait.
+  photoTreatment: PhotoTreatment
   // null = pas de fond animé pour ce thème — la variété inclut aussi le
   // calme, réservé à 3-4 thèmes seulement (prompt v2, Phase 6). Un thème qui
   // en a un l'affiche par défaut ; l'interrupteur "Fond animé" de l'éditeur
@@ -63,6 +71,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     headerLayout: 'classic',
     shape: 'soft',
     signatureStyle: 'plain',
+    photoTreatment: 'none',
     animationKind: null,
   },
   bourse: {
@@ -74,6 +83,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     headerLayout: 'banner',
     shape: 'pill',
     signatureStyle: 'plain',
+    photoTreatment: 'muted',
     animationKind: null,
   },
   capital: {
@@ -85,6 +95,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     headerLayout: 'classic',
     shape: 'sharp',
     signatureStyle: 'plain',
+    photoTreatment: 'high-contrast',
     animationKind: null,
   },
   sceau: {
@@ -98,6 +109,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     headerLayout: 'seal',
     shape: 'sharp',
     signatureStyle: 'stamp',
+    photoTreatment: 'sepia',
     animationKind: null,
   },
   lingot: {
@@ -111,6 +123,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     // lui-même plutôt qu'avec le duo "elegant".
     shape: 'sharp',
     signatureStyle: 'plain',
+    photoTreatment: 'sepia',
     animationKind: null,
   },
   devise: {
@@ -122,6 +135,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     headerLayout: 'classic',
     shape: 'soft',
     signatureStyle: 'plain',
+    photoTreatment: 'muted',
     animationKind: null,
   },
   titre: {
@@ -135,6 +149,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     headerLayout: 'seal',
     shape: 'soft',
     signatureStyle: 'stamp',
+    photoTreatment: 'sepia',
     animationKind: null,
   },
   reserve: {
@@ -146,6 +161,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     headerLayout: 'classic',
     shape: 'sharp',
     signatureStyle: 'stamp',
+    photoTreatment: 'high-contrast',
     animationKind: null,
   },
   // Les 4 thèmes suivants sont les candidats "3-4 thèmes" du prompt pour un
@@ -160,6 +176,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     headerLayout: 'seal',
     shape: 'sharp',
     signatureStyle: 'stamp',
+    photoTreatment: 'high-contrast',
     animationKind: 'guilloche',
   },
   rente: {
@@ -171,6 +188,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     headerLayout: 'banner',
     shape: 'pill',
     signatureStyle: 'plain',
+    photoTreatment: 'muted',
     animationKind: 'breath',
   },
   placement: {
@@ -182,6 +200,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     headerLayout: 'classic',
     shape: 'pill',
     signatureStyle: 'plain',
+    photoTreatment: 'none',
     animationKind: 'sparkline',
   },
   guilde: {
@@ -193,6 +212,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     headerLayout: 'banner',
     shape: 'pill',
     signatureStyle: 'plain',
+    photoTreatment: 'muted',
     animationKind: 'noise',
   },
 }

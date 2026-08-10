@@ -31,7 +31,25 @@ export function duotoneChannels(darkHex: string, lightHex: string): DuotoneChann
 // navigateur suffit), contrairement à filter: 'none' qui écrirait une
 // règle inutile.
 export function photoFilterCss(treatment: PhotoTreatment, duotoneFilterId: string): string | undefined {
-  if (treatment === 'grayscale') return 'grayscale(1)'
-  if (treatment === 'duotone') return `url(#${duotoneFilterId})`
-  return undefined
+  switch (treatment) {
+    case 'grayscale':
+      return 'grayscale(1)'
+    case 'duotone':
+      return `url(#${duotoneFilterId})`
+    case 'sepia':
+      return 'sepia(0.6)'
+    case 'high-contrast':
+      return 'contrast(1.25) brightness(0.95)'
+    case 'muted':
+      return 'saturate(0.35)'
+    case 'none':
+      return undefined
+  }
 }
+
+// Vignette (correctif "filtres photo étendus") — calque, pas un filtre : un
+// radial-gradient transparent au centre / sombre en périphérie, posé
+// PAR-DESSUS l'image plutôt que sur elle, pour rester combinable avec
+// n'importe lequel des six traitements ci-dessus (voir PhotoTreatment dans
+// src/types/profile.ts pour le choix d'en faire un booléen séparé).
+export const VIGNETTE_OVERLAY_CSS = 'radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.65) 100%)'

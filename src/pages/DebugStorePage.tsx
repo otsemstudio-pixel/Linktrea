@@ -17,6 +17,7 @@ function buildFixtureProfile(): Profile {
     bio: '',
     photo: null,
     photoTreatment: 'none',
+    photoVignette: false,
     availability: 'open',
     signature: '',
   }

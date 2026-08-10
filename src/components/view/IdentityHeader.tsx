@@ -9,7 +9,7 @@ import { useBackgroundAnimation } from '@/lib/motion/useBackgroundAnimation'
 import { sealOutlinePath } from '@/lib/svg/guilloche'
 import { deriveSurfaceTokens } from '@/lib/theme/deriveSurfaces'
 import { oklchToHex } from '@/lib/theme/color'
-import { photoFilterCss } from '@/lib/theme/photoTreatment'
+import { photoFilterCss, VIGNETTE_OVERLAY_CSS } from '@/lib/theme/photoTreatment'
 import DuotoneFilterDefs from '@/components/DuotoneFilterDefs'
 import AmbientSparkline from './AmbientSparkline'
 import GuillochePattern from './GuillochePattern'
@@ -59,12 +59,15 @@ function Avatar({ identity, size, accent, background }: { identity: Identity; si
   return (
     <>
       {identity.photoTreatment === 'duotone' && <DuotoneFilterDefs id={duotoneId} darkHex={darkHex} lightHex={accent} />}
-      <img
-        src={identity.photo}
-        alt={identity.fullName}
-        className={`${size} rounded-full object-cover`}
-        style={filter ? { filter } : undefined}
-      />
+      <div className={`relative ${size} rounded-full overflow-hidden`}>
+        <img
+          src={identity.photo}
+          alt={identity.fullName}
+          className="size-full object-cover"
+          style={filter ? { filter } : undefined}
+        />
+        {identity.photoVignette && <div aria-hidden="true" className="absolute inset-0" style={{ background: VIGNETTE_OVERLAY_CSS }} />}
+      </div>
     </>
   )
 }

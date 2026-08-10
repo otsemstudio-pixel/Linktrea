@@ -30,8 +30,11 @@ const httpsUrlSchema = z
 const availabilitySchema = z.enum(['open', 'busy', 'closed'])
 // .catch('none') — même raison que shapeLanguageSchema plus bas : un profil
 // enregistré avant l'ajout de ce réglage (personnalisation avancée, Phase 2)
-// n'a jamais eu ce champ.
-const photoTreatmentSchema = z.enum(['none', 'grayscale', 'duotone']).catch('none')
+// n'a jamais eu ce champ. Liste étendue par le correctif "filtres photo
+// étendus" — un ancien payload avec 'sepia'/'high-contrast'/'muted' n'existe
+// pas encore, mais .catch() protège aussi contre une valeur simplement
+// invalide (payload importé à la main, par exemple).
+const photoTreatmentSchema = z.enum(['none', 'grayscale', 'duotone', 'sepia', 'high-contrast', 'muted']).catch('none')
 
 // Bornes de longueur (refonte sécurité, Phase 6) — aucune n'existait
 // vraiment avant (seule bio en avait une), malgré ce que suggérait le
@@ -44,6 +47,9 @@ const identitySchema = z.object({
   bio: z.string().max(280),
   photo: z.string().nullable(),
   photoTreatment: photoTreatmentSchema,
+  // .catch(false) — même raison : champ absent des payloads enregistrés
+  // avant ce correctif.
+  photoVignette: z.boolean().catch(false),
   availability: availabilitySchema,
   // .catch('') — même raison que photoTreatmentSchema : un profil enregistré
   // avant l'ajout de ce champ (personnalisation avancée, Phase 4) ne l'a
@@ -51,19 +57,40 @@ const identitySchema = z.object({
   signature: z.string().max(120).catch(''),
 })
 
-const positionSchema = z.object({
-  id: z.string(),
-  role: z.string().max(100),
-  company: z.string().max(100),
-  startDate: z.string().max(20),
-  endDate: z.string().max(20).nullable(),
-  description: z.string().max(500),
-  // .max(3) redondant avec la limite déjà imposée côté UI
-  // (PositionsSection.tsx n'affiche plus le bouton "Ajouter" au-delà de 3) —
-  // mais cette limite UI n'empêchait rien côté données : rien ne validait
-  // qu'un payload importé ou modifié hors formulaire n'en contienne pas plus.
-  highlights: z.array(z.string().max(140)).max(3),
-})
+// "AAAA-MM" strict — seul format que les <select> mois/année de
+// PositionsSection.tsx peuvent désormais produire (correctif date de fin).
+const YEAR_MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/
+
+const positionSchema = z
+  .object({
+    id: z.string(),
+    role: z.string().max(100),
+    company: z.string().max(100),
+    startDate: z.string().max(20),
+    endDate: z.string().max(20).nullable(),
+    description: z.string().max(500),
+    // .max(3) redondant avec la limite déjà imposée côté UI
+    // (PositionsSection.tsx n'affiche plus le bouton "Ajouter" au-delà de 3) —
+    // mais cette limite UI n'empêchait rien côté données : rien ne validait
+    // qu'un payload importé ou modifié hors formulaire n'en contienne pas plus.
+    highlights: z.array(z.string().max(140)).max(3),
+  })
+  // N'invalide QUE quand les deux dates sont déjà au format "AAAA-MM" strict
+  // (donc forcément saisies via les nouveaux <select>, jamais du texte libre
+  // hérité d'avant ce correctif) : une position déjà enregistrée avec une
+  // startDate/endDate au format libre (ancien champ texte) ne doit jamais
+  // faire échouer la relecture de tout le profil (voir parseProfileData
+  // dans SupabaseProfileStore.ts, qui retombe sur un profil vide au moindre
+  // safeParse en échec) — seules les nouvelles saisies, forcément propres,
+  // sont comparées.
+  .refine(
+    (p) => {
+      if (p.endDate === null) return true
+      if (!YEAR_MONTH_RE.test(p.endDate) || !YEAR_MONTH_RE.test(p.startDate)) return true
+      return p.endDate >= p.startDate
+    },
+    { message: 'La date de fin ne peut pas être antérieure à la date de début.', path: ['endDate'] },
+  )
 
 const holdingSchema = z.object({
   id: z.string(),

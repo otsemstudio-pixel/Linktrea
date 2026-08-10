@@ -9,6 +9,7 @@ export const demoProfile: Profile = {
     bio: 'Analyste financière spécialisée en modélisation et allocation de portefeuille. 8 ans à accompagner PME et institutionnels sur la BRVM et les marchés obligataires ouest-africains.',
     photo: null,
     photoTreatment: 'none',
+    photoVignette: false,
     availability: 'open',
     signature: '',
   },

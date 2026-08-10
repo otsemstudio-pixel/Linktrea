@@ -15,6 +15,7 @@ function buildFixtureProfile(): Profile {
     bio: 'Profil de test pour valider le codec.',
     photo: null,
     photoTreatment: 'none',
+    photoVignette: false,
     availability: 'open',
     signature: '',
   }

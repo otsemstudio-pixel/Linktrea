@@ -6,6 +6,7 @@ import type { Profile, Position } from '@/types'
 type PositionField = FieldArrayWithId<Profile, 'positions', 'id'>
 import TextField from './fields/TextField'
 import TextAreaField from './fields/TextAreaField'
+import MonthYearSelect from './fields/MonthYearSelect'
 
 function newPosition(): Position {
   return {
@@ -81,9 +82,11 @@ type CardProps = {
 }
 
 function PositionCard({ position, index, control, onRemove }: CardProps) {
-  const { register, setValue } = useFormContext<Profile>()
+  const { register, setValue, formState } = useFormContext<Profile>()
   const dragControls = useDragControls()
+  const startDate = useWatch({ control, name: `positions.${index}.startDate` })
   const endDate = useWatch({ control, name: `positions.${index}.endDate` })
+  const endDateError = formState.errors.positions?.[index]?.endDate?.message
 
   return (
     <Reorder.Item
@@ -117,30 +120,39 @@ function PositionCard({ position, index, control, onRemove }: CardProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        <TextField label="Début (AAAA-MM)" registration={register(`positions.${index}.startDate`)} placeholder="2023-06" />
-        <label className="block mb-4">
-          <span className="text-label uppercase tracking-label text-muted block mb-1.5">Fin</span>
-          <input
-            type="text"
-            placeholder="En cours"
-            disabled={endDate === null}
-            value={endDate ?? ''}
-            onChange={(e) => setValue(`positions.${index}.endDate`, e.target.value, { shouldDirty: true })}
-            className="w-full min-h-11 rounded-md border border-ink-raised bg-surface-inset px-3 text-sm text-paper disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 focus:border-accent"
-          />
-        </label>
+      <div className="grid grid-cols-2 gap-2">
+        <MonthYearSelect
+          label="Début"
+          value={startDate}
+          onChange={(v) => setValue(`positions.${index}.startDate`, v, { shouldDirty: true, shouldValidate: true })}
+        />
+        <MonthYearSelect
+          label="Fin"
+          value={endDate ?? ''}
+          disabled={endDate === null}
+          onChange={(v) => setValue(`positions.${index}.endDate`, v, { shouldDirty: true, shouldValidate: true })}
+          error={endDateError}
+        />
       </div>
 
       <label className="flex items-center gap-2 mb-4 min-h-11 text-sm">
         <input
           type="checkbox"
           checked={endDate === null}
-          onChange={(e) => setValue(`positions.${index}.endDate`, e.target.checked ? null : '', { shouldDirty: true })}
+          onChange={(e) =>
+            setValue(`positions.${index}.endDate`, e.target.checked ? null : '', { shouldDirty: true, shouldValidate: true })
+          }
           className="size-4 accent-[var(--accent)]"
         />
         Poste en cours
       </label>
+      {/* Incomplet plutôt qu'invalide au sens du schéma (voir schema.ts) :
+          on guide sans bloquer tant que les deux <select> ne sont pas
+          remplis, une simple sélection en cours ne doit pas s'afficher en
+          rouge comme une vraie erreur. */}
+      {endDate === '' && !endDateError && (
+        <p className="-mt-3 mb-4 text-xs text-muted">Choisis un mois et une année de fin, ou coche « En cours ».</p>
+      )}
 
       <TextAreaField
         label="Description"

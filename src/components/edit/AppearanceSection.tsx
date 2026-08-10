@@ -117,6 +117,14 @@ function ThemeGallerySection() {
     // booléen — le forcer à false évite juste de garder un état sans objet.
     const animatedBackground = GALLERY_THEMES[themeId].animationKind !== null
     setValue('appearance', { ...appearance, themeId, animatedBackground }, { shouldDirty: true })
+
+    // Suggestion de traitement photo (correctif "filtres photo étendus") —
+    // seulement si rien n'a encore été choisi ('none' fait office de "pas
+    // encore touché" ici) : une fois la personne a délibérément réglé un
+    // traitement, changer de thème ensuite ne doit plus jamais l'écraser.
+    if (getValues('identity.photoTreatment') === 'none') {
+      setValue('identity.photoTreatment', GALLERY_THEMES[themeId].photoTreatment, { shouldDirty: true })
+    }
   }
 
   function updateSettings(patch: Partial<CustomThemeSettings>) {

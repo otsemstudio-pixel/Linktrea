@@ -10,6 +10,7 @@ export function createEmptyProfile(): Profile {
       bio: '',
       photo: null,
       photoTreatment: 'none',
+      photoVignette: false,
       availability: 'closed',
       signature: '',
     },

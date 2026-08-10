@@ -4,13 +4,15 @@
 
 export type Availability = 'open' | 'busy' | 'closed'
 
-// Traitement d'affichage de la photo (personnalisation avancée, Phase 2) —
-// jamais destructif : ne modifie que le rendu (filtre CSS/SVG), jamais le
-// fichier stocké dans `photo` (voir resizePhotoToWebP), pour pouvoir changer
-// d'avis sans réuploader. Pas de split Galerie/Personnalisé comme
-// ShapeLanguage : ce réglage n'est pas prévu par thème dans le prompt, c'est
-// un choix personnel indépendant du thème visuel choisi.
-export type PhotoTreatment = 'none' | 'grayscale' | 'duotone'
+// Traitement d'affichage de la photo (personnalisation avancée, Phase 2 ;
+// étendu par le correctif "filtres photo étendus") — jamais destructif : ne
+// modifie que le rendu (filtre CSS/SVG), jamais le fichier stocké dans
+// `photo` (voir resizePhotoToWebP), pour pouvoir changer d'avis sans
+// réuploader. Pas de split Galerie/Personnalisé comme ShapeLanguage : reste
+// éditable à tout moment quel que soit le mode (voir GalleryThemeMeta.
+// photoTreatment pour la seule chose que la Galerie en fait — une
+// SUGGESTION par défaut, jamais un verrou).
+export type PhotoTreatment = 'none' | 'grayscale' | 'duotone' | 'sepia' | 'high-contrast' | 'muted'
 
 export type Identity = {
   fullName: string
@@ -19,6 +21,14 @@ export type Identity = {
   bio: string
   photo: string | null
   photoTreatment: PhotoTreatment
+  // Vignette (correctif "filtres photo étendus") — calque indépendant, pas
+  // une 7e valeur de PhotoTreatment : elle se COMBINE avec n'importe quel
+  // traitement (un assombrissement radial des bords superposé en overlay),
+  // alors que les six valeurs ci-dessus sont mutuellement exclusives (un
+  // seul `filter` CSS/SVG à la fois). La modéliser comme un booléen séparé
+  // évite de doubler l'énumération (sepia+vignette, muted+vignette...) pour
+  // un axe qui n'a rien d'exclusif.
+  photoVignette: boolean
   availability: Availability
   // Signature personnelle (personnalisation avancée, Phase 4) — chaîne vide
   // = pas de signature, aucune zone affichée sur le profil public (jamais un
