@@ -5,10 +5,11 @@ type Props = {
   registration: UseFormRegisterReturn
   type?: string
   placeholder?: string
+  maxLength?: number
   error?: string
 }
 
-export default function TextField({ label, registration, type = 'text', placeholder, error }: Props) {
+export default function TextField({ label, registration, type = 'text', placeholder, maxLength, error }: Props) {
   return (
     <label className="block mb-4">
       <span className="text-label uppercase tracking-label text-muted block mb-1.5">{label}</span>
@@ -16,6 +17,7 @@ export default function TextField({ label, registration, type = 'text', placehol
         {...registration}
         type={type}
         placeholder={placeholder}
+        maxLength={maxLength}
         className="w-full min-h-11 rounded-md border border-ink-raised bg-surface-inset px-3 text-sm text-paper focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 focus:border-accent"
       />
       {error && <span className="block mt-1 text-xs text-down">{error}</span>}

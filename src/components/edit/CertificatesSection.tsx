@@ -8,7 +8,7 @@ function newCertificate(): Certificate {
 }
 
 export default function CertificatesSection() {
-  const { register, control } = useFormContext<Profile>()
+  const { register, control, formState } = useFormContext<Profile>()
   const { fields, append, remove } = useFieldArray({ control, name: 'certificates' })
 
   return (
@@ -21,15 +21,31 @@ export default function CertificatesSection() {
 
       {fields.map((field, index) => (
         <div key={field.id} className="rounded-lg border border-ink-raised bg-ink-raised/40 p-4 mb-3">
-          <TextField label="Titre" registration={register(`certificates.${index}.title`)} placeholder="Licence Finance" />
-          <TextField label="Institution" registration={register(`certificates.${index}.institution`)} placeholder="ESATIC" />
-          <TextField label="Année" registration={register(`certificates.${index}.year`)} placeholder="2023" />
+          <TextField
+            label="Titre"
+            registration={register(`certificates.${index}.title`)}
+            placeholder="Licence Finance"
+            maxLength={120}
+          />
+          <TextField
+            label="Institution"
+            registration={register(`certificates.${index}.institution`)}
+            placeholder="ESATIC"
+            maxLength={120}
+          />
+          <TextField label="Année" registration={register(`certificates.${index}.year`)} placeholder="2023" maxLength={20} />
           <TextField
             label="URL de vérification"
             registration={register(`certificates.${index}.credentialUrl`)}
             placeholder="https://..."
+            error={formState.errors.certificates?.[index]?.credentialUrl?.message}
           />
-          <TextField label="URL du document" registration={register(`certificates.${index}.fileUrl`)} placeholder="https://..." />
+          <TextField
+            label="URL du document"
+            registration={register(`certificates.${index}.fileUrl`)}
+            placeholder="https://..."
+            error={formState.errors.certificates?.[index]?.fileUrl?.message}
+          />
           <button
             type="button"
             onClick={() => remove(index)}

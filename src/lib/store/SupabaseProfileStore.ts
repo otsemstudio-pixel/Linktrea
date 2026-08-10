@@ -148,4 +148,17 @@ export class SupabaseProfileStore implements ProfileStore {
 
     return 'available'
   }
+
+  // delete_own_account() est une fonction Postgres SECURITY DEFINER (voir
+  // supabase/migrations/20260810120000_delete_own_account.sql) : le rôle
+  // authenticated n'a normalement aucun droit sur auth.users, donc la
+  // suppression ne peut pas passer par un simple delete client — il faut un
+  // point d'entrée serveur dédié. Elle supprime la ligne auth.users, dont la
+  // contrainte "references auth.users on delete cascade" sur profiles.id
+  // fait disparaître public.profiles automatiquement — pas la peine de la
+  // dupliquer ici.
+  async deleteAccount(): Promise<void> {
+    const { error } = await supabase.rpc('delete_own_account')
+    if (error) throw mapError(error, 'La suppression du compte a échoué. Réessaie dans un instant.')
+  }
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Profile } from '@/types'
+import { profileSchema } from '@/lib/schema'
 import { getProfileStore, ProfileStoreError } from './index'
 
 export type SaveStatus = 'idle' | 'saved' | 'error'
@@ -21,6 +22,15 @@ export function useProfileStoreAutosave(value: Profile, delay = 500) {
     }
     if (timer.current) clearTimeout(timer.current)
     timer.current = setTimeout(async () => {
+      // Le formulaire affiche déjà les erreurs de champ (zodResolver), mais
+      // ça ne bloque pas ce hook, qui observe la valeur brute via useWatch.
+      // Sans ce garde-fou, une valeur invalide (lien javascript:, texte trop
+      // long...) serait quand même écrite ; elle ne pourrait certes plus
+      // jamais être RELUE (parseProfileData la rejette et retombe sur un
+      // profil vide), mais ce serait alors tout le profil qui disparaîtrait
+      // silencieusement au prochain chargement — pas seulement le champ en
+      // cause (refonte sécurité, Phase 6).
+      if (!profileSchema.safeParse(value).success) return
       try {
         const store = await getProfileStore()
         await store.save(value)

@@ -49,7 +49,13 @@ export type Database = {
       }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      // Voir supabase/migrations/20260810120000_delete_own_account.sql.
+      delete_own_account: {
+        Args: Record<string, never>
+        Returns: undefined
+      }
+    }
   }
 }
 
@@ -66,4 +72,19 @@ if (!url || !anonKey) {
   )
 }
 
-export const supabase = createClient<Database>(url, anonKey)
+// Explicite plutôt que reposer sur les valeurs par défaut du SDK (elles le
+// sont déjà, mais une config de session pour de vrais comptes doit être
+// visible à l'audit, pas déduite) : persistSession stocke le token localement
+// (localStorage, jamais un cookie — voir AuthContext.tsx) ; autoRefreshToken
+// le renouvelle en tâche de fond tant que l'onglet est ouvert, pour que la
+// session survive au-delà de sa durée de vie courte sans reconnexion
+// manuelle ; detectSessionInUrl lit le `?code=...` du retour de lien
+// magique (voir LoginPage.tsx pour pourquoi cette URL ne doit pas déjà
+// contenir de hash).
+export const supabase = createClient<Database>(url, anonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+})

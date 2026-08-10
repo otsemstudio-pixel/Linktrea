@@ -19,6 +19,11 @@ export interface ProfileStore {
   // vers ces données, même pour ce nouveau besoin.
   getPublishStatus(): Promise<PublishStatus | null>
   checkSlugAvailability(slug: string): Promise<SlugAvailability>
+
+  // Ajouté en Phase 4 (refonte sécurité) — supprime définitivement le
+  // compte et tout son contenu. Irréversible : la confirmation (retaper son
+  // slug) vit côté UI (AccountSection.tsx), pas ici.
+  deleteAccount(): Promise<void>
 }
 
 // Une erreur Supabase (ou réseau) brute ne doit jamais atteindre un

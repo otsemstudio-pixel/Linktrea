@@ -47,6 +47,7 @@ function HighlightsList({ control, index }: { control: Control<Profile>; index: 
           <input
             {...register(`positions.${index}.highlights.${hIndex}`)}
             placeholder="18 émetteurs suivis sur la BRVM"
+            maxLength={140}
             className="flex-1 min-h-11 rounded-md border border-ink-raised bg-surface-inset px-3 text-sm text-paper focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 focus:border-accent"
           />
           <button
@@ -101,8 +102,18 @@ function PositionCard({ position, index, control, onRemove }: CardProps) {
           <GripVertical size={16} aria-hidden="true" />
         </button>
         <div className="flex-1">
-          <TextField label="Rôle" registration={register(`positions.${index}.role`)} placeholder="Analyste financière senior" />
-          <TextField label="Société" registration={register(`positions.${index}.company`)} placeholder="CGF Bourse" />
+          <TextField
+            label="Rôle"
+            registration={register(`positions.${index}.role`)}
+            placeholder="Analyste financière senior"
+            maxLength={100}
+          />
+          <TextField
+            label="Société"
+            registration={register(`positions.${index}.company`)}
+            placeholder="CGF Bourse"
+            maxLength={100}
+          />
         </div>
       </div>
 
@@ -136,6 +147,7 @@ function PositionCard({ position, index, control, onRemove }: CardProps) {
         registration={register(`positions.${index}.description`)}
         value=""
         rows={2}
+        maxLength={500}
         placeholder="Couverture actions et obligataire sur la BRVM pour une clientèle institutionnelle."
       />
 

@@ -84,4 +84,8 @@ export class LocalProfileStore implements ProfileStore {
     // Un seul utilisateur en local : "taken" n'a pas de sens (voir publish()).
     return isValidSlugFormat(slug) ? 'available' : 'invalid'
   }
+
+  async deleteAccount(): Promise<void> {
+    localStorage.removeItem(STORAGE_KEY)
+  }
 }

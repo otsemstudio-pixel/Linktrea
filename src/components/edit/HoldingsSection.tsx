@@ -34,8 +34,18 @@ export default function HoldingsSection() {
 
       {fields.map((field, index) => (
         <div key={field.id} className="rounded-lg border border-ink-raised bg-ink-raised/40 p-4 mb-3">
-          <TextField label="Compétence" registration={register(`holdings.${index}.label`)} placeholder="Modélisation financière" />
-          <TextField label="Catégorie" registration={register(`holdings.${index}.category`)} placeholder="Analyse, Outils, Marchés..." />
+          <TextField
+            label="Compétence"
+            registration={register(`holdings.${index}.label`)}
+            placeholder="Modélisation financière"
+            maxLength={100}
+          />
+          <TextField
+            label="Catégorie"
+            registration={register(`holdings.${index}.category`)}
+            placeholder="Analyse, Outils, Marchés..."
+            maxLength={60}
+          />
           <SliderField label="Poids" registration={register(`holdings.${index}.weight`, { valueAsNumber: true })} value={holdings[index]?.weight ?? 0} />
           <TextField
             label="Années d'expérience"

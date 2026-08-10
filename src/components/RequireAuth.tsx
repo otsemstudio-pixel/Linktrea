@@ -1,13 +1,14 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/auth/AuthContext'
+import EditorSkeleton from '@/components/edit/EditorSkeleton'
 
 type Props = {
   children: ReactNode
 }
 
 export default function RequireAuth({ children }: Props) {
-  const { user, loading } = useAuth()
+  const { status } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   // AnimatePresence garde l'arbre de la route sortante monté le temps de son
@@ -20,15 +21,16 @@ export default function RequireAuth({ children }: Props) {
   const hasRedirected = useRef(false)
 
   useEffect(() => {
-    if (loading || user || hasRedirected.current) return
+    if (status !== 'anonymous' || hasRedirected.current) return
     hasRedirected.current = true
     navigate('/login', { state: { from: location }, replace: true })
-  }, [loading, user, location, navigate])
+  }, [status, location, navigate])
 
-  // Rien tant que la session n'est pas résolue — sans ça, un utilisateur
-  // déjà connecté verrait /login clignoter une fraction de seconde à
-  // chaque rechargement de /edit, le temps que getSession() réponde.
-  if (loading || !user) return null
+  // Squelette neutre tant que la session n'est pas résolue — jamais `null` :
+  // un utilisateur déjà connecté ne doit voir ni un flash vers /login, ni un
+  // écran vide, le temps que getSession() réponde (refonte sécurité, Phase 1).
+  if (status === 'checking') return <EditorSkeleton />
+  if (status === 'anonymous') return null
 
   return <>{children}</>
 }

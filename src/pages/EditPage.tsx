@@ -15,6 +15,7 @@ import HoldingsSection from '@/components/edit/HoldingsSection'
 import CertificatesSection from '@/components/edit/CertificatesSection'
 import TickersSection from '@/components/edit/TickersSection'
 import AppearanceSection from '@/components/edit/AppearanceSection'
+import AccountSection from '@/components/edit/AccountSection'
 import EditorActionBar from '@/components/edit/EditorActionBar'
 import EditorSkeleton from '@/components/edit/EditorSkeleton'
 import ShareLinkModal from '@/components/edit/ShareLinkModal'
@@ -115,6 +116,14 @@ export default function EditPage() {
                   <CollapsibleSection title="Apparence">
                     <AppearanceSection />
                   </CollapsibleSection>
+                  {/* Pas de vrai compte à supprimer en mode local (voir
+                      LOCAL_DEV_USER dans AuthContext.tsx) — même garde que
+                      le bouton "Déconnexion" ci-dessus. */}
+                  {STORAGE_MODE === 'supabase' && (
+                    <CollapsibleSection title="Compte">
+                      <AccountSection />
+                    </CollapsibleSection>
+                  )}
                 </form>
               </main>
             </div>

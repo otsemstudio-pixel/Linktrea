@@ -21,7 +21,7 @@ function newTicker(): Ticker {
 }
 
 function TickerRow({ index, onRemove }: { index: number; onRemove: () => void }) {
-  const { register, control, setValue } = useFormContext<Profile>()
+  const { register, control, setValue, formState } = useFormContext<Profile>()
   const platform = useWatch({ control, name: `tickers.${index}.platform` })
   const handle = useWatch({ control, name: `tickers.${index}.handle` })
 
@@ -32,8 +32,16 @@ function TickerRow({ index, onRemove }: { index: number; onRemove: () => void })
   return (
     <div className="rounded-lg border border-ink-raised bg-ink-raised/40 p-4 mb-3">
       <SelectField label="Plateforme" registration={register(`tickers.${index}.platform`)} options={PLATFORM_OPTIONS} />
-      <TextField label="Identifiant" registration={register(`tickers.${index}.handle`)} placeholder="mon-identifiant" />
-      <p className="text-xs text-muted font-mono mb-4 break-all">{buildTickerUrl(platform, handle) || '—'}</p>
+      <TextField
+        label="Identifiant"
+        registration={register(`tickers.${index}.handle`)}
+        placeholder="mon-identifiant"
+        maxLength={100}
+      />
+      <p className="text-xs text-muted font-mono mb-1 break-all">{buildTickerUrl(platform, handle) || '—'}</p>
+      {formState.errors.tickers?.[index]?.url?.message && (
+        <p className="text-xs text-down mb-4">{formState.errors.tickers[index]?.url?.message}</p>
+      )}
       <button
         type="button"
         onClick={onRemove}

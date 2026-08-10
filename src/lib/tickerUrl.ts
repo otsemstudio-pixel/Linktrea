@@ -1,5 +1,18 @@
 import type { TickerPlatform } from '@/types'
 
+// website est la seule plateforme où la personne saisit une URL plutôt
+// qu'un simple identifiant — donc la seule où il faut vraiment normaliser le
+// protocole plutôt que le déduire d'un gabarit fixe. `startsWith('http')`
+// laissait auparavant passer un http:// non chiffré tel quel (le prompt
+// impose https:// uniquement, voir schema.ts) ; on force maintenant https
+// systématiquement, y compris pour une adresse saisie en http://.
+function normalizeWebsiteUrl(handle: string): string {
+  if (/^https?:\/\//i.test(handle)) {
+    return handle.replace(/^http:\/\//i, 'https://')
+  }
+  return `https://${handle}`
+}
+
 const URL_TEMPLATES: Record<TickerPlatform, (handle: string) => string> = {
   linkedin: (h) => `https://linkedin.com/in/${h}`,
   github: (h) => `https://github.com/${h}`,
@@ -7,7 +20,7 @@ const URL_TEMPLATES: Record<TickerPlatform, (handle: string) => string> = {
   behance: (h) => `https://behance.net/${h}`,
   instagram: (h) => `https://instagram.com/${h}`,
   email: (h) => `mailto:${h}`,
-  website: (h) => (h.startsWith('http') ? h : `https://${h}`),
+  website: normalizeWebsiteUrl,
 }
 
 export function buildTickerUrl(platform: TickerPlatform, handle: string): string {

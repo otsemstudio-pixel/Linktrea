@@ -70,10 +70,23 @@ export default function IdentitySection() {
         label="Nom complet"
         registration={register('identity.fullName')}
         placeholder="Aya Koffi N’Guessan"
+        maxLength={100}
         error={formState.errors.identity?.fullName?.message}
       />
-      <TextField label="Headline" registration={register('identity.headline')} placeholder="Analyste financière · Abidjan" />
-      <TextField label="Localisation" registration={register('identity.location')} placeholder="Abidjan, Côte d’Ivoire" />
+      <TextField
+        label="Headline"
+        registration={register('identity.headline')}
+        placeholder="Analyste financière · Abidjan"
+        maxLength={120}
+        error={formState.errors.identity?.headline?.message}
+      />
+      <TextField
+        label="Localisation"
+        registration={register('identity.location')}
+        placeholder="Abidjan, Côte d’Ivoire"
+        maxLength={100}
+        error={formState.errors.identity?.location?.message}
+      />
       <TextAreaField
         label="Bio"
         registration={register('identity.bio')}

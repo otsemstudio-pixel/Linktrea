@@ -3,12 +3,40 @@
 // on ne fait jamais confiance à un JSON.parse() brut sur ces canaux.
 import { z } from 'zod'
 
+// Assainissement du contenu public (refonte sécurité, Phase 6) — vérifie le
+// protocole RÉEL tel que le navigateur le comprendrait (new URL().protocol),
+// jamais un préfixe de chaîne : un test du type value.startsWith('http')
+// laisserait passer "http://evil" en le confondant avec une validation de
+// protocole, alors que ce n'est qu'un hasard de préfixe. '' veut dire
+// "aucun lien fourni" (valeur par défaut d'un champ vide côté formulaire,
+// équivalent à null pour l'affichage — voir CertificatesRail.tsx), toujours
+// valide.
+function hasProtocol(value: string, protocol: string): boolean {
+  if (value === '') return true
+  try {
+    return new URL(value).protocol === protocol
+  } catch {
+    return false
+  }
+}
+
+// Réservé aux liens destinés à devenir un href cliquable sur la page
+// publique (certificats) — jamais data:, javascript:, ni même http:// nu.
+const httpsUrlSchema = z
+  .string()
+  .nullable()
+  .refine((v) => v === null || hasProtocol(v, 'https:'), { message: 'Le lien doit commencer par https://' })
+
 const availabilitySchema = z.enum(['open', 'busy', 'closed'])
 
+// Bornes de longueur (refonte sécurité, Phase 6) — aucune n'existait
+// vraiment avant (seule bio en avait une), malgré ce que suggérait le
+// prompt ; choisies ici pour rester confortables en saisie normale tout en
+// empêchant un champ texte libre de servir à stocker un pavé arbitraire.
 const identitySchema = z.object({
-  fullName: z.string(),
-  headline: z.string(),
-  location: z.string(),
+  fullName: z.string().max(100),
+  headline: z.string().max(120),
+  location: z.string().max(100),
   bio: z.string().max(280),
   photo: z.string().nullable(),
   availability: availabilitySchema,
@@ -16,29 +44,33 @@ const identitySchema = z.object({
 
 const positionSchema = z.object({
   id: z.string(),
-  role: z.string(),
-  company: z.string(),
-  startDate: z.string(),
-  endDate: z.string().nullable(),
-  description: z.string(),
-  highlights: z.array(z.string()),
+  role: z.string().max(100),
+  company: z.string().max(100),
+  startDate: z.string().max(20),
+  endDate: z.string().max(20).nullable(),
+  description: z.string().max(500),
+  // .max(3) redondant avec la limite déjà imposée côté UI
+  // (PositionsSection.tsx n'affiche plus le bouton "Ajouter" au-delà de 3) —
+  // mais cette limite UI n'empêchait rien côté données : rien ne validait
+  // qu'un payload importé ou modifié hors formulaire n'en contienne pas plus.
+  highlights: z.array(z.string().max(140)).max(3),
 })
 
 const holdingSchema = z.object({
   id: z.string(),
-  label: z.string(),
-  category: z.string(),
+  label: z.string().max(100),
+  category: z.string().max(60),
   weight: z.number().min(0).max(100),
   years: z.number().min(0),
 })
 
 const certificateSchema = z.object({
   id: z.string(),
-  title: z.string(),
-  institution: z.string(),
-  year: z.string(),
-  credentialUrl: z.string().nullable(),
-  fileUrl: z.string().nullable(),
+  title: z.string().max(120),
+  institution: z.string().max(120),
+  year: z.string().max(20),
+  credentialUrl: httpsUrlSchema,
+  fileUrl: httpsUrlSchema,
 })
 
 const tickerPlatformSchema = z.enum([
@@ -51,12 +83,24 @@ const tickerPlatformSchema = z.enum([
   'website',
 ])
 
-const tickerSchema = z.object({
-  id: z.string(),
-  platform: tickerPlatformSchema,
-  handle: z.string(),
-  url: z.string(),
-})
+// url n'est jamais tapée directement par la personne (voir buildTickerUrl,
+// déclenché automatiquement par un useEffect sur platform+handle dans
+// TickersSection.tsx) — le refine reste nécessaire malgré tout : rien
+// n'empêche un payload importé ou modifié hors formulaire de contenir une
+// valeur qui n'est jamais passée par ce générateur. Protocole attendu
+// dépendant de la plateforme : mailto: pour email, https: pour tout le reste
+// (buildTickerUrl ne produit jamais un simple http:// non chiffré).
+const tickerSchema = z
+  .object({
+    id: z.string(),
+    platform: tickerPlatformSchema,
+    handle: z.string().max(100),
+    url: z.string(),
+  })
+  .refine((t) => hasProtocol(t.url, t.platform === 'email' ? 'mailto:' : 'https:'), {
+    message: 'Lien invalide.',
+    path: ['url'],
+  })
 
 const fontDuoIdSchema = z.enum([
   'institutionnel',
