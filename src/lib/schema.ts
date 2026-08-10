@@ -28,6 +28,10 @@ const httpsUrlSchema = z
   .refine((v) => v === null || hasProtocol(v, 'https:'), { message: 'Le lien doit commencer par https://' })
 
 const availabilitySchema = z.enum(['open', 'busy', 'closed'])
+// .catch('none') — même raison que shapeLanguageSchema plus bas : un profil
+// enregistré avant l'ajout de ce réglage (personnalisation avancée, Phase 2)
+// n'a jamais eu ce champ.
+const photoTreatmentSchema = z.enum(['none', 'grayscale', 'duotone']).catch('none')
 
 // Bornes de longueur (refonte sécurité, Phase 6) — aucune n'existait
 // vraiment avant (seule bio en avait une), malgré ce que suggérait le
@@ -39,7 +43,12 @@ const identitySchema = z.object({
   location: z.string().max(100),
   bio: z.string().max(280),
   photo: z.string().nullable(),
+  photoTreatment: photoTreatmentSchema,
   availability: availabilitySchema,
+  // .catch('') — même raison que photoTreatmentSchema : un profil enregistré
+  // avant l'ajout de ce champ (personnalisation avancée, Phase 4) ne l'a
+  // jamais eu dans son payload.
+  signature: z.string().max(120).catch(''),
 })
 
 const positionSchema = z.object({
@@ -147,6 +156,20 @@ const galleryThemeIdSchema = z.enum([
 
 const buttonStyleSchema = z.enum(['solid', 'outline', 'elevated'])
 const headerLayoutSchema = z.enum(['classic', 'banner', 'seal'])
+// .catch('soft') plutôt que .default('soft') : un profil Personnalisé
+// enregistré avant l'ajout de ce réglage (personnalisation avancée, Phase 1)
+// n'a jamais eu ce champ dans son payload — sans repli, il échouerait
+// entièrement à la relecture (voir le commentaire en tête de ce fichier sur
+// la rétrocompatibilité des payloads déjà partagés). .default() change le
+// type INPUT du schéma (le champ devient optionnel), ce qui casse la
+// compatibilité avec Resolver<Profile> dans EditPage.tsx (react-hook-form
+// exige que le type des valeurs du formulaire soit exactement Profile,
+// jamais Profile avec un champ optionnel) ; .catch() garde le même type
+// des deux côtés et absorbe silencieusement une valeur absente ou invalide.
+const shapeLanguageSchema = z.enum(['sharp', 'soft', 'pill']).catch('soft')
+// Même raison, même solution (.catch()) — voir shapeLanguageSchema juste
+// au-dessus (personnalisation avancée, Phase 4).
+const signatureStyleSchema = z.enum(['plain', 'stamp']).catch('plain')
 
 const customThemeSettingsSchema = z.object({
   background: z.string(),
@@ -158,6 +181,8 @@ const customThemeSettingsSchema = z.object({
   headingFontFamily: z.string().nullable(),
   buttonStyle: buttonStyleSchema,
   headerLayout: headerLayoutSchema,
+  shape: shapeLanguageSchema,
+  signatureStyle: signatureStyleSchema,
 })
 
 // z.discriminatedUnion sur 'kind' — cohérent avec AppearanceConfig

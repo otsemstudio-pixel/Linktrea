@@ -2,6 +2,7 @@ import { useFormContext, useWatch } from 'react-hook-form'
 import { Check, X, Loader2 } from 'lucide-react'
 import type { Profile } from '@/types'
 import { usePublishState, type CheckStatus } from './usePublishState'
+import QrCodeSection from './QrCodeSection'
 
 const STATUS_COPY: Record<CheckStatus, { label: string; className: string }> = {
   idle: { label: '', className: '' },
@@ -84,6 +85,8 @@ export default function PublishSection() {
           </button>
         )}
       </div>
+
+      <QrCodeSection isPublished={isPublished} savedSlug={savedSlug} />
     </>
   )
 }

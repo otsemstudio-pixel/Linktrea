@@ -4,6 +4,7 @@ import { resolveAccent, accentCssTokens } from './accent'
 import { resolveAppearanceCardStyle, styleTokens } from './cardStyle'
 import { deriveSurfaceTokens } from './deriveSurfaces'
 import { resolveAppearanceBackground, resolveAppearanceFontDuo, type ResolvedBackground } from './resolveAppearance'
+import { resolveAppearanceShape, shapeTokens } from './shape'
 import { hexToOklch, oklchToCss } from './color'
 import { FONT_DUOS } from './fontDuos'
 import { loadFontDuo, preloadFontDuo } from './loadFontDuo'
@@ -21,6 +22,7 @@ export function useAppliedTheme(appearance: AppearanceConfig, accent: string, en
   const resolvedFont = resolveAppearanceFontDuo(appearance)
   const resolvedAccent = resolveAccent(accent, resolved.hex)
   const resolvedCardStyle = resolveAppearanceCardStyle(appearance, resolvedAccent.hex)
+  const resolvedShape = resolveAppearanceShape(appearance)
 
   useEffect(() => {
     if (!enabled) return
@@ -108,6 +110,16 @@ export function useAppliedTheme(appearance: AppearanceConfig, accent: string, en
     preloadFontDuo(pageFontDuo)
     void loadFontDuo(pageFontDuo)
   }, [resolvedFont.pageFontDuo, resolvedFont.headingFontFamily, enabled])
+
+  useEffect(() => {
+    if (!enabled) return
+    const tokens = shapeTokens(resolvedShape)
+    const root = document.documentElement.style
+    root.setProperty('--radius-base', tokens.base)
+    root.setProperty('--radius-sm', tokens.sm)
+    root.setProperty('--radius-md', tokens.md)
+    root.setProperty('--radius-lg', tokens.lg)
+  }, [resolvedShape, enabled])
 
   return resolved
 }

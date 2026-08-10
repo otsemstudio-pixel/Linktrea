@@ -56,6 +56,8 @@ export default function DebugThemePage() {
       headingFontFamily: null,
       buttonStyle: 'solid',
       headerLayout: 'classic',
+      shape: 'soft',
+      signatureStyle: 'plain',
     },
     motion: 'full',
   }

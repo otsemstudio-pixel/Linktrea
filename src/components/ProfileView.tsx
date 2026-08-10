@@ -4,8 +4,9 @@ import { yearsOfExperience, totalPositions, totalHoldings, experienceTrend, isPr
 import { MotionPrefsProvider } from '@/lib/motion/MotionPrefsContext'
 import { useDocumentMeta, useFaviconAndThemeColor } from '@/lib/useDocumentMeta'
 import { useAppliedTheme } from '@/lib/theme/useAppliedTheme'
-import { resolveAppearanceHeaderLayout, resolveAppearanceAnimation } from '@/lib/theme/resolveAppearance'
+import { resolveAppearanceHeaderLayout, resolveAppearanceAnimation, resolveAppearanceSignatureStyle } from '@/lib/theme/resolveAppearance'
 import IdentityHeader from '@/components/view/IdentityHeader'
+import SignatureQuote from '@/components/view/SignatureQuote'
 import KeyMetric from '@/components/view/KeyMetric'
 import AllocationSection from '@/components/view/AllocationSection'
 import PositionsHistory from '@/components/view/PositionsHistory'
@@ -54,6 +55,7 @@ export default function ProfileView({ profile, standalone = true }: Props) {
   const trend = experienceTrend(profile.holdings)
   const headerLayout = resolveAppearanceHeaderLayout(profile.appearance)
   const resolvedAnimation = resolveAppearanceAnimation(profile.appearance)
+  const signatureStyle = resolveAppearanceSignatureStyle(profile.appearance)
 
   return (
     <MotionPrefsProvider themeMotion={profile.theme.motion}>
@@ -71,6 +73,8 @@ export default function ProfileView({ profile, standalone = true }: Props) {
               tickers={profile.tickers}
               headerLayout={headerLayout}
               resolvedAnimation={resolvedAnimation}
+              accent={profile.theme.accent}
+              background={resolvedBackground.hex}
             />
             <KeyMetric
               domain={profile.domain}
@@ -79,6 +83,14 @@ export default function ProfileView({ profile, standalone = true }: Props) {
               holdingsCount={totalHoldings(profile.holdings)}
               trend={trend}
             />
+            {/* En pied de profil, juste avant le bouton "Partager" (prompt,
+                Phase 4) — testé aussi entre l'identité et le chiffre clé,
+                écarté : ce second emplacement chevauche visuellement le bord
+                du bloc d'en-tête (fond guilloché) au lieu de reposer sur le
+                fond de page, contrairement à cet emplacement-ci. */}
+            <div className="px-6 @min-[1024px]:px-0 mt-1">
+              <SignatureQuote signature={profile.identity.signature} style={signatureStyle} />
+            </div>
             <ActionBar profile={profile} />
           </Aside>
 

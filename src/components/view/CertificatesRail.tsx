@@ -22,7 +22,7 @@ export default function CertificatesRail({ domain, certificates }: Props) {
           {certificates.map((cert) => (
             <div
               key={cert.id}
-              className="snap-start shrink-0 w-56 rounded-lg p-4"
+              className="snap-start shrink-0 w-56 rounded-[var(--radius-md)] p-4"
               style={{
                 background: 'var(--card-bg)',
                 color: 'var(--card-fg)',

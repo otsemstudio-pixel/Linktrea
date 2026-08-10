@@ -16,7 +16,9 @@ function buildFixtureProfile(): Profile {
     location: 'Test',
     bio: '',
     photo: null,
+    photoTreatment: 'none',
     availability: 'open',
+    signature: '',
   }
   return profile
 }

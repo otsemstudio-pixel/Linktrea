@@ -47,7 +47,7 @@ export default function ActionBar({ profile }: Props) {
   }
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-30 border-t border-ink-raised bg-ink/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)] @min-[1024px]:static @min-[1024px]:pb-0 @min-[1024px]:border @min-[1024px]:rounded-lg @min-[1024px]:bg-ink-raised/40">
+    <div className="fixed bottom-0 inset-x-0 z-30 border-t border-ink-raised bg-ink/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)] @min-[1024px]:static @min-[1024px]:pb-0 @min-[1024px]:border @min-[1024px]:rounded-[var(--radius-lg)] @min-[1024px]:bg-ink-raised/40">
       {toast && (
         <p role="status" aria-live="polite" className="text-center text-xs text-up py-1.5">
           {toast}
@@ -57,7 +57,7 @@ export default function ActionBar({ profile }: Props) {
         {emailTicker && (
           <a
             href={emailTicker.url}
-            className="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-md font-medium text-sm active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-paper focus-visible:-outline-offset-2"
+            className="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-[var(--radius-sm)] font-medium text-sm active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-paper focus-visible:-outline-offset-2"
             style={{
               background: 'var(--button-bg)',
               color: 'var(--button-fg)',
@@ -74,7 +74,7 @@ export default function ActionBar({ profile }: Props) {
         <button
           type="button"
           onClick={handleShare}
-          className="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-md border border-ink-raised text-sm active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+          className="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-ink-raised text-sm active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
         >
           <Share2 size={16} aria-hidden="true" />
           Partager
@@ -83,7 +83,7 @@ export default function ActionBar({ profile }: Props) {
           type="button"
           onClick={handleGenerateCard}
           disabled={generatingCard}
-          className="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-md border border-ink-raised text-sm disabled:opacity-50 active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+          className="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-ink-raised text-sm disabled:opacity-50 active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
         >
           <ImageIcon size={16} aria-hidden="true" />
           {generatingCard ? 'Génération…' : 'Carte'}

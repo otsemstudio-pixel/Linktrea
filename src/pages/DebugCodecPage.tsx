@@ -14,7 +14,9 @@ function buildFixtureProfile(): Profile {
     location: 'Abidjan, CI',
     bio: 'Profil de test pour valider le codec.',
     photo: null,
+    photoTreatment: 'none',
     availability: 'open',
+    signature: '',
   }
   profile.positions = [
     {

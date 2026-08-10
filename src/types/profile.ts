@@ -4,13 +4,26 @@
 
 export type Availability = 'open' | 'busy' | 'closed'
 
+// Traitement d'affichage de la photo (personnalisation avancée, Phase 2) —
+// jamais destructif : ne modifie que le rendu (filtre CSS/SVG), jamais le
+// fichier stocké dans `photo` (voir resizePhotoToWebP), pour pouvoir changer
+// d'avis sans réuploader. Pas de split Galerie/Personnalisé comme
+// ShapeLanguage : ce réglage n'est pas prévu par thème dans le prompt, c'est
+// un choix personnel indépendant du thème visuel choisi.
+export type PhotoTreatment = 'none' | 'grayscale' | 'duotone'
+
 export type Identity = {
   fullName: string
   headline: string
   location: string
   bio: string
   photo: string | null
+  photoTreatment: PhotoTreatment
   availability: Availability
+  // Signature personnelle (personnalisation avancée, Phase 4) — chaîne vide
+  // = pas de signature, aucune zone affichée sur le profil public (jamais un
+  // placeholder). Voir SignatureQuote.tsx pour le rendu.
+  signature: string
 }
 
 export type Position = {
@@ -101,6 +114,11 @@ export type Domain = 'finance'
 // chaque thème nommé).
 export type ButtonStyle = 'solid' | 'outline' | 'elevated'
 export type HeaderLayout = 'classic' | 'banner' | 'seal'
+// Variante d'affichage de la signature (personnalisation avancée, Phase 4) —
+// 'stamp' : pivotée, encadrée d'un filet fin à l'accent, façon cachet ;
+// réservée aux thèmes du registre "document officiel" (voir
+// GalleryThemeMeta.signatureStyle), libre en Personnalisé.
+export type SignatureStyle = 'plain' | 'stamp'
 
 // Les 12 thèmes minimum du prompt v2 — un mot abstrait du champ lexical
 // financier, jamais descriptif de sa couleur.
@@ -118,6 +136,14 @@ export type GalleryThemeId =
   | 'placement'
   | 'guilde'
 
+// Langage de forme (personnalisation avancée, Phase 1) — un seul réglage
+// pilote le rayon de tous les coins de l'application publique (cartes,
+// boutons, pastilles de statut...), à l'exception du médaillon photo, qui
+// reste circulaire quel que soit le langage choisi. Même logique à deux
+// niveaux que ButtonStyle/HeaderLayout : fixé par thème dans la Galerie,
+// libre en Personnalisé (voir GalleryThemeMeta.shape et resolveAppearanceShape).
+export type ShapeLanguage = 'sharp' | 'soft' | 'pill'
+
 export type CustomThemeSettings = {
   background: string // hex libre — pas limité aux 4 fonds fixes de ThemeConfig (voir Phase 2)
   buttonColor: string
@@ -131,6 +157,8 @@ export type CustomThemeSettings = {
   headingFontFamily: string | null
   buttonStyle: ButtonStyle
   headerLayout: HeaderLayout
+  shape: ShapeLanguage
+  signatureStyle: SignatureStyle
 }
 
 export type AppearanceConfig =

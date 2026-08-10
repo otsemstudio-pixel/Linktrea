@@ -45,7 +45,7 @@ export default function PositionsHistory({ domain, positions }: Props) {
 
                 <div
                   className={
-                    'rounded-lg p-4' +
+                    'rounded-[var(--radius-lg)] p-4' +
                     (reduced ? '' : ' active:scale-[0.985] transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]')
                   }
                   style={{

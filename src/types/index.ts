@@ -1,5 +1,6 @@
 export type {
   Availability,
+  PhotoTreatment,
   Identity,
   Position,
   Holding,
@@ -13,6 +14,8 @@ export type {
   Domain,
   ButtonStyle,
   HeaderLayout,
+  ShapeLanguage,
+  SignatureStyle,
   GalleryThemeId,
   CustomThemeSettings,
   AppearanceConfig,

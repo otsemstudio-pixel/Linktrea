@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useFormContext, useWatch } from 'react-hook-form'
 import { Check } from 'lucide-react'
-import type { Profile, GalleryThemeId, ButtonStyle, HeaderLayout, CustomThemeSettings } from '@/types'
+import type { Profile, GalleryThemeId, ButtonStyle, HeaderLayout, ShapeLanguage, SignatureStyle, CustomThemeSettings } from '@/types'
 import { ACCENT_SUGGESTIONS } from '@/lib/theme/accentSuggestions'
 import { resolveAccent } from '@/lib/theme/accent'
 import { ensureReadableTextColor } from '@/lib/theme/deriveSurfaces'
@@ -9,11 +9,60 @@ import { oklchToHex } from '@/lib/theme/color'
 import { FONT_DUOS, FONT_DUO_IDS } from '@/lib/theme/fontDuos'
 import { GALLERY_THEMES, GALLERY_THEME_IDS, type BackgroundTreatment } from '@/lib/theme/galleryThemes'
 import { resolveAppearanceBackground } from '@/lib/theme/resolveAppearance'
-import { BUTTON_STYLE_LABELS, HEADER_LAYOUT_LABELS, customSettingsFromTheme } from '@/lib/theme/appearance'
+import { shapeTokens } from '@/lib/theme/shape'
+import {
+  BUTTON_STYLE_LABELS,
+  HEADER_LAYOUT_LABELS,
+  SHAPE_LANGUAGE_LABELS,
+  SIGNATURE_STYLE_LABELS,
+  customSettingsFromTheme,
+} from '@/lib/theme/appearance'
 
 const ADJUSTED_NOTICE_DURATION_MS = 4000
 const BUTTON_STYLES: ButtonStyle[] = ['solid', 'outline', 'elevated']
 const HEADER_LAYOUTS: HeaderLayout[] = ['classic', 'banner', 'seal']
+const SHAPE_LANGUAGES: ShapeLanguage[] = ['sharp', 'soft', 'pill']
+const SIGNATURE_STYLES: SignatureStyle[] = ['plain', 'stamp']
+
+// Miniature "carte + bouton" dans le langage donné (personnalisation
+// avancée, Phase 1) — un nom seul ('Net'/'Doux'/'Pilule') ne dit rien de
+// l'effet réel, contrairement au style de boutons ou au layout d'en-tête,
+// dont le nom seul se comprend déjà à peu près. Rayons calculés directement
+// depuis shapeTokens(), jamais via var(--radius-*) : les trois options
+// doivent s'afficher simultanément, indépendamment de celle actuellement
+// appliquée à l'aperçu.
+function ShapePreview({ shape }: { shape: ShapeLanguage }) {
+  const tokens = shapeTokens(shape)
+  return (
+    <div className="flex items-end gap-1.5 mb-2" aria-hidden="true">
+      <div className="h-7 w-9 border border-ink-raised bg-ink" style={{ borderRadius: tokens.lg }} />
+      <div className="h-3.5 w-6 bg-accent" style={{ borderRadius: tokens.sm }} />
+    </div>
+  )
+}
+
+// Même logique que ShapePreview ci-dessus, pour la signature (Phase 4) —
+// « Aa » comme échantillon, pas la vraie signature de la personne : ce
+// sélecteur montre la FORME du traitement, une miniature n'a pas besoin de
+// citer un vrai texte pour ça.
+function SignaturePreview({ style }: { style: SignatureStyle }) {
+  if (style === 'stamp') {
+    return (
+      <p
+        className="italic text-[10px] font-mono border px-2 py-1 mb-1"
+        style={{ borderColor: 'var(--accent)', transform: 'rotate(-4deg)' }}
+        aria-hidden="true"
+      >
+        « Aa »
+      </p>
+    )
+  }
+  return (
+    <p className="italic text-[10px] text-muted mb-1" aria-hidden="true">
+      « Aa »
+    </p>
+  )
+}
 
 function treatmentPreviewStyle(treatment: BackgroundTreatment): React.CSSProperties {
   if (treatment.kind === 'flat') return { background: treatment.base }
@@ -314,6 +363,44 @@ function ThemeGallerySection() {
                   style={{ borderColor: appearance.settings.headerLayout === layout ? 'var(--accent)' : 'var(--ink-raised)' }}
                 >
                   {HEADER_LAYOUT_LABELS[layout]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="text-label uppercase tracking-label text-muted block mb-2">Langage de forme</span>
+            <div className="grid grid-cols-3 gap-2">
+              {SHAPE_LANGUAGES.map((shape) => (
+                <button
+                  key={shape}
+                  type="button"
+                  onClick={() => updateSettings({ shape })}
+                  aria-pressed={appearance.settings.shape === shape}
+                  className="rounded-md border p-2 flex flex-col items-center text-sm"
+                  style={{ borderColor: appearance.settings.shape === shape ? 'var(--accent)' : 'var(--ink-raised)' }}
+                >
+                  <ShapePreview shape={shape} />
+                  {SHAPE_LANGUAGE_LABELS[shape]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="text-label uppercase tracking-label text-muted block mb-2">Style de signature</span>
+            <div className="grid grid-cols-2 gap-2">
+              {SIGNATURE_STYLES.map((style) => (
+                <button
+                  key={style}
+                  type="button"
+                  onClick={() => updateSettings({ signatureStyle: style })}
+                  aria-pressed={appearance.settings.signatureStyle === style}
+                  className="rounded-md border p-2 flex flex-col items-center text-sm"
+                  style={{ borderColor: appearance.settings.signatureStyle === style ? 'var(--accent)' : 'var(--ink-raised)' }}
+                >
+                  <SignaturePreview style={style} />
+                  {SIGNATURE_STYLE_LABELS[style]}
                 </button>
               ))}
             </div>

@@ -193,7 +193,7 @@ export default function AllocationSection({ domain, holdings, accent, background
                 type="button"
                 onClick={() => setActive(active === i ? null : i)}
                 aria-pressed={active === i}
-                className="w-full min-h-9 flex items-center gap-2 text-sm rounded-md px-1.5 -mx-1.5 focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+                className="w-full min-h-9 flex items-center gap-2 text-sm rounded-[var(--radius-sm)] px-1.5 -mx-1.5 focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
                 style={{ background: active === i ? 'var(--accent-subtle)' : 'transparent' }}
               >
                 <span className="size-2.5 rounded-full shrink-0" style={{ background: shades[i] }} aria-hidden="true" />

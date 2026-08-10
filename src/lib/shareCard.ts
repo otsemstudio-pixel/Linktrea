@@ -5,9 +5,10 @@
 // strokeStyle dans les navigateurs modernes — pas besoin de dupliquer la
 // dérivation de couleur ici, juste de lire ce qui est déjà à l'écran.
 import type { Profile } from '@/types'
+import type { QrMatrix } from './qrcode'
 import { sortedHoldings, yearsOfExperience, initials } from './deriveStats'
 import { guillochePaths, GUILLOCHE_EXTENT } from './svg/guilloche'
-import { FONT_DUOS } from './theme/fontDuos'
+import { FONT_DUOS, type FontDuoDefinition } from './theme/fontDuos'
 import { resolveAppearanceBackground, resolveAppearanceFontDuo } from './theme/resolveAppearance'
 import { slugify } from './slug'
 import { VOCABULARY } from './vocabulary'
@@ -15,6 +16,11 @@ import { VOCABULARY } from './vocabulary'
 const SIZE = 1080
 const MARGIN = 90
 const MAX_TEXT_WIDTH = SIZE - MARGIN * 2
+// Dupliquée depuis qrcode.ts (pas importée) : un import de valeur depuis ce
+// module tirerait qrcode-generator dans le chunk de shareCard.ts, partagé
+// avec ActionBar.tsx (page publique) — la bibliothèque QR ne doit rester que
+// dans le chunk de l'éditeur, jamais alourdir le chargement de tout visiteur.
+const QUIET_ZONE_MODULES = 4
 
 function readThemeColor(name: string, fallback: string): string {
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
@@ -61,32 +67,32 @@ async function ensureFontsLoaded(titleFamily: string, monoFamily: string): Promi
   await document.fonts.ready
 }
 
-export async function generateShareCard(profile: Profile): Promise<Blob> {
-  const canvas = document.createElement('canvas')
-  canvas.width = SIZE
-  canvas.height = SIZE
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error("Le navigateur ne permet pas de générer la carte.")
+type CardColors = { bg: string; surface1: string; fg: string; muted: string; accent: string }
 
-  const bg = readThemeColor('--surface-0', '#0d0e0c')
-  const surface1 = readThemeColor('--surface-1', '#181917')
-  const fg = readThemeColor('--fg', '#e7e8e7')
-  const muted = readThemeColor('--fg-muted', '#7a7b79')
-  const accent = readThemeColor('--accent', '#e4a93c')
+function readCardColors(): CardColors {
+  return {
+    bg: readThemeColor('--surface-0', '#0d0e0c'),
+    surface1: readThemeColor('--surface-1', '#181917'),
+    fg: readThemeColor('--fg', '#e7e8e7'),
+    muted: readThemeColor('--fg-muted', '#7a7b79'),
+    accent: readThemeColor('--accent', '#e4a93c'),
+  }
+}
 
-  // Le duo réellement affiché dépend du thème (Galerie ou Personnalisé), pas
-  // de l'ancien champ plat theme.fontDuo — voir resolveAppearanceFontDuo,
-  // même source que useAppliedTheme, pour que la carte exportée corresponde
-  // exactement à ce que le visiteur voit sur la page.
-  const duo = FONT_DUOS[resolveAppearanceFontDuo(profile.appearance).pageFontDuo]
-  await ensureFontsLoaded(duo.titleFamily, duo.monoFamily)
+// En-tête commun aux deux cartes exportables (fond, guillochis, médaillon,
+// nom, headline) — extrait pour que la carte QR (personnalisation avancée,
+// Phase 3) réutilise ce pipeline existant plutôt que d'en écrire un second :
+// seul le contenu SOUS l'en-tête diffère (chiffre clé + compétences pour la
+// carte de partage, QR code pour l'autre). Renvoie le y courant, le contenu
+// appelant reprenant le dessin à partir de là.
+async function drawCardHeader(ctx: CanvasRenderingContext2D, profile: Profile, colors: CardColors, duo: FontDuoDefinition): Promise<number> {
+  const { bg, surface1, fg, muted, accent } = colors
 
   // Fond — reflète le vrai traitement du thème actif (Phase 2 : aplat,
   // dégradé ou texture), pas seulement --surface-0. Pour aplat et texture,
   // --surface-0 EST déjà la couleur de base exacte (deriveSurfaceTokens ne
   // la modifie pas), donc `bg` suffit ; seul le dégradé (Bourse, Lingot,
-  // Rente) a besoin d'un vrai gradient canvas — sinon la carte exportée
-  // pour ces thèmes affichait un aplat sans rapport avec la page.
+  // Rente) a besoin d'un vrai gradient canvas.
   const backgroundTreatment = resolveAppearanceBackground(profile.appearance).treatment
   if (backgroundTreatment.kind === 'gradient') {
     const gradient = ctx.createLinearGradient(0, 0, 0, SIZE)
@@ -99,8 +105,8 @@ export async function generateShareCard(profile: Profile): Promise<Blob> {
   ctx.fillRect(0, 0, SIZE, SIZE)
 
   // Guillochis — même signature visuelle que l'en-tête et les sceaux
-  // (Phase 3), à peine plus marquée ici puisque la carte EST le document,
-  // pas un simple fond de page.
+  // (Phase 3 de la refonte design), à peine plus marquée ici puisque la
+  // carte EST le document, pas un simple fond de page.
   ctx.save()
   ctx.globalAlpha = 0.08
   ctx.strokeStyle = accent
@@ -165,6 +171,28 @@ export async function generateShareCard(profile: Profile): Promise<Blob> {
     ctx.fillText(headline, SIZE / 2, y)
   }
 
+  return y
+}
+
+export async function generateShareCard(profile: Profile): Promise<Blob> {
+  const canvas = document.createElement('canvas')
+  canvas.width = SIZE
+  canvas.height = SIZE
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error("Le navigateur ne permet pas de générer la carte.")
+
+  const colors = readCardColors()
+  const { fg, muted, accent } = colors
+
+  // Le duo réellement affiché dépend du thème (Galerie ou Personnalisé), pas
+  // de l'ancien champ plat theme.fontDuo — voir resolveAppearanceFontDuo,
+  // même source que useAppliedTheme, pour que la carte exportée corresponde
+  // exactement à ce que le visiteur voit sur la page.
+  const duo = FONT_DUOS[resolveAppearanceFontDuo(profile.appearance).pageFontDuo]
+  await ensureFontsLoaded(duo.titleFamily, duo.monoFamily)
+
+  let y = await drawCardHeader(ctx, profile, colors, duo)
+
   // Chiffre clé
   y += 150
   const years = yearsOfExperience(profile.positions)
@@ -186,7 +214,7 @@ export async function generateShareCard(profile: Profile): Promise<Blob> {
 
   // Filet horizontal façon relevé de compte, pour occuper intentionnellement
   // l'espace entre le contenu et le pied de carte plutôt que le laisser vide.
-  ctx.strokeStyle = surface1
+  ctx.strokeStyle = colors.surface1
   ctx.lineWidth = 2
   ctx.beginPath()
   ctx.moveTo(SIZE / 2 - 120, SIZE - 170)
@@ -219,6 +247,74 @@ export async function downloadShareCard(profile: Profile): Promise<void> {
   const a = document.createElement('a')
   a.href = objectUrl
   a.download = `ledger-${slugify(profile.identity.fullName) || 'profil'}.png`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(objectUrl)
+}
+
+// Carte combinée nom + photo + QR code (personnalisation avancée, Phase 3) —
+// même en-tête que generateShareCard (drawCardHeader), contenu du bas
+// remplacé par le QR vers publicUrl plutôt que par le chiffre clé. Le QR est
+// dessiné à une taille et une position FIXES, indépendantes du y renvoyé par
+// l'en-tête : un nom sur deux lignes ne doit jamais faire toucher le QR au
+// pied de carte, mieux vaut une zone dédiée qu'un calcul dépendant d'un
+// contenu de longueur imprévisible.
+export async function generateQrCard(profile: Profile, matrix: QrMatrix, moduleColor: string, publicUrl: string): Promise<Blob> {
+  const canvas = document.createElement('canvas')
+  canvas.width = SIZE
+  canvas.height = SIZE
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error("Le navigateur ne permet pas de générer la carte.")
+
+  const colors = readCardColors()
+  const { muted, accent } = colors
+
+  const duo = FONT_DUOS[resolveAppearanceFontDuo(profile.appearance).pageFontDuo]
+  await ensureFontsLoaded(duo.titleFamily, duo.monoFamily)
+
+  await drawCardHeader(ctx, profile, colors, duo)
+
+  const quietTotal = matrix.length + QUIET_ZONE_MODULES * 2
+  const qrSize = 560
+  const cell = qrSize / quietTotal
+  const qrTop = SIZE - 190 - qrSize
+  const qrLeft = (SIZE - qrSize) / 2
+
+  ctx.fillStyle = moduleColor
+  matrix.forEach((row, r) => {
+    row.forEach((dark, c) => {
+      if (!dark) return
+      ctx.fillRect(qrLeft + (c + QUIET_ZONE_MODULES) * cell, qrTop + (r + QUIET_ZONE_MODULES) * cell, cell, cell)
+    })
+  })
+
+  ctx.textAlign = 'center'
+  ctx.fillStyle = accent
+  ctx.font = `600 22px "${duo.monoFamily}"`
+  ctx.fillText('LEDGER', SIZE / 2, SIZE - 118)
+
+  // publicUrl plutôt que window.location.href (voir generateShareCard) : ce
+  // générateur reçoit déjà l'URL publique exacte encodée dans le QR — pas de
+  // raison de relire l'URL de la page courante (celle de l'éditeur, pas du
+  // profil) alors qu'on a la bonne valeur sous la main.
+  const urlText = publicUrl.replace(/^https?:\/\//, '')
+  const urlSize = fitFontSize(ctx, urlText, duo.monoFamily, 400, 26, 16, MAX_TEXT_WIDTH)
+  ctx.fillStyle = muted
+  ctx.font = `400 ${urlSize}px "${duo.monoFamily}"`
+  ctx.fillText(urlText, SIZE / 2, SIZE - 70)
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob a échoué'))), 'image/png')
+  })
+}
+
+export async function downloadQrCard(profile: Profile, matrix: QrMatrix, moduleColor: string, publicUrl: string): Promise<void> {
+  const blob = await generateQrCard(profile, matrix, moduleColor, publicUrl)
+  const objectUrl = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = objectUrl
+  a.download = `ledger-qr-carte-${slugify(profile.identity.fullName) || 'profil'}.png`
   document.body.appendChild(a)
   a.click()
   a.remove()

@@ -6,6 +6,7 @@ import { resizePhotoToWebP } from '@/lib/photo'
 import TextField from './fields/TextField'
 import TextAreaField from './fields/TextAreaField'
 import SelectField from './fields/SelectField'
+import PhotoTreatmentPicker from './PhotoTreatmentPicker'
 
 const AVAILABILITY_OPTIONS = [
   { value: 'open', label: 'Ouvert aux missions' },
@@ -66,6 +67,8 @@ export default function IdentitySection() {
         {photoError && <p className="mt-2 text-xs text-down">{photoError}</p>}
       </div>
 
+      <PhotoTreatmentPicker />
+
       <TextField
         label="Nom complet"
         registration={register('identity.fullName')}
@@ -94,6 +97,13 @@ export default function IdentitySection() {
         maxLength={280}
         rows={4}
         placeholder="Analyste financière spécialisée en modélisation et allocation de portefeuille. 8 ans à accompagner PME et institutionnels sur la BRVM."
+      />
+      <TextField
+        label="Signature"
+        registration={register('identity.signature')}
+        placeholder="La rigueur avant la vitesse."
+        maxLength={120}
+        error={formState.errors.identity?.signature?.message}
       />
       <SelectField label="Disponibilité" registration={register('identity.availability')} options={AVAILABILITY_OPTIONS} />
     </>

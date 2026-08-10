@@ -91,11 +91,11 @@ export default function KeyMetric({ domain, years, positionsCount, holdingsCount
 
   return (
     <section className="px-6 py-4 @min-[1024px]:px-0">
-      <div className="rounded-lg border border-ink-raised bg-ink-raised/50 p-5">
+      <div className="rounded-[var(--radius-lg)] border border-ink-raised bg-ink-raised/50 p-5">
         <div className="flex items-start justify-between gap-3">
           <p className="text-label uppercase tracking-label text-muted pt-1">{vocabulary.keyMetric}</p>
           {positionsCount > 0 && (
-            <span className="inline-flex items-center gap-1 min-h-7 px-2.5 rounded-full bg-up/15 text-up text-xs font-mono font-medium shrink-0">
+            <span className="inline-flex items-center gap-1 min-h-7 px-2.5 rounded-[var(--radius-sm)] bg-up/15 text-up text-xs font-mono font-medium shrink-0">
               ▲ {positionsCount} {positionsCount > 1 ? 'postes' : 'poste'}
             </span>
           )}
@@ -108,7 +108,7 @@ export default function KeyMetric({ domain, years, positionsCount, holdingsCount
           {hasHoldings ? `${holdingsCount} compétence${holdingsCount > 1 ? 's' : ''} recensée${holdingsCount > 1 ? 's' : ''}` : ' '}
         </p>
 
-        <div className="mt-3 rounded-md bg-ink/60 px-2 pt-3 pb-1">
+        <div className="mt-3 rounded-[var(--radius-sm)] bg-ink/60 px-2 pt-3 pb-1">
           {hasHoldings ? (
             <Sparkline trend={trend} />
           ) : (

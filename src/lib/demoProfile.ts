@@ -8,7 +8,9 @@ export const demoProfile: Profile = {
     location: 'Abidjan, Côte d’Ivoire',
     bio: 'Analyste financière spécialisée en modélisation et allocation de portefeuille. 8 ans à accompagner PME et institutionnels sur la BRVM et les marchés obligataires ouest-africains.',
     photo: null,
+    photoTreatment: 'none',
     availability: 'open',
+    signature: '',
   },
   positions: [
     {

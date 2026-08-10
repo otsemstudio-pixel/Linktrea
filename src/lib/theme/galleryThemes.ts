@@ -10,7 +10,7 @@
 // les thèmes ne proposent pas de réglage de couleur de bouton indépendant,
 // contrairement au mode Personnalisé). Layout d'en-tête choisi parmi les 3 de
 // IdentityHeader.tsx, même logique.
-import type { GalleryThemeId, FontDuoId, ButtonStyle, HeaderLayout } from '@/types'
+import type { GalleryThemeId, FontDuoId, ButtonStyle, HeaderLayout, ShapeLanguage, SignatureStyle } from '@/types'
 
 export type BackgroundTreatment =
   | { kind: 'flat'; base: string }
@@ -35,6 +35,15 @@ export type GalleryThemeMeta = {
   buttonStyle: ButtonStyle
   // Même logique pour le layout de la zone photo + identité.
   headerLayout: HeaderLayout
+  // Même logique pour le langage de forme (personnalisation avancée,
+  // Phase 1) — choisi pour l'intention du thème, pas pour coller à une
+  // répartition égale entre les trois valeurs (voir ShapeLanguage).
+  shape: ShapeLanguage
+  // Même logique pour la variante de signature (personnalisation avancée,
+  // Phase 4) — 'stamp' réservé aux thèmes du registre "document officiel"
+  // (voir le prompt : "Sceau", "Réserve", proche du certificat), jamais
+  // systématique.
+  signatureStyle: SignatureStyle
   // null = pas de fond animé pour ce thème — la variété inclut aussi le
   // calme, réservé à 3-4 thèmes seulement (prompt v2, Phase 6). Un thème qui
   // en a un l'affiche par défaut ; l'interrupteur "Fond animé" de l'éditeur
@@ -52,6 +61,8 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     fontDuo: 'suisse',
     buttonStyle: 'solid',
     headerLayout: 'classic',
+    shape: 'soft',
+    signatureStyle: 'plain',
     animationKind: null,
   },
   bourse: {
@@ -61,6 +72,8 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     fontDuo: 'technique',
     buttonStyle: 'elevated',
     headerLayout: 'banner',
+    shape: 'pill',
+    signatureStyle: 'plain',
     animationKind: null,
   },
   capital: {
@@ -70,6 +83,8 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     fontDuo: 'institutionnel',
     buttonStyle: 'solid',
     headerLayout: 'classic',
+    shape: 'sharp',
+    signatureStyle: 'plain',
     animationKind: null,
   },
   sceau: {
@@ -81,6 +96,8 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     // Le nom du thème et celui du layout coïncident — pas une coïncidence :
     // c'est le pairing le plus évident du registre "document officiel".
     headerLayout: 'seal',
+    shape: 'sharp',
+    signatureStyle: 'stamp',
     animationKind: null,
   },
   lingot: {
@@ -90,6 +107,10 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     fontDuo: 'elegant',
     buttonStyle: 'elevated',
     headerLayout: 'banner',
+    // Lingot : bloc rectangulaire net, pas arrondi — cohérent avec l'objet
+    // lui-même plutôt qu'avec le duo "elegant".
+    shape: 'sharp',
+    signatureStyle: 'plain',
     animationKind: null,
   },
   devise: {
@@ -99,6 +120,8 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     fontDuo: 'geometrique',
     buttonStyle: 'outline',
     headerLayout: 'classic',
+    shape: 'soft',
+    signatureStyle: 'plain',
     animationKind: null,
   },
   titre: {
@@ -110,6 +133,8 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     // "Titre" comme titre de propriété/certificat — le cadre en sceau
     // renforce ce sens plutôt que le sens boursier du mot.
     headerLayout: 'seal',
+    shape: 'soft',
+    signatureStyle: 'stamp',
     animationKind: null,
   },
   reserve: {
@@ -119,6 +144,8 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     fontDuo: 'brut',
     buttonStyle: 'solid',
     headerLayout: 'classic',
+    shape: 'sharp',
+    signatureStyle: 'stamp',
     animationKind: null,
   },
   // Les 4 thèmes suivants sont les candidats "3-4 thèmes" du prompt pour un
@@ -131,6 +158,8 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     fontDuo: 'machine',
     buttonStyle: 'solid',
     headerLayout: 'seal',
+    shape: 'sharp',
+    signatureStyle: 'stamp',
     animationKind: 'guilloche',
   },
   rente: {
@@ -140,6 +169,8 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     fontDuo: 'humaniste',
     buttonStyle: 'elevated',
     headerLayout: 'banner',
+    shape: 'pill',
+    signatureStyle: 'plain',
     animationKind: 'breath',
   },
   placement: {
@@ -149,6 +180,8 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     fontDuo: 'compact',
     buttonStyle: 'solid',
     headerLayout: 'classic',
+    shape: 'pill',
+    signatureStyle: 'plain',
     animationKind: 'sparkline',
   },
   guilde: {
@@ -158,6 +191,8 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     fontDuo: 'terminal',
     buttonStyle: 'outline',
     headerLayout: 'banner',
+    shape: 'pill',
+    signatureStyle: 'plain',
     animationKind: 'noise',
   },
 }

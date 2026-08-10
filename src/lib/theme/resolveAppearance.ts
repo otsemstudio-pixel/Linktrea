@@ -3,7 +3,7 @@
 // branches de l'union, pour que le reste de l'app manipule une couleur de
 // fond ordinaire plutôt que de re-brancher un if/else 'gallery'/'custom'
 // partout où le fond est nécessaire.
-import type { AppearanceConfig, FontDuoId, HeaderLayout } from '@/types'
+import type { AppearanceConfig, FontDuoId, HeaderLayout, SignatureStyle } from '@/types'
 import { hexToOklch } from './color'
 import { GALLERY_THEMES } from './galleryThemes'
 import type { BackgroundTreatment, AnimatedBackgroundKind } from './galleryThemes'
@@ -52,6 +52,13 @@ export function resolveAppearanceFontDuo(appearance: AppearanceConfig): Resolved
 export function resolveAppearanceHeaderLayout(appearance: AppearanceConfig): HeaderLayout {
   if (appearance.kind === 'gallery') return GALLERY_THEMES[appearance.themeId].headerLayout
   return appearance.settings.headerLayout
+}
+
+// Variante de signature (personnalisation avancée, Phase 4) — même logique
+// à deux niveaux que le layout d'en-tête ci-dessus.
+export function resolveAppearanceSignatureStyle(appearance: AppearanceConfig): SignatureStyle {
+  if (appearance.kind === 'gallery') return GALLERY_THEMES[appearance.themeId].signatureStyle
+  return appearance.settings.signatureStyle
 }
 
 export type ResolvedAnimation = {
