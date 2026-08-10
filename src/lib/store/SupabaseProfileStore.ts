@@ -156,9 +156,29 @@ export class SupabaseProfileStore implements ProfileStore {
   // point d'entrée serveur dédié. Elle supprime la ligne auth.users, dont la
   // contrainte "references auth.users on delete cascade" sur profiles.id
   // fait disparaître public.profiles automatiquement — pas la peine de la
-  // dupliquer ici.
+  // dupliquer ici. Storage n'est en revanche couvert par aucun cascade : sans
+  // suppression explicite, l'avatar du bucket "avatars" resterait orphelin.
   async deleteAccount(): Promise<void> {
+    const userId = await requireUserId()
+
+    // Best effort : un fichier déjà absent ou une erreur Storage ne doit
+    // jamais bloquer la suppression du compte, seule opération réellement
+    // critique ici — au pire un avatar orphelin, jamais un compte qu'on ne
+    // peut plus supprimer.
+    const { error: storageError } = await supabase.storage.from('avatars').remove([`${userId}/avatar.webp`])
+    if (storageError) {
+      console.warn("Suppression de l'avatar Storage échouée (compte supprimé quand même) :", storageError.message)
+    }
+
     const { error } = await supabase.rpc('delete_own_account')
     if (error) throw mapError(error, 'La suppression du compte a échoué. Réessaie dans un instant.')
+
+    // Le RPC vient de supprimer auth.users : ce token n'a plus rien à
+    // désigner côté serveur. Scope 'local' seulement (pas signOutEverywhere) :
+    // il n'y a plus de session serveur à révoquer pour cet utilisateur, donc
+    // pas la peine d'attendre un aller-retour réseau avant de vider le
+    // storage local — AccountSection appelle ensuite signOutEverywhere() pour
+    // le reste du flux (état AuthContext, redirection).
+    await supabase.auth.signOut({ scope: 'local' })
   }
 }
