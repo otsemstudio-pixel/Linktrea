@@ -3,6 +3,7 @@ import { useFormContext, useWatch } from 'react-hook-form'
 import { Upload, X } from 'lucide-react'
 import type { Profile } from '@/types'
 import { resizePhotoToWebP } from '@/lib/photo'
+import { useCoachmarkTarget } from '@/lib/coachmark/CoachmarkContext'
 import TextField from './fields/TextField'
 import TextAreaField from './fields/TextAreaField'
 import SelectField from './fields/SelectField'
@@ -20,6 +21,8 @@ export default function IdentitySection() {
   const photo = useWatch({ control, name: 'identity.photo' })
   const [photoError, setPhotoError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const photoTargetRef = useCoachmarkTarget('photo')
+  const availabilityTargetRef = useCoachmarkTarget('availability')
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -36,7 +39,7 @@ export default function IdentitySection() {
 
   return (
     <>
-      <div className="mb-5">
+      <div className="mb-5" ref={photoTargetRef}>
         <span className="text-label uppercase tracking-label text-muted block mb-2">Photo</span>
         <div className="flex items-center gap-3">
           {photo ? (
@@ -105,7 +108,9 @@ export default function IdentitySection() {
         maxLength={120}
         error={formState.errors.identity?.signature?.message}
       />
-      <SelectField label="Disponibilité" registration={register('identity.availability')} options={AVAILABILITY_OPTIONS} />
+      <div ref={availabilityTargetRef}>
+        <SelectField label="Disponibilité" registration={register('identity.availability')} options={AVAILABILITY_OPTIONS} />
+      </div>
     </>
   )
 }

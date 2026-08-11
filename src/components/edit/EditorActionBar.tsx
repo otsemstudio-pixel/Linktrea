@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { Eye, Link2, Download, Upload } from 'lucide-react'
 import type { Profile } from '@/types'
 import { downloadProfileJson, parseProfileJson } from '@/lib/exportImport'
+import { useCoachmarkTarget } from '@/lib/coachmark/CoachmarkContext'
 
 type Props = {
   profile: Profile
@@ -13,6 +14,9 @@ type Props = {
 export default function EditorActionBar({ profile, onPreview, onGenerateLink, onImport }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importError, setImportError] = useState<string | null>(null)
+  // Cible "preview-mobile" du tuto (voir steps.ts) — voir DesktopPreviewPanel.tsx
+  // pour la cible alternative "preview-desktop", jamais visible en même temps.
+  const previewTargetRef = useCoachmarkTarget('preview-mobile')
 
   async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -34,6 +38,7 @@ export default function EditorActionBar({ profile, onPreview, onGenerateLink, on
       <div className="grid grid-cols-4 lg:grid-cols-3 gap-1 p-2 lg:mx-auto lg:max-w-[1400px] lg:px-8">
         {/* Redondant en desktop : l'aperçu est déjà visible en direct dans le panneau de droite. */}
         <button
+          ref={previewTargetRef}
           type="button"
           onClick={onPreview}
           className="lg:hidden min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md text-xs text-muted focus-visible:outline-2 focus-visible:outline-accent"

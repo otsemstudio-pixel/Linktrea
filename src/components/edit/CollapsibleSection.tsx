@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { ChevronDown } from 'lucide-react'
 import { useMotionPrefs } from '@/lib/motion/MotionPrefsContext'
+import { useCoachmarkTarget, useCoachmarkActivator } from '@/lib/coachmark/CoachmarkContext'
 
 type Props = {
   title: string
@@ -13,15 +14,23 @@ type Props = {
   count?: number
   defaultOpen?: boolean
   children: ReactNode
+  // Identifiant utilisé par le tuto en coachmarks (voir
+  // src/lib/coachmark/) pour désigner le bouton d'en-tête ET ouvrir
+  // automatiquement la section avant de la cibler si elle est repliée —
+  // undefined = section non ciblable par le tuto, comportement inchangé.
+  coachmarkId?: string
 }
 
-export default function CollapsibleSection({ title, subtitle, count, defaultOpen = false, children }: Props) {
+export default function CollapsibleSection({ title, subtitle, count, defaultOpen = false, children, coachmarkId }: Props) {
   const [open, setOpen] = useState(defaultOpen)
   const { reduced } = useMotionPrefs()
+  const targetRef = useCoachmarkTarget(coachmarkId)
+  useCoachmarkActivator(coachmarkId, () => setOpen(true))
 
   return (
     <section className="border-b border-ink-raised">
       <button
+        ref={targetRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}

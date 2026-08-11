@@ -7,6 +7,12 @@ import { createEmptyProfile } from '@/lib/emptyProfile'
 import { getProfileStore } from '@/lib/store'
 import { useProfileStoreAutosave } from '@/lib/store/useProfileStoreAutosave'
 import { MotionPrefsProvider } from '@/lib/motion/MotionPrefsContext'
+import { CoachmarkProvider } from '@/lib/coachmark/CoachmarkContext'
+import { markTutorialSeen } from '@/lib/coachmark/tutorialSeen'
+import { buildCoachmarkSteps } from '@/lib/coachmark/steps'
+import CoachmarkOverlay from '@/components/coachmark/CoachmarkOverlay'
+import CoachmarkAutoStart from '@/components/coachmark/CoachmarkAutoStart'
+import CoachmarkHelpButton from '@/components/coachmark/CoachmarkHelpButton'
 import CollapsibleSection from '@/components/edit/CollapsibleSection'
 import IdentitySection from '@/components/edit/IdentitySection'
 import PublishSection from '@/components/edit/PublishSection'
@@ -45,6 +51,10 @@ export default function EditPage() {
   } = methods
   const profile = useWatch({ control }) as Profile
   const { status: saveStatus, error: saveError } = useProfileStoreAutosave(profile)
+  // ?? 'finance' — même garde que activeAccent/activeAppearance ci-dessous :
+  // useWatch peut renvoyer un profil encore incomplet pendant un bref
+  // instant après que isLoading passe à faux.
+  const coachmarkSteps = buildCoachmarkSteps(profile.domain ?? 'finance')
 
   const [previewOpen, setPreviewOpen] = useState(false)
   const [linkModalOpen, setLinkModalOpen] = useState(false)
@@ -71,78 +81,84 @@ export default function EditPage() {
 
   return (
     <MotionPrefsProvider themeMotion={profile.theme?.motion ?? 'full'}>
-      <FormProvider {...methods}>
-        <div className="min-h-dvh bg-ink text-paper font-sans pb-24 lg:pb-10">
-          <div className="lg:mx-auto lg:flex lg:max-w-[1400px] lg:items-start lg:gap-8 lg:px-8 lg:pt-8">
-            <div className="lg:min-w-0 lg:flex-1">
-              <header className="px-4 py-4 flex justify-between items-center border-b border-ink-raised lg:border lg:rounded-lg lg:px-5 lg:mb-4">
-                <h1 className="font-medium">Éditeur</h1>
-                <div className="flex items-center gap-3">
-                  <span className={`text-xs ${saveStatus === 'error' ? 'text-down' : 'text-muted'}`}>
-                    {saveStatus === 'saved' && 'Enregistré'}
-                    {saveStatus === 'error' && saveError}
-                  </span>
-                  {STORAGE_MODE === 'supabase' && (
-                    <button
-                      type="button"
-                      onClick={() => void signOut()}
-                      className="min-h-11 px-3 text-xs text-muted rounded-md focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
-                    >
-                      Déconnexion
-                    </button>
-                  )}
-                </div>
-              </header>
+      <CoachmarkProvider onFinish={markTutorialSeen}>
+        <FormProvider {...methods}>
+          <div className="min-h-dvh bg-ink text-paper font-sans pb-24 lg:pb-10">
+            <div className="lg:mx-auto lg:flex lg:max-w-[1400px] lg:items-start lg:gap-8 lg:px-8 lg:pt-8">
+              <div className="lg:min-w-0 lg:flex-1">
+                <header className="px-4 py-4 flex justify-between items-center border-b border-ink-raised lg:border lg:rounded-lg lg:px-5 lg:mb-4">
+                  <h1 className="font-medium">Éditeur</h1>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-xs ${saveStatus === 'error' ? 'text-down' : 'text-muted'}`}>
+                      {saveStatus === 'saved' && 'Enregistré'}
+                      {saveStatus === 'error' && saveError}
+                    </span>
+                    <CoachmarkHelpButton steps={coachmarkSteps} />
+                    {STORAGE_MODE === 'supabase' && (
+                      <button
+                        type="button"
+                        onClick={() => void signOut()}
+                        className="min-h-11 px-3 text-xs text-muted rounded-md focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+                      >
+                        Déconnexion
+                      </button>
+                    )}
+                  </div>
+                </header>
 
-              <main>
-                <form onSubmit={(e) => e.preventDefault()} className="lg:border lg:rounded-lg">
-                  <CollapsibleSection title="Identité" defaultOpen>
-                    <IdentitySection />
-                  </CollapsibleSection>
-                  <CollapsibleSection title="Publier">
-                    <PublishSection />
-                  </CollapsibleSection>
-                  <CollapsibleSection title="Positions" count={profile.positions?.length ?? 0}>
-                    <PositionsSection />
-                  </CollapsibleSection>
-                  <CollapsibleSection title="Compétences" count={profile.holdings?.length ?? 0}>
-                    <HoldingsSection />
-                  </CollapsibleSection>
-                  <CollapsibleSection title="Certificats" count={profile.certificates?.length ?? 0}>
-                    <CertificatesSection />
-                  </CollapsibleSection>
-                  <CollapsibleSection title="Réseaux" count={profile.tickers?.length ?? 0}>
-                    <TickersSection />
-                  </CollapsibleSection>
-                  <CollapsibleSection title="Apparence">
-                    <AppearanceSection />
-                  </CollapsibleSection>
-                  {/* Pas de vrai compte à supprimer en mode local (voir
-                      LOCAL_DEV_USER dans AuthContext.tsx) — même garde que
-                      le bouton "Déconnexion" ci-dessus. */}
-                  {STORAGE_MODE === 'supabase' && (
-                    <CollapsibleSection title="Compte">
-                      <AccountSection />
+                <main>
+                  <form onSubmit={(e) => e.preventDefault()} className="lg:border lg:rounded-lg">
+                    <CollapsibleSection title="Identité" defaultOpen coachmarkId="identity">
+                      <IdentitySection />
                     </CollapsibleSection>
-                  )}
-                </form>
-              </main>
+                    <CollapsibleSection title="Publier" coachmarkId="publish">
+                      <PublishSection />
+                    </CollapsibleSection>
+                    <CollapsibleSection title="Positions" count={profile.positions?.length ?? 0} coachmarkId="positions">
+                      <PositionsSection />
+                    </CollapsibleSection>
+                    <CollapsibleSection title="Compétences" count={profile.holdings?.length ?? 0} coachmarkId="holdings">
+                      <HoldingsSection />
+                    </CollapsibleSection>
+                    <CollapsibleSection title="Certificats" count={profile.certificates?.length ?? 0} coachmarkId="certificates">
+                      <CertificatesSection />
+                    </CollapsibleSection>
+                    <CollapsibleSection title="Réseaux" count={profile.tickers?.length ?? 0} coachmarkId="tickers">
+                      <TickersSection />
+                    </CollapsibleSection>
+                    <CollapsibleSection title="Apparence" coachmarkId="appearance">
+                      <AppearanceSection />
+                    </CollapsibleSection>
+                    {/* Pas de vrai compte à supprimer en mode local (voir
+                        LOCAL_DEV_USER dans AuthContext.tsx) — même garde que
+                        le bouton "Déconnexion" ci-dessus. */}
+                    {STORAGE_MODE === 'supabase' && (
+                      <CollapsibleSection title="Compte">
+                        <AccountSection />
+                      </CollapsibleSection>
+                    )}
+                  </form>
+                </main>
+              </div>
+
+              <DesktopPreviewPanel profile={profile} />
             </div>
 
-            <DesktopPreviewPanel profile={profile} />
+            <EditorActionBar
+              profile={profile}
+              onPreview={() => setPreviewOpen(true)}
+              onGenerateLink={() => setLinkModalOpen(true)}
+              onImport={(imported) => reset(imported)}
+            />
           </div>
 
-          <EditorActionBar
-            profile={profile}
-            onPreview={() => setPreviewOpen(true)}
-            onGenerateLink={() => setLinkModalOpen(true)}
-            onImport={(imported) => reset(imported)}
-          />
-        </div>
+          <PreviewOverlay open={previewOpen} profile={profile} onClose={() => setPreviewOpen(false)} />
+          <ShareLinkModal open={linkModalOpen} profile={profile} onClose={() => setLinkModalOpen(false)} />
+        </FormProvider>
 
-        <PreviewOverlay open={previewOpen} profile={profile} onClose={() => setPreviewOpen(false)} />
-        <ShareLinkModal open={linkModalOpen} profile={profile} onClose={() => setLinkModalOpen(false)} />
-      </FormProvider>
+        <CoachmarkAutoStart steps={coachmarkSteps} />
+        <CoachmarkOverlay />
+      </CoachmarkProvider>
     </MotionPrefsProvider>
   )
 }
