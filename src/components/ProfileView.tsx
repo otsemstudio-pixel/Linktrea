@@ -110,10 +110,6 @@ export default function ProfileView({ profile, standalone = true, publicUrl, sta
             <div className="px-6 @min-[1024px]:px-0 mt-1">
               <SignatureQuote signature={profile.identity.signature} style={signatureStyle} />
             </div>
-            <ActionBar profile={profile} publicUrl={publicUrl} staticPosition={staticActionBar} />
-            <p className="px-6 @min-[1024px]:px-0 mt-2 text-xs text-muted text-center @min-[1024px]:text-left">
-              Tous droits réservés à Napps de N'nahssé Group - Jean-David Kouamé
-            </p>
           </Aside>
 
           <Main standalone={standalone} className="@min-[1024px]:min-w-0">
@@ -126,6 +122,28 @@ export default function ProfileView({ profile, standalone = true, publicUrl, sta
             <PositionsHistory domain={profile.domain} positions={profile.positions} />
             <CertificatesRail domain={profile.domain} certificates={profile.certificates} />
           </Main>
+        </div>
+
+        {/* Pied de page RÉEL — hors de la grille ci-dessus, donc toujours le
+            DERNIER élément de la page, quel que soit le contexte : sur tout
+            layout à une seule colonne (mobile réel, panneau d'aperçu étroit
+            de l'éditeur — voir DesktopPreviewPanel.tsx), <Aside> apparaît
+            avant <Main> dans le flux ; y placer Partager/Carte/Carte de
+            visite + la mention de droits les coinçait entre l'identité et
+            "Allocation" plutôt qu'à la fin (retour utilisateur). Le bouton
+            "Partager" reste fixed-bottom sur mobile réel (voir ActionBar.tsx) —
+            sa position CSS ne dépend pas de son ordre dans le DOM, donc ce
+            déplacement ne change rien à ce comportement-là.
+            @min-[1024px]:max-w-[360px] sur le bloc interne : mêmes
+            proportions que l'ancien emplacement dans la colonne de gauche,
+            plutôt qu'un rang de boutons étiré sur toute la largeur (1120px). */}
+        <div className="px-6 @min-[1024px]:px-10 @min-[1024px]:mx-auto @min-[1024px]:max-w-[1120px] mt-10 @min-[1024px]:mt-8">
+          <div className="@min-[1024px]:max-w-[360px]">
+            <ActionBar profile={profile} publicUrl={publicUrl} staticPosition={staticActionBar} />
+            <p className="mt-2 text-xs text-muted text-center @min-[1024px]:text-left">
+              Tous droits réservés à Napps de N'nahssé Group - Jean-David Kouamé
+            </p>
+          </div>
         </div>
       </div>
     </MotionPrefsProvider>
