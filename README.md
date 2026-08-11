@@ -1,4 +1,4 @@
-# Ledger
+# Linktrea
 
 Portfolio personnel à esthétique financière — un profil professionnel présenté
 comme un relevé de portefeuille. 100 % frontend : aucun serveur, aucune base
@@ -40,7 +40,7 @@ par trois canaux complémentaires, chacun avec un rôle différent :
    n'est stocké ailleurs. Un avertissement s'affiche si le lien dépasse
    4000 caractères (certains services le tronqueraient).
 3. **Export / Import JSON** — le bouton "Exporter" télécharge
-   `ledger-data.json` ; "Importer" recharge un fichier dans l'éditeur. C'est
+   `linktrea-data.json` ; "Importer" recharge un fichier dans l'éditeur. C'est
    à la fois une sauvegarde de secours et le mécanisme pour figer un profil
    par défaut (voir ci-dessous).
 
@@ -54,7 +54,7 @@ fausses données de démonstration dans le build de production. Pour que ta
 page affiche *ton* profil par défaut (sans dépendre d'un lien partagé) :
 
 1. Remplis ton profil dans `/edit`.
-2. Clique sur "Exporter" pour télécharger `ledger-data.json`.
+2. Clique sur "Exporter" pour télécharger `linktrea-data.json`.
 3. Renomme ce fichier en `data.json` et place-le dans `public/`.
 4. `npm run build` (ou déploie directement — voir plus bas).
 

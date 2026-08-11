@@ -7,7 +7,7 @@ export function downloadProfileJson(profile: Profile) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = 'ledger-data.json'
+  a.download = 'linktrea-data.json'
   a.click()
   URL.revokeObjectURL(url)
 }

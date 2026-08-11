@@ -656,7 +656,7 @@ async function drawContentStack(
   return y
 }
 
-// Marque "LEDGER" + URL, centrées sur centerX, ancrées par le BAS (baselineY
+// Marque "LINKTREA" + URL, centrées sur centerX, ancrées par le BAS (baselineY
 // = position de la ligne d'URL, la marque vient au-dessus) — plus pratique
 // pour caler un pied de carte à une distance fixe du bord bas, quel que soit
 // ce qu'il y a au-dessus.
@@ -672,7 +672,7 @@ function drawFooter(
   ctx.textAlign = 'center'
   ctx.fillStyle = colors.accent
   ctx.font = `600 22px "${duo.monoFamily}"`
-  ctx.fillText('LEDGER', centerX, baselineY - 48)
+  ctx.fillText('LINKTREA', centerX, baselineY - 48)
 
   const urlSize = fitFontSize(ctx, urlText, duo.monoFamily, 400, 26, 16, maxWidth)
   ctx.fillStyle = colors.muted
@@ -899,7 +899,7 @@ async function composeBusinessCard(
   const footerY = height - padding
   ctx.fillStyle = colors.accent
   ctx.font = `600 20px "${duo.monoFamily}"`
-  ctx.fillText('LEDGER', leftX, footerY - 30)
+  ctx.fillText('LINKTREA', leftX, footerY - 30)
 
   if (publicUrl) {
     const urlText = displayUrl(publicUrl)
@@ -1003,7 +1003,7 @@ export function downloadCanvasBlob(blob: Blob, fileName: string): void {
 
 export async function downloadShareCard(profile: Profile, format: ShareCardFormat, content: ShareCardContent, publicUrl?: string): Promise<void> {
   const blob = await generateShareCard(profile, format, content, publicUrl)
-  downloadCanvasBlob(blob, `ledger-${slugify(profile.identity.fullName) || 'profil'}-${format}.png`)
+  downloadCanvasBlob(blob, `linktrea-${slugify(profile.identity.fullName) || 'profil'}-${format}.png`)
 }
 
 // --- Carte combinée avec QR — API historique (personnalisation avancée,
@@ -1024,5 +1024,5 @@ export async function generateQrCard(profile: Profile, publicUrl: string): Promi
 
 export async function downloadQrCard(profile: Profile, publicUrl: string): Promise<void> {
   const blob = await generateQrCard(profile, publicUrl)
-  downloadCanvasBlob(blob, `ledger-qr-carte-${slugify(profile.identity.fullName) || 'profil'}.png`)
+  downloadCanvasBlob(blob, `linktrea-qr-carte-${slugify(profile.identity.fullName) || 'profil'}.png`)
 }

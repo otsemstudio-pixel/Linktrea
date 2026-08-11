@@ -31,7 +31,7 @@ function setMetaTag(attr: 'name' | 'property', key: string, content: string) {
 export function useDocumentMeta(profile: Profile, enabled = true) {
   useEffect(() => {
     if (!enabled) return
-    const name = profile.identity.fullName || 'Ledger'
+    const name = profile.identity.fullName || 'Linktrea'
     const headline = profile.identity.headline
     const title = headline ? `${name} · ${headline}` : name
     const description = profile.identity.bio || `Portefeuille professionnel de ${name}, présenté façon relevé financier.`

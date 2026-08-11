@@ -111,6 +111,9 @@ export default function ProfileView({ profile, standalone = true, publicUrl, sta
               <SignatureQuote signature={profile.identity.signature} style={signatureStyle} />
             </div>
             <ActionBar profile={profile} publicUrl={publicUrl} staticPosition={staticActionBar} />
+            <p className="px-6 @min-[1024px]:px-0 mt-2 text-xs text-muted text-center @min-[1024px]:text-left">
+              Tous droits réservés à Napps de N'nahssé Group - Jean-David Kouamé
+            </p>
           </Aside>
 
           <Main standalone={standalone} className="@min-[1024px]:min-w-0">

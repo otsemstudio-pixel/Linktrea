@@ -35,7 +35,7 @@ export async function downloadQrPng(matrix: QrMatrix, moduleColor: string, fileN
   const objectUrl = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = objectUrl
-  a.download = `ledger-qr-${slugify(fileNameHint) || 'profil'}.png`
+  a.download = `linktrea-qr-${slugify(fileNameHint) || 'profil'}.png`
   document.body.appendChild(a)
   a.click()
   a.remove()

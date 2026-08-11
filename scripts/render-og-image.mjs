@@ -74,7 +74,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
       ${guillochePaths.map((d) => `<path d="${d}" fill="none" stroke="#e4a93c" stroke-width="0.35" />`).join('')}
     </svg>
     <div class="mark"><span>L</span></div>
-    <h1>Ledger</h1>
+    <h1>Linktrea</h1>
     <p>Portefeuille professionnel présenté façon relevé financier.</p>
   </div>
 </body></html>`

@@ -57,7 +57,7 @@ export default function BusinessCardModal({ open, profile, publicUrl, onClose }:
     const canvas = canvasRef.current
     if (!canvas || rendering) return
     const blob = await exportCanvasToBlob(canvas)
-    downloadCanvasBlob(blob, `ledger-${slugify(profile.identity.fullName) || 'profil'}-carte-visite.png`)
+    downloadCanvasBlob(blob, `linktrea-${slugify(profile.identity.fullName) || 'profil'}-carte-visite.png`)
   }
 
   // Même cadre à hauteur CSS fixe que ShareCardModal (voir son commentaire,

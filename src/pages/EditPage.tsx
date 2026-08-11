@@ -61,7 +61,7 @@ export default function EditPage() {
   const resolvedBackground = useAppliedTheme(activeAppearance, activeAccent)
   useFaviconAndThemeColor(resolvedBackground.hex, activeAccent)
   useEffect(() => {
-    document.title = 'Éditeur · Ledger'
+    document.title = 'Éditeur · Linktrea'
   }, [])
 
   // Le temps que loadMine() résolve (chargement du vrai profil depuis le

@@ -89,7 +89,7 @@ export default function ShareCardModal({ open, profile, publicUrl, onClose }: Pr
     const canvas = canvasRef.current
     if (!canvas || rendering) return
     const blob = await exportCanvasToBlob(canvas)
-    downloadCanvasBlob(blob, `ledger-${slugify(profile.identity.fullName) || 'profil'}-${format}.png`)
+    downloadCanvasBlob(blob, `linktrea-${slugify(profile.identity.fullName) || 'profil'}-${format}.png`)
   }
 
   // Zone d'aperçu à hauteur CSS CONSTANTE, quel que soit le format choisi

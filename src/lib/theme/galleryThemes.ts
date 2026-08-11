@@ -66,7 +66,7 @@ export type GalleryThemeMeta = {
 export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
   ledger: {
     id: 'ledger',
-    name: 'Ledger',
+    name: 'Linktrea',
     background: { kind: 'flat', base: '#0D0E0C' },
     // Duo, style et layout par défaut du profil vide (voir emptyProfile.ts) —
     // Ledger doit rester visuellement identique à l'ancien theme.* par défaut.

@@ -151,7 +151,7 @@ export default function LoginPage() {
   // ne soit visible — une UI spécifique à ce cas ne serait jamais vue.
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center gap-4 px-6 text-center bg-ink text-paper font-sans">
-      <p className="text-label uppercase tracking-label text-muted">Ledger</p>
+      <p className="text-label uppercase tracking-label text-muted">Linktrea</p>
 
       {accountDeleted && (
         <p className="text-sm text-up max-w-xs" role="status">

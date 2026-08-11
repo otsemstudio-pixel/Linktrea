@@ -37,7 +37,7 @@ export default function PublicEmptyProfileGhost({ theme, domain, appearance }: P
       <div className="fixed inset-0 z-10 flex items-center justify-center px-6 bg-ink/50">
         <div className="max-w-xs w-full rounded-lg border border-ink-raised bg-ink-raised p-6 text-center shadow-xl">
           <p className="text-label uppercase tracking-label text-muted mb-2">Aperçu</p>
-          <h1 className="text-xl font-semibold mb-2">Voici à quoi ressemble un profil Ledger</h1>
+          <h1 className="text-xl font-semibold mb-2">Voici à quoi ressemble un profil Linktrea</h1>
           <p className="text-sm text-muted mb-5">
             Ce profil n'a pas encore de contenu. Créez le vôtre pour obtenir votre relevé et le lien à partager.
           </p>
