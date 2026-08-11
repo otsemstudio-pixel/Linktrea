@@ -27,6 +27,7 @@ import EditorSkeleton from '@/components/edit/EditorSkeleton'
 import ShareLinkModal from '@/components/edit/ShareLinkModal'
 import PreviewOverlay from '@/components/edit/PreviewOverlay'
 import StatsOverlay from '@/components/edit/StatsOverlay'
+import CvOverlay from '@/components/edit/CvOverlay'
 import DesktopPreviewPanel from '@/components/edit/DesktopPreviewPanel'
 import { useFaviconAndThemeColor } from '@/lib/useDocumentMeta'
 import { useAppliedTheme } from '@/lib/theme/useAppliedTheme'
@@ -59,6 +60,7 @@ export default function EditPage() {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [linkModalOpen, setLinkModalOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
+  const [cvOpen, setCvOpen] = useState(false)
 
   const activeAccent = profile.theme?.accent ?? '#E4A93C'
   const activeAppearance: Profile['appearance'] = profile.appearance ?? {
@@ -149,6 +151,7 @@ export default function EditPage() {
               profile={profile}
               onPreview={() => setPreviewOpen(true)}
               onGenerateLink={() => setLinkModalOpen(true)}
+              onDownloadCv={() => setCvOpen(true)}
               onStats={() => setStatsOpen(true)}
             />
           </div>
@@ -156,6 +159,7 @@ export default function EditPage() {
           <PreviewOverlay open={previewOpen} profile={profile} onClose={() => setPreviewOpen(false)} />
           <ShareLinkModal open={linkModalOpen} profile={profile} onClose={() => setLinkModalOpen(false)} />
           <StatsOverlay open={statsOpen} profile={profile} onClose={() => setStatsOpen(false)} />
+          <CvOverlay open={cvOpen} profile={profile} onClose={() => setCvOpen(false)} />
         </FormProvider>
 
         <CoachmarkAutoStart steps={coachmarkSteps} />

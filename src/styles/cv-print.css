@@ -1,0 +1,270 @@
+/* Mise en page imprimable du CV (prompt dédié) — feuille de style dédiée,
+   volontairement indépendante des tokens du thème vivant de l'application
+   (bg-ink/text-paper... suivent le thème choisi par le profil, l'inverse de
+   ce qu'un CV doit être) : noir sur blanc, fixe, quel que soit le thème
+   actif. Seule la couleur d'accent est injectée au cas par cas via un style
+   inline depuis les composants de template, jamais depuis ce fichier. */
+
+@page {
+  size: A4;
+  margin: 2cm;
+}
+
+.cv-doc {
+  background: #ffffff;
+  color: #1a1a1a;
+  font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.45;
+}
+
+.cv-doc a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Aperçu à l'écran (Phase 3) : simule la page A4 dans un conteneur
+   scrollable, avant l'impression réelle — mêmes styles que .cv-doc, juste
+   une largeur/hauteur/ombre fixées pour se voir comme une feuille. */
+.cv-doc--preview {
+  width: 21cm;
+  min-height: 29.7cm;
+  padding: 2cm;
+  margin: 0 auto;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.cv-header {
+  margin-bottom: 1.2em;
+}
+
+/* Photo (opt-in, prompt de suivi — case à cocher prévue Phase 3) : ronde,
+   sobre, jamais le seul élément visuel qui distinguerait ce document d'un
+   CV texte classique. */
+.cv-header--with-photo {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
+.cv-header-photo {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.cv-modern-sidebar-photo {
+  display: block;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 1.2em;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.cv-name {
+  margin: 0;
+  font-size: 20pt;
+  font-weight: 700;
+  display: inline-block;
+  padding-bottom: 0.15em;
+  border-bottom-width: 2px;
+  border-bottom-style: solid;
+}
+
+.cv-headline {
+  margin: 0.3em 0 0;
+  font-size: 11pt;
+  color: #4a4a4a;
+}
+
+.cv-meta {
+  margin: 0.4em 0 0;
+  font-size: 9.5pt;
+  color: #4a4a4a;
+}
+
+.cv-section {
+  margin-top: 1.3em;
+  /* Une section ne se coupe jamais entre deux pages si elle peut tenir
+     entière sur la suivante — évite un titre de section orphelin en bas de
+     page 1 avec son contenu qui commence page 2. */
+  break-inside: avoid-page;
+}
+
+.cv-section-title {
+  margin: 0 0 0.6em;
+  font-size: 9.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cv-summary {
+  margin: 0;
+}
+
+.cv-entry {
+  margin-bottom: 0.9em;
+  break-inside: avoid-page;
+}
+.cv-entry:last-child {
+  margin-bottom: 0;
+}
+
+.cv-entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6em;
+}
+
+.cv-entry-role {
+  font-weight: 600;
+}
+
+.cv-entry-dates {
+  font-size: 9pt;
+  color: #4a4a4a;
+  white-space: nowrap;
+}
+
+.cv-entry-description {
+  margin: 0.3em 0 0;
+}
+
+.cv-entry-highlights {
+  margin: 0.35em 0 0;
+  padding-left: 1.2em;
+}
+.cv-entry-highlights li {
+  margin-bottom: 0.15em;
+}
+
+.cv-skill-group {
+  margin: 0 0 0.3em;
+}
+.cv-skill-group:last-child {
+  margin-bottom: 0;
+}
+
+.cv-cert-list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+.cv-cert-list li {
+  margin-bottom: 0.2em;
+}
+
+/* Modèle Moderne — deux colonnes : coordonnées + compétences en colonne
+   latérale, résumé/expérience/formation en colonne principale (voir le
+   prompt). L'en-tête (.cv-header) reste pleine largeur, au-dessus de la
+   grille — seule différence structurelle avec le modèle Classique. */
+.cv-modern-grid {
+  display: grid;
+  grid-template-columns: 32% 1fr;
+  gap: 0 1.5em;
+  margin-top: 0.5em;
+}
+
+.cv-modern-sidebar {
+  background: #f4f4f4;
+  padding: 1em;
+  border-radius: 4px;
+  break-inside: avoid-page;
+  /* Sans ça, certains navigateurs omettent les couleurs de fond à
+     l'impression même avec "graphiques d'arrière-plan" coché — la teinte
+     grise reste alors correcte à l'écran mais disparaît sur le PDF. */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.cv-modern-sidebar .cv-section:first-child {
+  margin-top: 0;
+}
+
+.cv-modern-main {
+  min-width: 0;
+}
+
+.cv-modern-main .cv-section:first-child {
+  margin-top: 0;
+}
+
+.cv-contact-list {
+  list-style: none;
+  margin: 0 0 1.2em;
+  padding: 0;
+  font-size: 9pt;
+  color: #333333;
+}
+.cv-contact-list li {
+  margin-bottom: 0.35em;
+  overflow-wrap: break-word;
+}
+.cv-contact-list li:last-child {
+  margin-bottom: 0;
+}
+
+@media print {
+  /* N'imprime que le CV, jamais le reste de l'application — deux contextes
+     possibles, deux mécanismes :
+     1) Panneau CvOverlay.tsx (route /edit réelle) : rendu hors de #root,
+        directement sur <body>, via un portail React — précisément pour
+        pouvoir masquer tout #root (qui porte aussi la longue page /edit
+        derrière ce panneau) d'un simple display:none, sans emporter le
+        panneau avec lui. display:none plutôt que le hack classique
+        visibility:hidden : celui-ci laissait les éléments cachés occuper
+        leur hauteur normale dans le document (visibility ne retire rien du
+        flux), ce qui faussait la pagination — un CV d'une page en générait
+        deux, la seconde dupliquant la première (repéré en générant un vrai
+        PDF pendant les tests, invisible à l'écran). display:none retire
+        vraiment #root du flux.
+     2) Ailleurs (ex. /debug/cv, sans CvOverlay) : .cv-print-root reste dans
+        #root, donc le masquer entièrement masquerait aussi le CV — la page
+        qui l'entoure y est courte (pas de long formulaire cache-dessous
+        comme /edit), le hack visibility:hidden ci-dessous suffit. */
+  body:has(.cv-overlay-root) #root {
+    display: none;
+  }
+  .cv-overlay-chrome {
+    display: none;
+  }
+  /* Le panneau reste "position: fixed" à l'écran (plein viewport, défilement
+     interne) — gardé tel quel à l'impression, un CV de plusieurs pages y
+     serait tronqué à la hauteur d'une seule page. Redevient un bloc normal,
+     dont la hauteur suit son contenu réel plutôt que le viewport. */
+  .cv-overlay-root {
+    position: static;
+    overflow: visible;
+    height: auto;
+  }
+
+  body:not(:has(.cv-overlay-root)) * {
+    visibility: hidden;
+  }
+  body:not(:has(.cv-overlay-root)) .cv-print-root,
+  body:not(:has(.cv-overlay-root)) .cv-print-root * {
+    visibility: visible;
+  }
+  body:not(:has(.cv-overlay-root)) .cv-print-root {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  .cv-doc--preview {
+    width: auto;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+  }
+}

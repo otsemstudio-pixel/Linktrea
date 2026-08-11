@@ -1,4 +1,4 @@
-import { BarChart3, Eye, Link2, Download } from 'lucide-react'
+import { BarChart3, Eye, Link2, Download, FileDown } from 'lucide-react'
 import type { Profile } from '@/types'
 import { downloadProfileJson } from '@/lib/exportImport'
 import { useCoachmarkTarget } from '@/lib/coachmark/CoachmarkContext'
@@ -9,17 +9,18 @@ type Props = {
   profile: Profile
   onPreview: () => void
   onGenerateLink: () => void
+  onDownloadCv: () => void
   onStats: () => void
 }
 
-export default function EditorActionBar({ profile, onPreview, onGenerateLink, onStats }: Props) {
+export default function EditorActionBar({ profile, onPreview, onGenerateLink, onDownloadCv, onStats }: Props) {
   // Cible "preview-mobile" du tuto (voir steps.ts) — voir DesktopPreviewPanel.tsx
   // pour la cible alternative "preview-desktop", jamais visible en même temps.
   const previewTargetRef = useCoachmarkTarget('preview-mobile')
 
   return (
     <div className="fixed bottom-0 inset-x-0 border-t border-ink-raised bg-ink/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)]">
-      <div className="grid grid-cols-4 lg:grid-cols-3 gap-1 p-2 lg:mx-auto lg:max-w-[1400px] lg:px-8">
+      <div className="grid grid-cols-5 lg:grid-cols-4 gap-1 p-2 lg:mx-auto lg:max-w-[1400px] lg:px-8">
         {/* Redondant en desktop : l'aperçu est déjà visible en direct dans le panneau de droite. */}
         <button
           ref={previewTargetRef}
@@ -40,6 +41,17 @@ export default function EditorActionBar({ profile, onPreview, onGenerateLink, on
         >
           <Link2 size={16} aria-hidden="true" />
           Lien
+        </button>
+        {/* CV PDF (prompt dédié) — visibilité de premier plan voulue, contrairement
+            à l'export JSON resté discret dans la zone Compte : c'est un document
+            que l'utilisateur envoie réellement à un recruteur, pas une sauvegarde. */}
+        <button
+          type="button"
+          onClick={onDownloadCv}
+          className="min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md text-xs text-muted focus-visible:outline-2 focus-visible:outline-accent"
+        >
+          <FileDown size={16} aria-hidden="true" />
+          CV
         </button>
         <button
           type="button"

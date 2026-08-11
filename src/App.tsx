@@ -16,6 +16,7 @@ const LoginPage = lazy(() => import('@/pages/LoginPage'))
 const DebugCodecPage = lazy(() => import('@/pages/DebugCodecPage'))
 const DebugThemePage = lazy(() => import('@/pages/DebugThemePage'))
 const DebugStorePage = lazy(() => import('@/pages/DebugStorePage'))
+const DebugCvPage = lazy(() => import('@/pages/DebugCvPage'))
 const SlugPage = lazy(() => import('@/pages/SlugPage'))
 
 function AnimatedRoutes() {
@@ -69,6 +70,14 @@ function AnimatedRoutes() {
           element={
             <Suspense fallback={null}>
               <DebugStorePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/debug/cv"
+          element={
+            <Suspense fallback={null}>
+              <DebugCvPage />
             </Suspense>
           }
         />

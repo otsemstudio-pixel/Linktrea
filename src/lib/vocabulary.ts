@@ -5,6 +5,14 @@
 // jamais une chaîne écrite en dur, pour que ces domaines s'ajoutent plus
 // tard sans toucher aux composants eux-mêmes.
 import type { Domain } from '@/types'
+import type { CvLang } from './cv/types'
+
+// Libellé du CV — objet {fr, en} plutôt qu'une chaîne unique : c'est
+// l'extension « avec une dimension de langue » demandée par le prompt CV
+// (Phase 2), plutôt qu'une seconde table de vocabulaire dupliquée. Ne
+// s'applique qu'aux 4 champs cv* : le reste de DomainVocabulary sert le
+// profil public, qui n'a pas de sélecteur de langue.
+type CvLabel = Record<CvLang, string>
 
 export type DomainVocabulary = {
   keyMetric: string
@@ -14,6 +22,15 @@ export type DomainVocabulary = {
   historyItem: string
   certifications: string
   networks: string
+  // Intitulés du CV PDF (prompt dédié) — volontairement distincts des
+  // libellés ci-dessus : ceux-ci portent la métaphore du profil public par
+  // domaine ("Allocation", "Actifs certifiés"...), alors qu'un CV attend un
+  // vocabulaire de candidature standard ("Expérience", "Compétences"...),
+  // quel que soit le domaine.
+  cvSummary: CvLabel
+  cvExperience: CvLabel
+  cvSkills: CvLabel
+  cvCertifications: CvLabel
 }
 
 export const VOCABULARY: Record<Domain, DomainVocabulary> = {
@@ -25,6 +42,10 @@ export const VOCABULARY: Record<Domain, DomainVocabulary> = {
     historyItem: 'Position',
     certifications: 'Actifs certifiés',
     networks: 'Réseaux',
+    cvSummary: { fr: 'Résumé', en: 'Summary' },
+    cvExperience: { fr: 'Expérience', en: 'Experience' },
+    cvSkills: { fr: 'Compétences', en: 'Skills' },
+    cvCertifications: { fr: 'Certifications', en: 'Certifications' },
   },
   // Les entrées 'droit', 'diplomatie', 'informatique', 'design' viendront
   // plus tard, avec leur propre vocabulaire et leur propre famille de
