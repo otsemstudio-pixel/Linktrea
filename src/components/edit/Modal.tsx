@@ -8,9 +8,13 @@ type Props = {
   title: string
   onClose: () => void
   children: ReactNode
+  // 'max-w-sm' par défaut (dialogues de confirmation courts) — un contenu
+  // plus riche (aperçu de carte de partage, par exemple) peut avoir besoin
+  // de plus de place plutôt que de forcer un habillage étroit.
+  maxWidthClassName?: string
 }
 
-export default function Modal({ open, title, onClose, children }: Props) {
+export default function Modal({ open, title, onClose, children, maxWidthClassName = 'max-w-sm' }: Props) {
   const { reduced } = useMotionPrefs()
 
   useEffect(() => {
@@ -43,7 +47,7 @@ export default function Modal({ open, title, onClose, children }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: reduced ? 0 : 16 }}
             transition={{ duration: reduced ? 0 : 0.2 }}
-            className="w-full max-w-sm rounded-lg border border-ink-raised bg-ink p-5 text-paper"
+            className={`w-full ${maxWidthClassName} rounded-lg border border-ink-raised bg-ink p-5 text-paper`}
           >
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-medium">{title}</h2>

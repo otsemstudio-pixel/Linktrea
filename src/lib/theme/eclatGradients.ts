@@ -5,6 +5,17 @@
 // galleryThemes.ts pour ne pas alourdir ce fichier de littéraux CSS.
 import type { EclatVariant } from '@/types'
 
+// Les trois teintes de l'arc, exportées séparément des chaînes CSS
+// ci-dessous — réutilisées telles quelles par shareCard.ts (refonte carte
+// de partage, Phase 4) pour construire un dégradé <canvas> équivalent :
+// une carte est un export statique, jamais l'animation elle-même, mais son
+// fond doit rester identifiable comme "Éclat" plutôt que de retomber sur le
+// dégradé sombre de base (voir GALLERY_THEMES.eclat.background), qui à lui
+// seul ne distingue pas ce thème des autres thèmes à dégradé sombre.
+export const ECLAT_ARC_ORANGE = '#FF7A1A'
+export const ECLAT_ARC_RED = '#E4322C'
+export const ECLAT_ARC_VIOLET = '#7A2EBF'
+
 export const ECLAT_GRADIENT: Record<EclatVariant, string> = {
   braise: 'radial-gradient(circle at 50% 50%, #FF7A1A 0%, #E4322C 45%, #7A2EBF 100%)',
   maree: 'linear-gradient(115deg, #FF7A1A 0%, #E4322C 30%, #7A2EBF 60%, #FF7A1A 100%)',

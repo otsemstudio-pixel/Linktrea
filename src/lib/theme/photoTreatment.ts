@@ -11,6 +11,14 @@ import { hexToRgb } from './color'
 // le résultat serait visiblement plus terne que le rendu attendu.
 export const GRAYSCALE_MATRIX = '0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0 0 0 1 0'
 
+// Mêmes coefficients que GRAYSCALE_MATRIX ci-dessus, sous forme numérique —
+// réutilisés par shareCard.ts (refonte carte de partage, Phase 4) pour
+// reproduire le duoton pixel par pixel sur <canvas> : pas de filtre SVG
+// référencé en url(#id) là-bas (peu fiable pour ctx.filter selon les
+// navigateurs), donc le même calcul de luminance refait "à la main" via
+// ImageData plutôt que dupliqué en dur.
+export const LUMINANCE_WEIGHTS = { r: 0.299, g: 0.587, b: 0.114 }
+
 export type DuotoneChannels = { r: string; g: string; b: string }
 
 // tableValues d'un feFuncX type="table" à deux entrées : la valeur en 0

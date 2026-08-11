@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Mail, Share2, Image as ImageIcon } from 'lucide-react'
+import { Mail, Share2, Image as ImageIcon, IdCard } from 'lucide-react'
 import type { Profile } from '@/types'
-import { downloadShareCard } from '@/lib/shareCard'
+import ShareCardModal from './ShareCardModal'
+import BusinessCardModal from './BusinessCardModal'
 
 type Props = {
   profile: Profile
@@ -9,7 +10,11 @@ type Props = {
 
 export default function ActionBar({ profile }: Props) {
   const [toast, setToast] = useState<string | null>(null)
-  const [generatingCard, setGeneratingCard] = useState(false)
+  const [cardModalOpen, setCardModalOpen] = useState(false)
+  // Bouton séparé (Phase 5) — pas mélangé au sélecteur de format de
+  // ShareCardModal, voir le prompt : "pour ne pas complexifier le
+  // sélecteur principal".
+  const [businessCardModalOpen, setBusinessCardModalOpen] = useState(false)
   const emailTicker = profile.tickers.find((t) => t.platform === 'email')
   // Thème "Éclat" (Phase 3, lisibilité) : la barre desktop translucide
   // (bg-ink-raised/40) est pensée pour un fond calme — sur le dégradé animé
@@ -38,17 +43,6 @@ export default function ActionBar({ profile }: Props) {
       showToast('Lien copié')
     } catch {
       showToast("Impossible de copier le lien")
-    }
-  }
-
-  async function handleGenerateCard() {
-    setGeneratingCard(true)
-    try {
-      await downloadShareCard(profile)
-    } catch {
-      showToast('Impossible de générer la carte')
-    } finally {
-      setGeneratingCard(false)
     }
   }
 
@@ -89,14 +83,34 @@ export default function ActionBar({ profile }: Props) {
         </button>
         <button
           type="button"
-          onClick={handleGenerateCard}
-          disabled={generatingCard}
-          className="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-ink-raised text-sm disabled:opacity-50 active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+          onClick={() => setCardModalOpen(true)}
+          className="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-ink-raised text-sm active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
         >
           <ImageIcon size={16} aria-hidden="true" />
-          {generatingCard ? 'Génération…' : 'Carte'}
+          Carte
+        </button>
+        <button
+          type="button"
+          onClick={() => setBusinessCardModalOpen(true)}
+          className="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-ink-raised text-sm active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
+        >
+          <IdCard size={16} aria-hidden="true" />
+          Carte de visite
         </button>
       </div>
+
+      <ShareCardModal
+        open={cardModalOpen}
+        profile={profile}
+        publicUrl={window.location.href}
+        onClose={() => setCardModalOpen(false)}
+      />
+      <BusinessCardModal
+        open={businessCardModalOpen}
+        profile={profile}
+        publicUrl={window.location.href}
+        onClose={() => setBusinessCardModalOpen(false)}
+      />
     </div>
   )
 }

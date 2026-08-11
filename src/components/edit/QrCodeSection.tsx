@@ -71,7 +71,7 @@ export default function QrCodeSection({ isPublished, savedSlug }: Props) {
             </button>
             <button
               type="button"
-              onClick={() => downloadQrCard(profile, matrix, moduleColor, publicUrl)}
+              onClick={() => downloadQrCard(profile, publicUrl)}
               className="min-h-11 px-3 rounded-md border border-ink-raised text-sm flex items-center gap-2 focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2"
             >
               <ImageIcon size={14} aria-hidden="true" />
