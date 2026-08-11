@@ -4,7 +4,12 @@ import { yearsOfExperience, totalPositions, totalHoldings, experienceTrend, isPr
 import { MotionPrefsProvider } from '@/lib/motion/MotionPrefsContext'
 import { useDocumentMeta, useFaviconAndThemeColor } from '@/lib/useDocumentMeta'
 import { useAppliedTheme } from '@/lib/theme/useAppliedTheme'
-import { resolveAppearanceHeaderLayout, resolveAppearanceAnimation, resolveAppearanceSignatureStyle } from '@/lib/theme/resolveAppearance'
+import {
+  resolveAppearanceHeaderLayout,
+  resolveAppearanceAnimation,
+  resolveAppearanceSignatureStyle,
+  resolveAppearancePlatformIconStyle,
+} from '@/lib/theme/resolveAppearance'
 import IdentityHeader from '@/components/view/IdentityHeader'
 import SignatureQuote from '@/components/view/SignatureQuote'
 import KeyMetric from '@/components/view/KeyMetric'
@@ -77,6 +82,7 @@ export default function ProfileView({ profile, standalone = true, publicUrl, sta
   const headerLayout = resolveAppearanceHeaderLayout(profile.appearance)
   const resolvedAnimation = resolveAppearanceAnimation(profile.appearance)
   const signatureStyle = resolveAppearanceSignatureStyle(profile.appearance)
+  const iconStyle = resolveAppearancePlatformIconStyle(profile.appearance)
   // Thème "Éclat" (Phase 3, lisibilité) — voir le commentaire sur
   // KeyMetric.tsx : seul thème dont le fond animé est assez vif pour rendre
   // les cartes translucides risquées, jamais un changement pour les autres.
@@ -100,6 +106,7 @@ export default function ProfileView({ profile, standalone = true, publicUrl, sta
               resolvedAnimation={resolvedAnimation}
               accent={profile.theme.accent}
               background={resolvedBackground.hex}
+              iconStyle={iconStyle}
               slug={slug}
             />
             <KeyMetric

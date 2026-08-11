@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useFormContext, useWatch } from 'react-hook-form'
 import { Check } from 'lucide-react'
-import type { Profile, GalleryThemeId, ButtonStyle, HeaderLayout, ShapeLanguage, SignatureStyle, CustomThemeSettings } from '@/types'
+import type { Profile, GalleryThemeId, ButtonStyle, HeaderLayout, ShapeLanguage, SignatureStyle, PlatformIconStyle, CustomThemeSettings } from '@/types'
 import { ACCENT_SUGGESTIONS } from '@/lib/theme/accentSuggestions'
 import { resolveAccent } from '@/lib/theme/accent'
 import { ensureReadableTextColor } from '@/lib/theme/deriveSurfaces'
@@ -11,11 +11,13 @@ import { GALLERY_THEMES, GALLERY_THEME_IDS, type BackgroundTreatment } from '@/l
 import EclatVariantPicker from './EclatVariantPicker'
 import { resolveAppearanceBackground } from '@/lib/theme/resolveAppearance'
 import { shapeTokens } from '@/lib/theme/shape'
+import PlatformIcon from '@/components/PlatformIcon'
 import {
   BUTTON_STYLE_LABELS,
   HEADER_LAYOUT_LABELS,
   SHAPE_LANGUAGE_LABELS,
   SIGNATURE_STYLE_LABELS,
+  PLATFORM_ICON_STYLE_LABELS,
   customSettingsFromTheme,
 } from '@/lib/theme/appearance'
 
@@ -24,6 +26,7 @@ const BUTTON_STYLES: ButtonStyle[] = ['solid', 'outline', 'elevated']
 const HEADER_LAYOUTS: HeaderLayout[] = ['classic', 'banner', 'seal']
 const SHAPE_LANGUAGES: ShapeLanguage[] = ['sharp', 'soft', 'pill']
 const SIGNATURE_STYLES: SignatureStyle[] = ['plain', 'stamp']
+const PLATFORM_ICON_STYLES: PlatformIconStyle[] = ['accent', 'brand', 'white', 'black']
 
 // Miniature "carte + bouton" dans le langage donné (personnalisation
 // avancée, Phase 1) — un nom seul ('Net'/'Doux'/'Pilule') ne dit rien de
@@ -84,6 +87,15 @@ function ThemeGallerySection() {
   const { control, setValue, getValues } = useFormContext<Profile>()
   const appearance = useWatch({ control, name: 'appearance' })
   const [adjustedNotice, setAdjustedNotice] = useState<string | null>(null)
+
+  // Garde-fou de contraste (prompt "Icônes de plateformes...", Partie 1) —
+  // 'white' sur un fond clair et 'black' sur un fond sombre produiraient des
+  // icônes quasi invisibles ; désactivés plutôt que laissés au choix (voir
+  // le rendu du sélecteur en mode Personnalisé plus bas). Sans objet en
+  // Galerie : chaque thème y fixe déjà une valeur lisible sur SON fond (voir
+  // GALLERY_THEMES), aucun sélecteur n'y est proposé.
+  const isLightBackground = resolveAppearanceBackground(appearance).isLight
+  const disabledIconStyles: PlatformIconStyle[] = isLightBackground ? ['white'] : ['black']
 
   useEffect(() => {
     if (!adjustedNotice) return
@@ -461,6 +473,39 @@ function ThemeGallerySection() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <span className="text-label uppercase tracking-label text-muted block mb-2">Style des icônes de réseaux</span>
+            <div className="grid grid-cols-2 gap-2">
+              {PLATFORM_ICON_STYLES.map((style) => {
+                const poorContrast = disabledIconStyles.includes(style)
+                return (
+                  <button
+                    key={style}
+                    type="button"
+                    onClick={() => updateSettings({ platformIconStyle: style })}
+                    aria-pressed={appearance.settings.platformIconStyle === style}
+                    disabled={poorContrast}
+                    className="rounded-md border p-2 flex flex-col items-center gap-1.5 text-sm disabled:opacity-40"
+                    style={{
+                      borderColor: appearance.settings.platformIconStyle === style ? 'var(--accent)' : 'var(--ink-raised)',
+                    }}
+                  >
+                    <div className="flex gap-1.5" aria-hidden="true">
+                      <PlatformIcon platform="github" style={style} size={18} />
+                      <PlatformIcon platform="instagram" style={style} size={18} />
+                    </div>
+                    {PLATFORM_ICON_STYLE_LABELS[style]}
+                  </button>
+                )
+              })}
+            </div>
+            {disabledIconStyles.length > 0 && (
+              <p className="text-xs text-muted mt-2">
+                {disabledIconStyles.map((s) => PLATFORM_ICON_STYLE_LABELS[s]).join(', ')} peu lisible sur ce fond, désactivé.
+              </p>
+            )}
           </div>
         </div>
       )}

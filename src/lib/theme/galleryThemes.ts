@@ -10,7 +10,7 @@
 // les thèmes ne proposent pas de réglage de couleur de bouton indépendant,
 // contrairement au mode Personnalisé). Layout d'en-tête choisi parmi les 3 de
 // IdentityHeader.tsx, même logique.
-import type { GalleryThemeId, FontDuoId, ButtonStyle, HeaderLayout, ShapeLanguage, SignatureStyle, PhotoTreatment, EclatVariant } from '@/types'
+import type { GalleryThemeId, FontDuoId, ButtonStyle, HeaderLayout, ShapeLanguage, SignatureStyle, PhotoTreatment, EclatVariant, PlatformIconStyle } from '@/types'
 
 export type BackgroundTreatment =
   | { kind: 'flat'; base: string }
@@ -56,6 +56,13 @@ export type GalleryThemeMeta = {
   // selectGalleryTheme() dans AppearanceSection.tsx) — une suggestion pour
   // qui n'a encore rien choisi, jamais un remplacement d'un choix déjà fait.
   photoTreatment: PhotoTreatment
+  // Style des icônes de plateformes (prompt dédié, Partie 1) — même logique
+  // que shape/signatureStyle ci-dessus : fixé par thème, choisi pour rester
+  // lisible sur SON fond ('white' jamais sur le seul thème clair de la
+  // Galerie, 'black' jamais sur les 12 autres, sombres) et cohérent avec son
+  // registre (voir PLATFORM_ICON_STYLE_LABELS et le prompt : "brand" réservé
+  // à "Éclat" pour un contraste vif, "accent" par défaut ailleurs).
+  platformIconStyle: PlatformIconStyle
   // null = pas de fond animé pour ce thème — la variété inclut aussi le
   // calme, réservé à 3-4 thèmes seulement (prompt v2, Phase 6). Un thème qui
   // en a un l'affiche par défaut ; l'interrupteur "Fond animé" de l'éditeur
@@ -76,6 +83,12 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'soft',
     signatureStyle: 'plain',
     photoTreatment: 'none',
+    // 'accent' serait invisible ici : buttonStyle 'solid' colore le fond des
+    // pastilles de réseaux avec l'accent lui-même (voir cardStyle.ts,
+    // styleTokens 'solid' : background = buttonColor = accent) — une icône
+    // ALSO accent se fondrait dans son propre fond (bug repéré à l'usage).
+    // 'white' reste lisible quel que soit l'accent choisi, sur ce fond sombre.
+    platformIconStyle: 'white',
     animationKind: null,
   },
   bourse: {
@@ -88,6 +101,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'pill',
     signatureStyle: 'plain',
     photoTreatment: 'muted',
+    platformIconStyle: 'accent',
     animationKind: null,
   },
   capital: {
@@ -100,6 +114,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'sharp',
     signatureStyle: 'plain',
     photoTreatment: 'high-contrast',
+    platformIconStyle: 'white',
     animationKind: null,
   },
   sceau: {
@@ -114,6 +129,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'sharp',
     signatureStyle: 'stamp',
     photoTreatment: 'sepia',
+    platformIconStyle: 'white',
     animationKind: null,
   },
   lingot: {
@@ -128,6 +144,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'sharp',
     signatureStyle: 'plain',
     photoTreatment: 'sepia',
+    platformIconStyle: 'accent',
     animationKind: null,
   },
   devise: {
@@ -140,6 +157,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'soft',
     signatureStyle: 'plain',
     photoTreatment: 'muted',
+    platformIconStyle: 'white',
     animationKind: null,
   },
   titre: {
@@ -154,6 +172,9 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'soft',
     signatureStyle: 'stamp',
     photoTreatment: 'sepia',
+    // Seul thème à fond clair de la Galerie — 'black' est le seul choix
+    // lisible ici, jamais 'white' (voir le prompt : garde-fou de contraste).
+    platformIconStyle: 'black',
     animationKind: null,
   },
   reserve: {
@@ -166,6 +187,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'sharp',
     signatureStyle: 'stamp',
     photoTreatment: 'high-contrast',
+    platformIconStyle: 'white',
     animationKind: null,
   },
   // Les 4 thèmes suivants sont les candidats "3-4 thèmes" du prompt pour un
@@ -181,6 +203,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'sharp',
     signatureStyle: 'stamp',
     photoTreatment: 'high-contrast',
+    platformIconStyle: 'white',
     animationKind: 'guilloche',
   },
   rente: {
@@ -193,6 +216,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'pill',
     signatureStyle: 'plain',
     photoTreatment: 'muted',
+    platformIconStyle: 'accent',
     animationKind: 'breath',
   },
   placement: {
@@ -205,6 +229,9 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'pill',
     signatureStyle: 'plain',
     photoTreatment: 'none',
+    // 'white', pas 'accent' — même raison que ledger ci-dessus (buttonStyle
+    // 'solid' colore déjà le fond des pastilles avec l'accent).
+    platformIconStyle: 'white',
     animationKind: 'sparkline',
   },
   guilde: {
@@ -217,6 +244,7 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'pill',
     signatureStyle: 'plain',
     photoTreatment: 'muted',
+    platformIconStyle: 'accent',
     animationKind: 'noise',
   },
   // 13e thème, ajouté par le prompt "Éclat : dégradé chromatique animé" —
@@ -239,6 +267,10 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     shape: 'pill',
     signatureStyle: 'plain',
     photoTreatment: 'muted',
+    // Seul thème dont le registre appelle explicitement les couleurs de
+    // marque officielles pour un contraste vif (voir le prompt), plutôt que
+    // la teinte uniforme utilisée ailleurs dans la Galerie.
+    platformIconStyle: 'brand',
     animationKind: 'braise',
   },
 }

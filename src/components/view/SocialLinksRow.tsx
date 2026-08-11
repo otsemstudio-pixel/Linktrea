@@ -1,18 +1,19 @@
-import type { Ticker } from '@/types'
-import { PLATFORM_SYMBOLS } from '@/lib/platformSymbols'
+import type { Ticker, PlatformIconStyle } from '@/types'
+import PlatformIcon from '@/components/PlatformIcon'
 import { recordLinkClick } from '@/lib/stats'
 
 type Props = {
   tickers: Ticker[]
+  iconStyle: PlatformIconStyle
   slug?: string | null
 }
 
-// Grille de pastilles carrées, symbole seul (voir platformSymbols.ts — pas
-// d'icônes de marque disponibles) — le libellé complet (handle) ne
-// s'affiche qu'au toucher/focus, via group-active/group-focus-visible, sans
-// état JS : la pastille reste lisible même repliée, le détail arrive à la
-// demande plutôt que d'encombrer la grille en permanence.
-export default function SocialLinksRow({ tickers, slug }: Props) {
+// Grille de pastilles carrées, icône fidèle à la marque (prompt "Icônes de
+// plateformes...", Partie 1 — voir PlatformIcon.tsx) — le libellé complet
+// (handle) ne s'affiche qu'au toucher/focus, via group-active/group-focus-
+// visible, sans état JS : la pastille reste lisible même repliée, le détail
+// arrive à la demande plutôt que d'encombrer la grille en permanence.
+export default function SocialLinksRow({ tickers, iconStyle, slug }: Props) {
   if (tickers.length === 0) return null
 
   return (
@@ -34,7 +35,7 @@ export default function SocialLinksRow({ tickers, slug }: Props) {
             boxShadow: 'var(--card-shadow)',
           }}
         >
-          {PLATFORM_SYMBOLS[ticker.platform]}
+          <PlatformIcon platform={ticker.platform} style={iconStyle} size={18} />
           <span
             role="presentation"
             className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-ink-raised bg-ink px-2 py-1 text-[11px] text-paper opacity-0 scale-95 transition-[opacity,transform] duration-150 group-active:opacity-100 group-active:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100"

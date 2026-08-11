@@ -1,15 +1,20 @@
 import type { TickerPlatform } from '@/types'
 
-// lucide-react n'expose plus d'icônes de marque (Linkedin, Github, X...) —
-// retirées du set pour raisons de droits. On assume ce choix : chaque
-// réseau devient un symbole 4-5 lettres à la façon d'un ticker boursier,
-// cohérent avec l'élément signature du bandeau.
+// Symboles courts façon ticker boursier — depuis le prompt "Icônes de
+// plateformes..." (Partie 1), plus qu'un simple repli visuel : PlatformIcon.tsx
+// utilise désormais de vraies icônes de marque (Simple Icons) pour la
+// plupart des plateformes, ce tableau ne sert plus qu'à LinkedIn (absent de
+// Simple Icons, voir platformIcons.ts) et au badge compact du dashboard de
+// statistiques (StatsOverlay.tsx), où un symbole texte reste plus lisible
+// qu'une icône minuscule.
 export const PLATFORM_SYMBOLS: Record<TickerPlatform, string> = {
   linkedin: 'LNKD',
   github: 'GTHB',
   x: 'X',
   behance: 'BHNC',
   instagram: 'INST',
+  tiktok: 'TKTK',
+  youtube: 'YT',
   email: 'MAIL',
   website: 'WEB',
 }

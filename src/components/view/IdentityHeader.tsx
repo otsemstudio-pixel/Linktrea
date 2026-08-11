@@ -1,6 +1,6 @@
 import { useId } from 'react'
 import { motion } from 'motion/react'
-import type { Identity, Ticker, Domain, HeaderLayout } from '@/types'
+import type { Identity, Ticker, Domain, HeaderLayout, PlatformIconStyle } from '@/types'
 import { initials } from '@/lib/deriveStats'
 import { useMotionPrefs } from '@/lib/motion/MotionPrefsContext'
 import { INTRO_TIMELINE } from '@/lib/motion/timeline'
@@ -27,6 +27,10 @@ type Props = {
   // direct plutôt que figer une valeur à l'upload de la photo.
   accent: string
   background: string
+  // Icônes de plateformes (prompt dédié, Partie 1) — résolu une fois dans
+  // ProfileView.tsx (resolveAppearancePlatformIconStyle), traversé jusqu'aux
+  // deux endroits qui affichent des tickers.
+  iconStyle: PlatformIconStyle
   // Dashboard de statistiques (Phase 2) — voir le commentaire sur ce même
   // prop dans ProfileView.tsx.
   slug?: string | null
@@ -101,7 +105,17 @@ function SealMedallion({ identity, accent, background }: { identity: Identity; a
   )
 }
 
-function IdentityText({ identity, tickers, slug }: { identity: Identity; tickers: Ticker[]; slug?: string | null }) {
+function IdentityText({
+  identity,
+  tickers,
+  iconStyle,
+  slug,
+}: {
+  identity: Identity
+  tickers: Ticker[]
+  iconStyle: PlatformIconStyle
+  slug?: string | null
+}) {
   return (
     <>
       <h1 className="mt-4 text-[32px] leading-tight font-semibold tracking-tight font-heading">
@@ -129,12 +143,22 @@ function IdentityText({ identity, tickers, slug }: { identity: Identity; tickers
         <span>{AVAILABILITY_COPY[identity.availability]}</span>
       </div>
 
-      <SocialLinksRow tickers={tickers} slug={slug} />
+      <SocialLinksRow tickers={tickers} iconStyle={iconStyle} slug={slug} />
     </>
   )
 }
 
-export default function IdentityHeader({ domain, identity, tickers, headerLayout, resolvedAnimation, accent, background, slug }: Props) {
+export default function IdentityHeader({
+  domain,
+  identity,
+  tickers,
+  headerLayout,
+  resolvedAnimation,
+  accent,
+  background,
+  iconStyle,
+  slug,
+}: Props) {
   const animation = useBackgroundAnimation(resolvedAnimation)
   // Sparkline ambiante : rendue uniquement dans les layouts qui ont un
   // véritable bloc de fond derrière l'en-tête (Classique, Bandeau) — Sceau
@@ -160,9 +184,9 @@ export default function IdentityHeader({ domain, identity, tickers, headerLayout
         className="flex flex-col items-center text-center px-6 pt-10 pb-6 bg-ink-raised @min-[1024px]:rounded-[var(--radius-lg)] overflow-hidden"
       >
         <SealMedallion identity={identity} accent={accent} background={background} />
-        <IdentityText identity={identity} tickers={tickers} slug={slug} />
+        <IdentityText identity={identity} tickers={tickers} iconStyle={iconStyle} slug={slug} />
         <div className="w-full -mx-6 mt-3">
-          <TickerBanner domain={domain} tickers={tickers} slug={slug} />
+          <TickerBanner domain={domain} tickers={tickers} iconStyle={iconStyle} slug={slug} />
         </div>
       </motion.header>
     )
@@ -182,14 +206,14 @@ export default function IdentityHeader({ domain, identity, tickers, headerLayout
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-accent-subtle to-transparent" />
           {showAmbientSparkline && <AmbientSparkline />}
           <div className="absolute inset-x-0 top-0">
-            <TickerBanner domain={domain} tickers={tickers} slug={slug} />
+            <TickerBanner domain={domain} tickers={tickers} iconStyle={iconStyle} slug={slug} />
           </div>
         </div>
         <div className="relative -mt-12 flex flex-col items-center text-center px-6 pb-6 bg-ink-raised">
           <div className="rounded-full border-2 border-accent p-1 bg-ink-raised">
             <Avatar identity={identity} size="size-24" accent={accent} background={background} />
           </div>
-          <IdentityText identity={identity} tickers={tickers} slug={slug} />
+          <IdentityText identity={identity} tickers={tickers} iconStyle={iconStyle} slug={slug} />
         </div>
       </motion.header>
     )
@@ -205,11 +229,11 @@ export default function IdentityHeader({ domain, identity, tickers, headerLayout
 
       <div className="relative flex flex-col items-center text-center px-6 pt-10 pb-6">
         <ClassicMedallion identity={identity} accent={accent} background={background} />
-        <IdentityText identity={identity} tickers={tickers} slug={slug} />
+        <IdentityText identity={identity} tickers={tickers} iconStyle={iconStyle} slug={slug} />
       </div>
 
       <div className="relative">
-        <TickerBanner domain={domain} tickers={tickers} slug={slug} />
+        <TickerBanner domain={domain} tickers={tickers} iconStyle={iconStyle} slug={slug} />
       </div>
     </motion.header>
   )

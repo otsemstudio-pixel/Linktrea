@@ -69,8 +69,17 @@ export type TickerPlatform =
   | 'x'
   | 'behance'
   | 'instagram'
+  | 'tiktok'
+  | 'youtube'
   | 'email'
   | 'website'
+
+// Style des icônes de plateformes (prompt "Icônes de plateformes et collage
+// d'URL auto-détecté", Partie 1) — réglage global, pas par icône : voir
+// resolveAppearancePlatformIconStyle. 'brand' = couleur de marque officielle
+// propre à chaque icône (voir src/lib/platformIcons.ts) ; les trois autres
+// appliquent une teinte uniforme à toute la grille.
+export type PlatformIconStyle = 'white' | 'black' | 'brand' | 'accent'
 
 export type Ticker = {
   id: string
@@ -181,6 +190,10 @@ export type CustomThemeSettings = {
   headerLayout: HeaderLayout
   shape: ShapeLanguage
   signatureStyle: SignatureStyle
+  // Même logique à deux niveaux que shape/signatureStyle ci-dessus — fixé
+  // par thème dans la Galerie (voir GalleryThemeMeta.platformIconStyle),
+  // libre en Personnalisé.
+  platformIconStyle: PlatformIconStyle
   // Fond animé (refonte "fond animé personnalisé") — superpose un arc
   // chromatique animé par-dessus `background` ci-dessus, MÊME mécanique de
   // rendu que le thème "Éclat" de la Galerie (voir EclatBackgroundLayer.tsx

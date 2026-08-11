@@ -19,6 +19,11 @@ const URL_TEMPLATES: Record<TickerPlatform, (handle: string) => string> = {
   x: (h) => `https://x.com/${h}`,
   behance: (h) => `https://behance.net/${h}`,
   instagram: (h) => `https://instagram.com/${h}`,
+  // Toujours reconstruit au format moderne @handle (voir detectPlatform.ts,
+  // qui accepte aussi youtube.com/c/{handle} en lecture mais ne produit
+  // jamais que ce format-ci) — tiktok.com n'a jamais eu de format /c/.
+  tiktok: (h) => `https://tiktok.com/@${h}`,
+  youtube: (h) => `https://youtube.com/@${h}`,
   email: (h) => `mailto:${h}`,
   website: normalizeWebsiteUrl,
 }

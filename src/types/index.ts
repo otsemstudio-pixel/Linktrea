@@ -6,6 +6,7 @@ export type {
   Holding,
   Certificate,
   TickerPlatform,
+  PlatformIconStyle,
   Ticker,
   BackgroundId,
   FontDuoId,

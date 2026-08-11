@@ -116,6 +116,8 @@ const tickerPlatformSchema = z.enum([
   'x',
   'behance',
   'instagram',
+  'tiktok',
+  'youtube',
   'email',
   'website',
 ])
@@ -203,6 +205,10 @@ const shapeLanguageSchema = z.enum(['sharp', 'soft', 'pill']).catch('soft')
 // Même raison, même solution (.catch()) — voir shapeLanguageSchema juste
 // au-dessus (personnalisation avancée, Phase 4).
 const signatureStyleSchema = z.enum(['plain', 'stamp']).catch('plain')
+// Même raison, même solution — un profil Personnalisé enregistré avant
+// l'ajout du style d'icônes de plateformes (prompt dédié, Partie 1) n'a
+// jamais eu ce champ.
+const platformIconStyleSchema = z.enum(['white', 'black', 'brand', 'accent']).catch('accent')
 
 // .catch(...) — même raison que shapeLanguageSchema plus haut : un profil
 // Personnalisé enregistré avant l'ajout du fond animé (refonte "fond animé
@@ -223,6 +229,7 @@ const customThemeSettingsSchema = z.object({
   headerLayout: headerLayoutSchema,
   shape: shapeLanguageSchema,
   signatureStyle: signatureStyleSchema,
+  platformIconStyle: platformIconStyleSchema,
   animatedBackground: z.boolean().catch(false),
   animatedColors: animatedColorsSchema,
   animationStyle: eclatVariantSchema,

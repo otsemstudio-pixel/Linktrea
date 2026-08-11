@@ -3,7 +3,7 @@
 // branches de l'union, pour que le reste de l'app manipule une couleur de
 // fond ordinaire plutôt que de re-brancher un if/else 'gallery'/'custom'
 // partout où le fond est nécessaire.
-import type { AppearanceConfig, FontDuoId, HeaderLayout, SignatureStyle } from '@/types'
+import type { AppearanceConfig, FontDuoId, HeaderLayout, SignatureStyle, PlatformIconStyle } from '@/types'
 import { hexToOklch } from './color'
 import { GALLERY_THEMES } from './galleryThemes'
 import type { BackgroundTreatment, AnimatedBackgroundKind } from './galleryThemes'
@@ -59,6 +59,14 @@ export function resolveAppearanceHeaderLayout(appearance: AppearanceConfig): Hea
 export function resolveAppearanceSignatureStyle(appearance: AppearanceConfig): SignatureStyle {
   if (appearance.kind === 'gallery') return GALLERY_THEMES[appearance.themeId].signatureStyle
   return appearance.settings.signatureStyle
+}
+
+// Style des icônes de plateformes (prompt "Icônes de plateformes...",
+// Partie 1) — même logique à deux niveaux que le layout d'en-tête et la
+// signature ci-dessus.
+export function resolveAppearancePlatformIconStyle(appearance: AppearanceConfig): PlatformIconStyle {
+  if (appearance.kind === 'gallery') return GALLERY_THEMES[appearance.themeId].platformIconStyle
+  return appearance.settings.platformIconStyle
 }
 
 export type ResolvedAnimation = {

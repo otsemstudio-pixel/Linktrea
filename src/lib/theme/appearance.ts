@@ -1,7 +1,7 @@
 // Aides pour le système de thème à deux niveaux (refonte v2, Phase 1) —
 // valeurs par défaut et libellés d'affichage, séparés du composant éditeur
 // pour rester testables indépendamment de React.
-import type { AppearanceConfig, ThemeConfig, CustomThemeSettings, ButtonStyle, HeaderLayout, ShapeLanguage, SignatureStyle } from '@/types'
+import type { AppearanceConfig, ThemeConfig, CustomThemeSettings, ButtonStyle, HeaderLayout, ShapeLanguage, SignatureStyle, PlatformIconStyle } from '@/types'
 import { bestTextOn } from './color'
 import { GALLERY_THEMES } from './galleryThemes'
 import { resolveAppearanceBackground } from './resolveAppearance'
@@ -29,6 +29,13 @@ export const SHAPE_LANGUAGE_LABELS: Record<ShapeLanguage, string> = {
 export const SIGNATURE_STYLE_LABELS: Record<SignatureStyle, string> = {
   plain: 'Simple',
   stamp: 'Tampon',
+}
+
+export const PLATFORM_ICON_STYLE_LABELS: Record<PlatformIconStyle, string> = {
+  white: 'Blanc',
+  black: 'Noir',
+  brand: 'Couleurs de marque',
+  accent: 'Accent',
 }
 
 // Prérempli le mode Personnalisé à partir du thème quitté plutôt que de
@@ -64,6 +71,7 @@ export function customSettingsFromTheme(appearance: AppearanceConfig, theme: The
     headerLayout: themeMeta.headerLayout,
     shape: themeMeta.shape,
     signatureStyle: themeMeta.signatureStyle,
+    platformIconStyle: themeMeta.platformIconStyle,
     animatedBackground: wasEclat && appearance.animatedBackground,
     animatedColors: [ECLAT_ARC_ORANGE, ECLAT_ARC_RED, ECLAT_ARC_VIOLET],
     animationStyle: wasEclat ? appearance.eclatVariant : 'braise',
