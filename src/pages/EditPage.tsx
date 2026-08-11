@@ -26,6 +26,7 @@ import EditorActionBar from '@/components/edit/EditorActionBar'
 import EditorSkeleton from '@/components/edit/EditorSkeleton'
 import ShareLinkModal from '@/components/edit/ShareLinkModal'
 import PreviewOverlay from '@/components/edit/PreviewOverlay'
+import StatsOverlay from '@/components/edit/StatsOverlay'
 import DesktopPreviewPanel from '@/components/edit/DesktopPreviewPanel'
 import { useFaviconAndThemeColor } from '@/lib/useDocumentMeta'
 import { useAppliedTheme } from '@/lib/theme/useAppliedTheme'
@@ -46,7 +47,6 @@ export default function EditPage() {
 
   const {
     control,
-    reset,
     formState: { isLoading },
   } = methods
   const profile = useWatch({ control }) as Profile
@@ -58,6 +58,7 @@ export default function EditPage() {
 
   const [previewOpen, setPreviewOpen] = useState(false)
   const [linkModalOpen, setLinkModalOpen] = useState(false)
+  const [statsOpen, setStatsOpen] = useState(false)
 
   const activeAccent = profile.theme?.accent ?? '#E4A93C'
   const activeAppearance: Profile['appearance'] = profile.appearance ?? {
@@ -148,12 +149,13 @@ export default function EditPage() {
               profile={profile}
               onPreview={() => setPreviewOpen(true)}
               onGenerateLink={() => setLinkModalOpen(true)}
-              onImport={(imported) => reset(imported)}
+              onStats={() => setStatsOpen(true)}
             />
           </div>
 
           <PreviewOverlay open={previewOpen} profile={profile} onClose={() => setPreviewOpen(false)} />
           <ShareLinkModal open={linkModalOpen} profile={profile} onClose={() => setLinkModalOpen(false)} />
+          <StatsOverlay open={statsOpen} profile={profile} onClose={() => setStatsOpen(false)} />
         </FormProvider>
 
         <CoachmarkAutoStart steps={coachmarkSteps} />

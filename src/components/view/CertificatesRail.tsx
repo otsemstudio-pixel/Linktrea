@@ -2,13 +2,15 @@ import { ExternalLink } from 'lucide-react'
 import type { Certificate, Domain } from '@/types'
 import CertificateSeal from './CertificateSeal'
 import { VOCABULARY } from '@/lib/vocabulary'
+import { recordLinkClick } from '@/lib/stats'
 
 type Props = {
   domain: Domain
   certificates: Certificate[]
+  slug?: string | null
 }
 
-export default function CertificatesRail({ domain, certificates }: Props) {
+export default function CertificatesRail({ domain, certificates, slug }: Props) {
   const vocabulary = VOCABULARY[domain]
 
   return (
@@ -42,6 +44,7 @@ export default function CertificatesRail({ domain, certificates }: Props) {
                   href={cert.credentialUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => recordLinkClick(slug, cert.id)}
                   className="mt-3 inline-flex items-center gap-1 min-h-11 text-xs text-accent focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 rounded"
                 >
                   Vérifier <ExternalLink size={12} aria-hidden="true" />

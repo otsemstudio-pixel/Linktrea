@@ -55,6 +55,27 @@ export type Database = {
         Args: Record<string, never>
         Returns: undefined
       }
+      // Voir supabase/migrations/20260811130000_profile_stats.sql (dashboard
+      // de statistiques, Phase 1). record_link_click n'est pas appelée via
+      // supabase.rpc() côté client (voir src/lib/stats.ts — fetch manuel pour
+      // pouvoir attacher le jeton de session), le type reste néanmoins
+      // déclaré ici pour rester fidèle au schéma SQL réel.
+      record_profile_view: {
+        Args: { p_slug: string }
+        Returns: undefined
+      }
+      record_link_click: {
+        Args: { p_slug: string; p_link_id: string }
+        Returns: undefined
+      }
+      get_my_profile_stats: {
+        Args: { p_days?: number }
+        Returns: { day: string; views: number }[]
+      }
+      get_my_link_clicks: {
+        Args: { p_days?: number }
+        Returns: { link_id: string; total_clicks: number }[]
+      }
     }
   }
 }

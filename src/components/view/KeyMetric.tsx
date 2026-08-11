@@ -1,9 +1,10 @@
-import { useEffect, useId, useState } from 'react'
-import { motion, animate } from 'motion/react'
+import { useEffect, useState } from 'react'
+import { animate } from 'motion/react'
 import type { Domain } from '@/types'
 import { useMotionPrefs } from '@/lib/motion/MotionPrefsContext'
 import { INTRO_TIMELINE } from '@/lib/motion/timeline'
 import { VOCABULARY } from '@/lib/vocabulary'
+import Sparkline from '@/components/Sparkline'
 
 type Props = {
   domain: Domain
@@ -18,52 +19,6 @@ type Props = {
   // qui défile derrière — ce seul thème demande une carte opaque, jamais les
   // 12 autres (voir ProfileView.tsx, seul appelant qui calcule ce booléen).
   vividBackground?: boolean
-}
-
-function Sparkline({ trend }: { trend: number[] }) {
-  const { reduced, profile } = useMotionPrefs()
-  const gradientId = useId()
-  const width = 320
-  const height = 48
-  const max = Math.max(...trend)
-  const min = Math.min(...trend)
-  const range = max - min || 1
-  const points = trend.map((value, i) => {
-    const x = (i / (trend.length - 1)) * width
-    const y = height - ((value - min) / range) * height
-    return [x, y] as const
-  })
-  const linePoints = points.map(([x, y]) => `${x},${y}`).join(' ')
-  const areaPath = `M${points.map(([x, y]) => `${x},${y}`).join('L')}L${width},${height}L0,${height}Z`
-
-  return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-12" preserveAspectRatio="none" aria-hidden="true">
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <motion.path
-        d={areaPath}
-        fill={`url(#${gradientId})`}
-        initial={{ opacity: reduced ? 1 : 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: reduced ? 0 : INTRO_TIMELINE.sparkline, duration: reduced ? 0 : 0.6 * profile.durationScale }}
-      />
-      <motion.polyline
-        points={linePoints}
-        fill="none"
-        stroke="var(--accent)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        initial={{ pathLength: reduced ? 1 : 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ delay: reduced ? 0 : INTRO_TIMELINE.sparkline, duration: reduced ? 0 : 0.8 * profile.durationScale, ease: 'easeOut' }}
-      />
-    </svg>
-  )
 }
 
 // Le compteur ne dépend pas de transform/opacity : c'est le contenu texte

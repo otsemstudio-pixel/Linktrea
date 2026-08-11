@@ -5,10 +5,12 @@ import { PLATFORM_SYMBOLS } from '@/lib/platformSymbols'
 import { pseudoVariation } from '@/lib/tickerVariation'
 import { useMotionPrefs } from '@/lib/motion/MotionPrefsContext'
 import { VOCABULARY } from '@/lib/vocabulary'
+import { recordLinkClick } from '@/lib/stats'
 
 type Props = {
   domain: Domain
   tickers: Ticker[]
+  slug?: string | null
 }
 
 function tickerContent(ticker: Ticker) {
@@ -28,13 +30,14 @@ function tickerContent(ticker: Ticker) {
 const TICKER_ITEM_CLASS =
   'shrink-0 flex items-center gap-2 px-4 py-2.5 min-h-11 border-r border-ink-raised font-mono text-xs whitespace-nowrap'
 
-function TickerItem({ ticker }: { ticker: Ticker }) {
+function TickerItem({ ticker, slug }: { ticker: Ticker; slug?: string | null }) {
   return (
     <a
       role="listitem"
       href={ticker.url}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() => recordLinkClick(slug, ticker.id)}
       className={`${TICKER_ITEM_CLASS} focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2`}
     >
       {tickerContent(ticker)}
@@ -51,7 +54,7 @@ function TickerItemVisual({ ticker }: { ticker: Ticker }) {
 // Élément signature. Marquee en transform (jamais scrollLeft ni width),
 // dupliqué pour boucler sans coupure. Se met en pause au toucher — c'est
 // le seul endroit "bruyant" de la page, comme prévu par le plan de design.
-export default function TickerBanner({ domain, tickers }: Props) {
+export default function TickerBanner({ domain, tickers, slug }: Props) {
   const trackRef = useRef<HTMLDivElement>(null)
   const controls = useAnimationControls()
   const { reduced } = useMotionPrefs()
@@ -79,7 +82,7 @@ export default function TickerBanner({ domain, tickers }: Props) {
     return (
       <div role="list" aria-label={networksLabel} className="flex overflow-x-auto scrollbar-none bg-ink/90">
         {tickers.map((t) => (
-          <TickerItem key={t.id} ticker={t} />
+          <TickerItem key={t.id} ticker={t} slug={slug} />
         ))}
       </div>
     )
@@ -101,7 +104,7 @@ export default function TickerBanner({ domain, tickers }: Props) {
     >
       <motion.div ref={trackRef} className="flex w-max" animate={controls}>
         {tickers.map((t) => (
-          <TickerItem key={t.id} ticker={t} />
+          <TickerItem key={t.id} ticker={t} slug={slug} />
         ))}
         <div aria-hidden="true" className="flex">
           {tickers.map((t) => (

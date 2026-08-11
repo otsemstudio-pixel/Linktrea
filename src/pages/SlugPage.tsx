@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getProfileStore } from '@/lib/store'
+import { recordProfileView } from '@/lib/stats'
 import ProfileView from '@/components/ProfileView'
 import PublicProfileNotFound from '@/components/view/PublicProfileNotFound'
 import ProfileSkeleton from '@/components/view/ProfileSkeleton'
@@ -44,7 +45,16 @@ export default function SlugPage() {
     }
   }, [slug])
 
+  // Une fois par chargement de page, en arrière-plan — voir stats.ts pour la
+  // déduplication (sessionStorage) et l'exclusion des vues du propriétaire
+  // (gérée côté serveur, auth.uid() lu dans record_profile_view).
+  useEffect(() => {
+    if (state.status === 'ready' && slug) {
+      recordProfileView(slug)
+    }
+  }, [state.status, slug])
+
   if (state.status === 'loading') return <ProfileSkeleton />
   if (state.status === 'not-found') return <PublicProfileNotFound />
-  return <ProfileView profile={state.profile} />
+  return <ProfileView profile={state.profile} slug={slug} />
 }

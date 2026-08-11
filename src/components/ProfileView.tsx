@@ -38,6 +38,13 @@ type Props = {
   // donc le @container ci-dessous ne peut pas s'en rendre compte tout seul
   // (voir ActionBar.tsx pour le détail du problème que ça cause).
   staticActionBar?: boolean
+  // Slug de la route publique /:slug (dashboard de statistiques, Phase 2) —
+  // uniquement fourni par SlugPage.tsx, jamais par les aperçus de l'éditeur
+  // (DesktopPreviewPanel/PreviewOverlay) ni par ViewPage.tsx (payload URL,
+  // sans slug publié) : recordLinkClick devient un no-op sans slug, donc ces
+  // contextes-là ne comptent simplement aucun clic, ce qui est le
+  // comportement voulu (ce ne sont pas des visites publiques réelles).
+  slug?: string | null
 }
 
 type LandmarkProps = { standalone: boolean; children: ReactNode } & HTMLAttributes<HTMLElement>
@@ -51,7 +58,7 @@ function Main({ standalone, children, ...rest }: LandmarkProps) {
   return standalone ? <main {...rest}>{children}</main> : <div {...rest}>{children}</div>
 }
 
-export default function ProfileView({ profile, standalone = true, publicUrl, staticActionBar = false }: Props) {
+export default function ProfileView({ profile, standalone = true, publicUrl, staticActionBar = false, slug }: Props) {
   const resolvedBackground = useAppliedTheme(profile.appearance, profile.theme.accent, standalone)
 
   useDocumentMeta(profile, standalone)
@@ -93,6 +100,7 @@ export default function ProfileView({ profile, standalone = true, publicUrl, sta
               resolvedAnimation={resolvedAnimation}
               accent={profile.theme.accent}
               background={resolvedBackground.hex}
+              slug={slug}
             />
             <KeyMetric
               domain={profile.domain}
@@ -120,7 +128,7 @@ export default function ProfileView({ profile, standalone = true, publicUrl, sta
               background={resolvedBackground.hex}
             />
             <PositionsHistory domain={profile.domain} positions={profile.positions} />
-            <CertificatesRail domain={profile.domain} certificates={profile.certificates} />
+            <CertificatesRail domain={profile.domain} certificates={profile.certificates} slug={slug} />
           </Main>
         </div>
 
