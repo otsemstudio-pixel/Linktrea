@@ -24,7 +24,7 @@ import AppearanceSection from '@/components/edit/AppearanceSection'
 import AccountSection from '@/components/edit/AccountSection'
 import EditorActionBar from '@/components/edit/EditorActionBar'
 import EditorSkeleton from '@/components/edit/EditorSkeleton'
-import ShareLinkModal from '@/components/edit/ShareLinkModal'
+import ShareProfileModal from '@/components/edit/ShareProfileModal'
 import PreviewOverlay from '@/components/edit/PreviewOverlay'
 import StatsOverlay from '@/components/edit/StatsOverlay'
 import CvOverlay from '@/components/edit/CvOverlay'
@@ -58,7 +58,7 @@ export default function EditPage() {
   const coachmarkSteps = buildCoachmarkSteps(profile.domain ?? 'finance')
 
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [linkModalOpen, setLinkModalOpen] = useState(false)
+  const [shareModalOpen, setShareModalOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
   const [cvOpen, setCvOpen] = useState(false)
 
@@ -150,14 +150,14 @@ export default function EditPage() {
             <EditorActionBar
               profile={profile}
               onPreview={() => setPreviewOpen(true)}
-              onGenerateLink={() => setLinkModalOpen(true)}
+              onShare={() => setShareModalOpen(true)}
               onDownloadCv={() => setCvOpen(true)}
               onStats={() => setStatsOpen(true)}
             />
           </div>
 
           <PreviewOverlay open={previewOpen} profile={profile} onClose={() => setPreviewOpen(false)} />
-          <ShareLinkModal open={linkModalOpen} profile={profile} onClose={() => setLinkModalOpen(false)} />
+          <ShareProfileModal open={shareModalOpen} onClose={() => setShareModalOpen(false)} />
           <StatsOverlay open={statsOpen} profile={profile} onClose={() => setStatsOpen(false)} />
           <CvOverlay open={cvOpen} profile={profile} onClose={() => setCvOpen(false)} />
         </FormProvider>

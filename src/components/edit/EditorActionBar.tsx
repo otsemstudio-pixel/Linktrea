@@ -1,4 +1,4 @@
-import { BarChart3, Eye, Link2, Download, FileDown } from 'lucide-react'
+import { BarChart3, Eye, Share2, Download, FileDown } from 'lucide-react'
 import type { Profile } from '@/types'
 import { downloadProfileJson } from '@/lib/exportImport'
 import { useCoachmarkTarget } from '@/lib/coachmark/CoachmarkContext'
@@ -8,12 +8,12 @@ const STORAGE_MODE = import.meta.env.VITE_STORAGE_MODE === 'supabase' ? 'supabas
 type Props = {
   profile: Profile
   onPreview: () => void
-  onGenerateLink: () => void
+  onShare: () => void
   onDownloadCv: () => void
   onStats: () => void
 }
 
-export default function EditorActionBar({ profile, onPreview, onGenerateLink, onDownloadCv, onStats }: Props) {
+export default function EditorActionBar({ profile, onPreview, onShare, onDownloadCv, onStats }: Props) {
   // Cible "preview-mobile" du tuto (voir steps.ts) — voir DesktopPreviewPanel.tsx
   // pour la cible alternative "preview-desktop", jamais visible en même temps.
   const previewTargetRef = useCoachmarkTarget('preview-mobile')
@@ -31,16 +31,19 @@ export default function EditorActionBar({ profile, onPreview, onGenerateLink, on
           <Eye size={16} aria-hidden="true" />
           Aperçu
         </button>
-        {/* Action principale du parcours (Phase 5) : c'est le lien partageable
+        {/* Action principale du parcours (Phase 5) : c'est le partage du profil
             qui est le but final, pas l'aperçu ni l'export — seul bouton mis
-            en avant à l'accent. */}
+            en avant à l'accent. Renommé "Partager" (correctif "bouton Lien") :
+            ouvre la publication si le profil n'est pas encore publié, sinon
+            le lien public réel à copier — plus jamais un lien encodé généré
+            à part. */}
         <button
           type="button"
-          onClick={onGenerateLink}
+          onClick={onShare}
           className="min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md bg-accent-subtle text-accent text-xs font-medium focus-visible:outline-2 focus-visible:outline-accent"
         >
-          <Link2 size={16} aria-hidden="true" />
-          Lien
+          <Share2 size={16} aria-hidden="true" />
+          Partager
         </button>
         {/* CV PDF (prompt dédié) — visibilité de premier plan voulue, contrairement
             à l'export JSON resté discret dans la zone Compte : c'est un document

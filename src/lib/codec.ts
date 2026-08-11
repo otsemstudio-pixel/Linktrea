@@ -1,5 +1,16 @@
-// Encodage/décodage du Profile pour le canal "URL partageable" :
-// JSON -> compression LZString -> composant d'URL sûr, et retour.
+// Encodage/décodage du Profile pour le canal "URL partageable" : JSON ->
+// compression LZString -> composant d'URL sûr, et retour. Mécanisme de
+// secours du tout premier prompt du projet (avant Supabase), pour un
+// fonctionnement entièrement sans backend.
+//
+// decodeProfile() reste nécessaire : ViewPage.tsx s'en sert encore pour la
+// route publique /p/:payload, qui doit continuer à afficher les liens déjà
+// partagés avant l'introduction de la publication par slug (voir le
+// correctif "bouton Lien" — celui-ci retire uniquement le BOUTON qui
+// GÉNÉRAIT ce genre de lien depuis l'éditeur, jamais la capacité de lire un
+// lien déjà existant). encodeProfile() n'est plus utilisé par aucun flux
+// visible de l'application, mais reste nécessaire à DebugCodecPage.tsx pour
+// fabriquer des payloads de test valides et exercer decodeProfile().
 import LZString from 'lz-string'
 import { profileSchema } from './schema'
 import type { Profile } from '@/types'
@@ -43,9 +54,4 @@ export function decodeProfile(payload: string): DecodeResult {
   }
 
   return { ok: true, profile: result.data }
-}
-
-export function buildShareUrl(profile: Profile, origin: string = window.location.origin): string {
-  const payload = encodeProfile(profile)
-  return `${origin}/#/p/${payload}`
 }
