@@ -144,21 +144,22 @@ function drawGuillocheTexture(ctx: CanvasRenderingContext2D, colors: CardColors,
   ctx.restore()
 }
 
-// Capture FIGÉE du dégradé chromatique du thème "Éclat" (jamais l'animation
-// elle-même dans un export statique, comme spécifié) — sans quoi une carte
-// "Éclat" ne se distinguerait pas des autres thèmes à dégradé sombre
-// (GALLERY_THEMES.eclat.background n'est qu'une base sombre pour la
-// dérivation de surfaces, pas le calque vif qui fait l'identité visuelle du
-// thème sur la page réelle — voir EclatBackgroundLayer.tsx). Une seule
-// interprétation du dégradé pour les 5 variantes plutôt que de reproduire
-// exactement la forme de chacune : le but d'une capture figée est de
-// représenter le CARACTÈRE chromatique du thème, pas l'animation qu'il n'y a
-// plus lieu de rejouer.
-function drawEclatFrozenOverlay(ctx: CanvasRenderingContext2D, opacity: number, width: number, height: number): void {
+// Capture FIGÉE d'un arc chromatique animé (jamais l'animation elle-même
+// dans un export statique, comme spécifié) — sans quoi une carte "Éclat", ou
+// une carte Personnalisé à fond animé, ne se distinguerait pas d'un thème à
+// simple dégradé/aplat sombre (GALLERY_THEMES.eclat.background n'est qu'une
+// base sombre pour la dérivation de surfaces, pas le calque vif qui fait
+// l'identité visuelle du thème sur la page réelle — voir
+// EclatBackgroundLayer.tsx ; même chose pour CustomThemeSettings.animatedBackground).
+// Une seule interprétation du dégradé, quelle que soit la variante,
+// plutôt que de reproduire exactement la forme de chacune : le but d'une
+// capture figée est de représenter le CARACTÈRE chromatique de l'arc, pas
+// l'animation qu'il n'y a plus lieu de rejouer.
+function drawChromaticArcOverlay(ctx: CanvasRenderingContext2D, colors: [string, string, string], opacity: number, width: number, height: number): void {
   const gradient = ctx.createLinearGradient(0, 0, width, height)
-  gradient.addColorStop(0, ECLAT_ARC_ORANGE)
-  gradient.addColorStop(0.5, ECLAT_ARC_RED)
-  gradient.addColorStop(1, ECLAT_ARC_VIOLET)
+  gradient.addColorStop(0, colors[0])
+  gradient.addColorStop(0.5, colors[1])
+  gradient.addColorStop(1, colors[2])
   ctx.save()
   ctx.globalAlpha = opacity
   ctx.fillStyle = gradient
@@ -186,7 +187,9 @@ function drawBackground(ctx: CanvasRenderingContext2D, profile: Profile, colors:
 
   const eclatVariant = appearance.kind === 'gallery' && appearance.themeId === 'eclat' ? appearance.eclatVariant : null
   if (eclatVariant && isEclatVariant(eclatVariant)) {
-    drawEclatFrozenOverlay(ctx, ECLAT_OPACITY[eclatVariant], width, height)
+    drawChromaticArcOverlay(ctx, [ECLAT_ARC_ORANGE, ECLAT_ARC_RED, ECLAT_ARC_VIOLET], ECLAT_OPACITY[eclatVariant], width, height)
+  } else if (appearance.kind === 'custom' && appearance.settings.animatedBackground) {
+    drawChromaticArcOverlay(ctx, appearance.settings.animatedColors, ECLAT_OPACITY[appearance.settings.animationStyle], width, height)
   } else if (backgroundTreatment.kind === 'texture') {
     drawGuillocheTexture(ctx, colors, width, height)
   }

@@ -68,19 +68,35 @@ export type ResolvedAnimation = {
   // deux derniers gates vivent dans useBackgroundAnimation, pas ici, car ce
   // sont des états runtime (hooks React), pas dérivables d'AppearanceConfig.
   enabled: boolean
+  // Palette libre (fond animé, mode Personnalisé — voir
+  // CustomThemeSettings.animatedColors) — présente uniquement dans ce cas ;
+  // undefined pour toute la Galerie, y compris Éclat, dont la palette fixe
+  // vit dans eclatGradients.ts (ECLAT_GRADIENT), jamais ici.
+  colors?: [string, string, string]
 }
 
-// Fond animé génératif (refonte v2, Phase 6) — axe exclusif à la Galerie : le
-// mode Personnalisé n'a pas d'équivalent (le prompt ne le prévoit que pour
-// "3-4 thèmes" nommés, pas pour un fond libre). Cas particulier "Éclat"
-// (prompt dédié) : c'est le SEUL thème dont la variante d'animation est
-// choisie librement par la personne (voir EclatVariant dans
-// src/types/profile.ts) plutôt que fixée par le thème — animationKind vaut
-// ici juste la variante par défaut ('braise'), utile pour que l'interrupteur
-// "Fond animé" générique (AppearanceSection.tsx) sache que ce thème EN A un,
-// mais la variante réellement affichée vient d'appearance.eclatVariant.
+// Fond animé génératif (refonte v2, Phase 6) — 5 thèmes de la Galerie en
+// déclarent un (voir GALLERY_THEMES[id].animationKind), fixé par le thème
+// (palette et forme non modifiables), sauf "Éclat" (prompt dédié) : seul
+// thème dont la variante d'animation est choisie librement par la personne
+// (voir EclatVariant) — animationKind vaut ici juste la variante par défaut
+// ('braise'), utile pour que l'interrupteur "Fond animé" générique
+// (AppearanceSection.tsx) sache que ce thème EN A un, mais la variante
+// réellement affichée vient d'appearance.eclatVariant.
+//
+// Le mode Personnalisé (refonte "fond animé personnalisé") a un équivalent
+// séparé : CustomThemeSettings.animatedBackground, avec sa propre palette
+// (animatedColors) ET son propre style d'animation (animationStyle, un des
+// 5 mêmes EclatVariant réutilisés comme catalogue de MOUVEMENTS — voir le
+// commentaire sur ce champ dans src/types/profile.ts). Ce n'est jamais
+// "Éclat" : la palette est libre, jamais orange/rouge/violet imposé.
 export function resolveAppearanceAnimation(appearance: AppearanceConfig): ResolvedAnimation {
-  if (appearance.kind !== 'gallery') return { kind: null, enabled: false }
+  if (appearance.kind !== 'gallery') {
+    if (appearance.settings.animatedBackground) {
+      return { kind: appearance.settings.animationStyle, enabled: true, colors: appearance.settings.animatedColors }
+    }
+    return { kind: null, enabled: false }
+  }
   const meta = GALLERY_THEMES[appearance.themeId]
   const kind = appearance.themeId === 'eclat' ? appearance.eclatVariant : meta.animationKind
   return { kind, enabled: meta.animationKind !== null && appearance.animatedBackground }

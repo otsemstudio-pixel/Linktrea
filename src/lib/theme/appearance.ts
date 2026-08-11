@@ -6,6 +6,7 @@ import { bestTextOn } from './color'
 import { GALLERY_THEMES } from './galleryThemes'
 import { resolveAppearanceBackground } from './resolveAppearance'
 import { deriveSurfaceTokens, oklchToHex } from './deriveSurfaces'
+import { ECLAT_ARC_ORANGE, ECLAT_ARC_RED, ECLAT_ARC_VIOLET } from './eclatGradients'
 
 export const BUTTON_STYLE_LABELS: Record<ButtonStyle, string> = {
   solid: 'Plein',
@@ -44,6 +45,12 @@ export function customSettingsFromTheme(appearance: AppearanceConfig, theme: The
   const themeMeta = GALLERY_THEMES[appearance.themeId]
   const background = resolveAppearanceBackground(appearance).hex
   const textHex = oklchToHex(deriveSurfaceTokens(background).fg)
+  // Repris du thème "Éclat" quitté (palette + variante), même principe
+  // "ajuster plutôt que repartir de zéro" que le reste de cette fonction —
+  // les 4 autres thèmes animés de la Galerie n'ont pas de palette à
+  // récupérer (leur animation ne repose pas sur une teinte : guilloche,
+  // bruit, respiration), donc rien à en reprendre ici.
+  const wasEclat = appearance.themeId === 'eclat'
 
   return {
     background,
@@ -57,5 +64,8 @@ export function customSettingsFromTheme(appearance: AppearanceConfig, theme: The
     headerLayout: themeMeta.headerLayout,
     shape: themeMeta.shape,
     signatureStyle: themeMeta.signatureStyle,
+    animatedBackground: wasEclat && appearance.animatedBackground,
+    animatedColors: [ECLAT_ARC_ORANGE, ECLAT_ARC_RED, ECLAT_ARC_VIOLET],
+    animationStyle: wasEclat ? appearance.eclatVariant : 'braise',
   }
 }

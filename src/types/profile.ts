@@ -181,6 +181,22 @@ export type CustomThemeSettings = {
   headerLayout: HeaderLayout
   shape: ShapeLanguage
   signatureStyle: SignatureStyle
+  // Fond animé (refonte "fond animé personnalisé") — superpose un arc
+  // chromatique animé par-dessus `background` ci-dessus, MÊME mécanique de
+  // rendu que le thème "Éclat" de la Galerie (voir EclatBackgroundLayer.tsx
+  // et buildAnimatedGradient dans eclatGradients.ts) mais avec une palette
+  // ET un style d'animation libres, pas la palette/variante fixes d'Éclat.
+  // "Éclat" lui-même reste exclusif à la Galerie (nom de thème, palette figée
+  // orange/rouge/violet) ; ceci est un axe séparé, générique, pas une façon
+  // d'obtenir Éclat en Personnalisé.
+  animatedBackground: boolean
+  animatedColors: [string, string, string]
+  // Réutilise EclatVariant comme catalogue de STYLES d'animation (pulsation,
+  // glissement, rotation...) — ces cinq variantes ne décrivent que le
+  // mouvement et l'intensité (voir ECLAT_VARIANT_META), pas la palette de
+  // couleurs elle-même : les réutiliser ici évite de dupliquer cinq
+  // animations CSS pour un axe qui n'a rien de spécifique à "Éclat".
+  animationStyle: EclatVariant
 }
 
 export type AppearanceConfig =
@@ -190,9 +206,10 @@ export type AppearanceConfig =
       animatedBackground: boolean
       // Variante du thème "Éclat" — présente pour tous les thèmes de la
       // Galerie (comme animatedBackground) mais seulement significative
-      // quand themeId === 'eclat' ; inerte sinon. Pas dans CustomThemeSettings
-      // : "Éclat" est exclusif à la Galerie, pas superposable aux autres
-      // thèmes en Personnalisé (voir le prompt).
+      // quand themeId === 'eclat' ; inerte sinon. Le thème "Éclat" nommé
+      // (palette orange/rouge/violet fixe) reste exclusif à la Galerie —
+      // voir CustomThemeSettings.animationStyle ci-dessus pour l'équivalent
+      // générique à palette libre du mode Personnalisé.
       eclatVariant: EclatVariant
       motion: MotionPreference
     }

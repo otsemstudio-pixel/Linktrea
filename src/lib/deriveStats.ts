@@ -3,17 +3,30 @@
 // de la sparkline se recalculent à chaque rendu à partir des données brutes.
 import type { Holding, Position, Profile } from '@/types'
 
-function parseYearMonth(value: string): number {
-  const [year, month] = value.split('-').map(Number)
+// 'YYYY-MM' → nombre de mois depuis l'an 0, ou null si la valeur ne suit pas
+// ce format — notamment Position.startDate juste après "Ajouter un poste"
+// dans l'éditeur (PositionsSection.tsx la crée avec startDate: '', avant que
+// la personne choisisse une date). null se propage explicitement plutôt
+// qu'un NaN silencieux : un split('-').map(Number) sur '' donnait déjà NaN,
+// qui contaminait ensuite Math.min/Math.max et affichait "NaN ANS" partout
+// où le chiffre clé est montré (profil public, carte de partage).
+function parseYearMonth(value: string): number | null {
+  const match = /^(\d{4})-(\d{1,2})$/.exec(value)
+  if (!match) return null
+  const year = Number(match[1])
+  const month = Number(match[2])
+  if (month < 1 || month > 12) return null
   return year * 12 + (month - 1)
 }
 
 export function yearsOfExperience(positions: Position[], now: Date = new Date()): number {
-  if (positions.length === 0) return 0
-  const starts = positions.map((p) => parseYearMonth(p.startDate))
-  const ends = positions.map((p) => (p.endDate ? parseYearMonth(p.endDate) : parseYearMonth(`${now.getFullYear()}-${now.getMonth() + 1}`)))
+  const starts = positions.map((p) => parseYearMonth(p.startDate)).filter((v): v is number => v !== null)
+  if (starts.length === 0) return 0
+  const ends = positions
+    .map((p) => (p.endDate ? parseYearMonth(p.endDate) : parseYearMonth(`${now.getFullYear()}-${now.getMonth() + 1}`)))
+    .filter((v): v is number => v !== null)
   const earliestStart = Math.min(...starts)
-  const latestEnd = Math.max(...ends)
+  const latestEnd = Math.max(...ends, earliestStart)
   return Math.max(0, Math.floor((latestEnd - earliestStart) / 12))
 }
 
@@ -37,7 +50,11 @@ export function sortedHoldings(holdings: Holding[]): Holding[] {
 }
 
 export function sortedPositions(positions: Position[]): Position[] {
-  return [...positions].sort((a, b) => parseYearMonth(b.startDate) - parseYearMonth(a.startDate))
+  // Un poste sans date valide (voir parseYearMonth) retombe tout en bas —
+  // -Infinity plutôt que de laisser passer null dans une soustraction, qui
+  // redonnerait NaN et un ordre de tri imprévisible.
+  const rank = (p: Position) => parseYearMonth(p.startDate) ?? -Infinity
+  return [...positions].sort((a, b) => rank(b) - rank(a))
 }
 
 // Courbe de progression pour la sparkline : nombre cumulé de compétences

@@ -256,6 +256,44 @@ function ThemeGallerySection() {
             />
           </label>
 
+          <div>
+            <label className="flex items-center gap-2 min-h-11 text-sm">
+              <input
+                type="checkbox"
+                checked={appearance.settings.animatedBackground}
+                onChange={(e) => updateSettings({ animatedBackground: e.target.checked })}
+                className="size-4 accent-[var(--accent)]"
+              />
+              Fond animé
+            </label>
+            {appearance.settings.animatedBackground && (
+              <>
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  {appearance.settings.animatedColors.map((hex, i) => (
+                    <label key={i} className="flex items-center gap-2 min-h-11">
+                      <input
+                        type="color"
+                        value={hex}
+                        onChange={(e) => {
+                          const next = [...appearance.settings.animatedColors] as [string, string, string]
+                          next[i] = e.target.value
+                          updateSettings({ animatedColors: next })
+                        }}
+                        className="h-9 w-full rounded-md border border-ink-raised bg-transparent p-0.5 shrink-0"
+                      />
+                    </label>
+                  ))}
+                </div>
+                <EclatVariantPicker
+                  value={appearance.settings.animationStyle}
+                  onChange={(animationStyle) => updateSettings({ animationStyle })}
+                  colors={appearance.settings.animatedColors}
+                  label="Style d'animation"
+                />
+              </>
+            )}
+          </div>
+
           {(
             [
               ['buttonColor', 'Couleur des boutons/cartes'],
@@ -428,9 +466,9 @@ function ThemeGallerySection() {
       )}
 
       <p className="text-xs text-muted mt-4">
-        Le fond, la typographie, le style de boutons/cartes et le layout d'en-tête pilotent déjà l'aperçu, en
-        Galerie comme en Personnalisé. Le fond animé reste propre à 4 thèmes de la Galerie — sans équivalent
-        en Personnalisé.
+        Le fond, la typographie, le style de boutons/cartes, le layout d'en-tête et le fond animé pilotent déjà
+        l'aperçu, en Galerie comme en Personnalisé — en Personnalisé, la palette et le style d'animation du
+        fond animé restent libres, jamais liés au thème "Éclat" de la Galerie.
       </p>
     </div>
   )

@@ -24,6 +24,29 @@ export const ECLAT_GRADIENT: Record<EclatVariant, string> = {
   nebuleuse: 'linear-gradient(160deg, #FF7A1A 0%, #E4322C 50%, #7A2EBF 100%)',
 }
 
+// Même forme de dégradé que ECLAT_GRADIENT ci-dessus (formes, angles, stops
+// identiques), mais avec une palette de 3 couleurs libre — réutilisé par le
+// fond animé du mode Personnalisé (voir CustomThemeSettings.animatedColors
+// dans src/types/profile.ts), qui reprend la mécanique d'Éclat sans imposer
+// sa palette. ECLAT_GRADIENT reste la version figée sur la palette de la
+// Galerie, non dérivée de cette fonction, pour ne rien risquer sur le thème
+// existant.
+export function buildAnimatedGradient(variant: EclatVariant, colors: [string, string, string]): string {
+  const [c1, c2, c3] = colors
+  switch (variant) {
+    case 'braise':
+      return `radial-gradient(circle at 50% 50%, ${c1} 0%, ${c2} 45%, ${c3} 100%)`
+    case 'maree':
+      return `linear-gradient(115deg, ${c1} 0%, ${c2} 30%, ${c3} 60%, ${c1} 100%)`
+    case 'crepuscule':
+      return `linear-gradient(135deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)`
+    case 'eclipse':
+      return `conic-gradient(from 0deg at 50% 50%, ${c1} 0%, ${c2} 33%, ${c3} 66%, ${c1} 100%)`
+    case 'nebuleuse':
+      return `linear-gradient(160deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)`
+  }
+}
+
 // "Vif, saturation pleine" (Braise/Marée) → "assourdi" (Crépuscule/Éclipse)
 // → "très subtil, faible opacité" (Nébuleuse) — l'opacité du calque contre
 // le fond sombre fixe suffit à porter cette distinction, sans avoir besoin

@@ -1,3 +1,4 @@
+import type { EclatVariant } from '@/types'
 import type { BackgroundTreatment } from '@/lib/theme/galleryThemes'
 import type { ResolvedAnimation } from '@/lib/theme/resolveAppearance'
 import { useBackgroundAnimation } from '@/lib/motion/useBackgroundAnimation'
@@ -27,7 +28,24 @@ type Props = {
 // lisibilité, animée ou non.
 export default function AppliedBackgroundLayer({ treatment, resolvedAnimation }: Props) {
   const animation = useBackgroundAnimation(resolvedAnimation)
-  if (treatment.kind === 'flat') return null
+
+  if (treatment.kind === 'flat') {
+    // Fond animé du mode Personnalisé (voir resolveAppearanceAnimation) —
+    // seul cas où un traitement 'flat' a quand même une décoration : aucun
+    // thème de la Galerie à fond 'flat' ne déclare d'animationKind, donc
+    // animation.colors n'est jamais défini ici pour ces thèmes-là — le
+    // cast ci-dessous est sûr par construction (resolveAppearanceAnimation
+    // ne pose colors que quand kind = settings.animationStyle, un EclatVariant).
+    if (animation.kind && animation.colors) {
+      return (
+        <div aria-hidden="true" className="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
+          <div className="absolute inset-0" style={{ background: treatment.base }} />
+          <EclatBackgroundLayer variant={animation.kind as EclatVariant} active={animation.active} colors={animation.colors} />
+        </div>
+      )
+    }
+    return null
+  }
 
   if (treatment.kind === 'gradient') {
     return (

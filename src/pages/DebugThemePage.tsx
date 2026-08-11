@@ -58,6 +58,9 @@ export default function DebugThemePage() {
       headerLayout: 'classic',
       shape: 'soft',
       signatureStyle: 'plain',
+      animatedBackground: false,
+      animatedColors: ['#FF7A1A', '#E4322C', '#7A2EBF'],
+      animationStyle: 'braise',
     },
     motion: 'full',
   }

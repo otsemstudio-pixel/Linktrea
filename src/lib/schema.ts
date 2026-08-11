@@ -2,6 +2,7 @@
 // payload venant d'une source non fiable (hash d'URL, fichier JSON importé) :
 // on ne fait jamais confiance à un JSON.parse() brut sur ces canaux.
 import { z } from 'zod'
+import { ECLAT_ARC_ORANGE, ECLAT_ARC_RED, ECLAT_ARC_VIOLET } from './theme/eclatGradients'
 
 // Assainissement du contenu public (refonte sécurité, Phase 6) — vérifie le
 // protocole RÉEL tel que le navigateur le comprendrait (new URL().protocol),
@@ -203,6 +204,13 @@ const shapeLanguageSchema = z.enum(['sharp', 'soft', 'pill']).catch('soft')
 // au-dessus (personnalisation avancée, Phase 4).
 const signatureStyleSchema = z.enum(['plain', 'stamp']).catch('plain')
 
+// .catch(...) — même raison que shapeLanguageSchema plus haut : un profil
+// Personnalisé enregistré avant l'ajout du fond animé (refonte "fond animé
+// personnalisé") n'a jamais eu ces trois champs.
+const animatedColorsSchema = z
+  .tuple([z.string(), z.string(), z.string()])
+  .catch([ECLAT_ARC_ORANGE, ECLAT_ARC_RED, ECLAT_ARC_VIOLET])
+
 const customThemeSettingsSchema = z.object({
   background: z.string(),
   buttonColor: z.string(),
@@ -215,6 +223,9 @@ const customThemeSettingsSchema = z.object({
   headerLayout: headerLayoutSchema,
   shape: shapeLanguageSchema,
   signatureStyle: signatureStyleSchema,
+  animatedBackground: z.boolean().catch(false),
+  animatedColors: animatedColorsSchema,
+  animationStyle: eclatVariantSchema,
 })
 
 // z.discriminatedUnion sur 'kind' — cohérent avec AppearanceConfig

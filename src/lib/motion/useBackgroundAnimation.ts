@@ -12,10 +12,14 @@ export type ActiveAnimation = {
   // la page) et la visibilité de l'onglet. Un seul point de calcul pour ne
   // pas répéter cette combinaison dans chaque composant qui anime un fond.
   active: boolean
+  // Simple passe-plat de ResolvedAnimation.colors (fond animé, mode
+  // Personnalisé) — ce hook ne fait que gater `active`, il n'a aucune
+  // raison de connaître la palette elle-même.
+  colors?: [string, string, string]
 }
 
 export function useBackgroundAnimation(resolved: ResolvedAnimation): ActiveAnimation {
   const { reduced } = useMotionPrefs()
   const tabVisible = useTabVisible()
-  return { kind: resolved.kind, active: resolved.enabled && !reduced && tabVisible }
+  return { kind: resolved.kind, active: resolved.enabled && !reduced && tabVisible, colors: resolved.colors }
 }
