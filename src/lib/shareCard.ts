@@ -94,6 +94,47 @@ function fitFontSize(
   return size
 }
 
+// Pour un texte trop long (poste + lieu, notamment) : essaie d'abord de
+// tenir sur UNE ligne sans descendre sous `minSingleLineSize` (un plancher
+// pensé pour rester lisible, pas la taille minimale absolue) ; si ça ne
+// suffit toujours pas, répartit plutôt sur plusieurs lignes à une taille
+// confortable (`preferredSize`, réduite seulement si une ligne répartie ne
+// tient toujours pas) — préfère revenir à la ligne plutôt que réduire la
+// police jusqu'à l'illisible (bug repéré à l'usage : un texte long finissait
+// écrasé sur une seule ligne à peine lisible plutôt que sur deux lignes
+// nettes). Ne coupe jamais un mot (voir wrapTokens).
+function fitOrWrapLine(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  family: string,
+  weight: number,
+  preferredSize: number,
+  minSingleLineSize: number,
+  maxWidth: number,
+): { lines: string[]; size: number } {
+  let size = preferredSize
+  ctx.font = `${weight} ${size}px "${family}"`
+  while (size > minSingleLineSize && ctx.measureText(text).width > maxWidth) {
+    size -= 2
+    ctx.font = `${weight} ${size}px "${family}"`
+  }
+  if (ctx.measureText(text).width <= maxWidth) {
+    return { lines: [text], size }
+  }
+
+  const words = text.split(' ')
+  size = preferredSize
+  let lines: string[]
+  for (;;) {
+    ctx.font = `${weight} ${size}px "${family}"`
+    lines = wrapTokens(ctx, words, ' ', ctx.font, maxWidth)
+    const longest = Math.max(...lines.map((line) => ctx.measureText(line).width))
+    if (longest <= maxWidth || size <= minSingleLineSize) break
+    size -= 2
+  }
+  return { lines, size }
+}
+
 async function ensureFontsLoaded(titleFamily: string, monoFamily: string): Promise<void> {
   await Promise.all([
     document.fonts.load(`700 56px "${titleFamily}"`),
@@ -317,8 +358,18 @@ async function drawMedallion(
   ctx.stroke()
 }
 
+// Résultat de drawIdentityText — `bottom` est la baseline de la DERNIÈRE
+// ligne réellement dessinée (headline/location incluse si elle a débordé
+// sur une seconde ligne), et `headlineSize` la taille de police réellement
+// utilisée pour cette ligne (0 si aucune headline/location) — les deux
+// permettent aux appelants de calculer un espacement correct avant le
+// premier bloc de contenu, plutôt qu'une constante fixe qui suppose une
+// headline sur une seule ligne à une taille standard (bug repéré à
+// l'usage : un chiffre clé en gros caractères pouvait alors chevaucher une
+// headline/location longue).
+type IdentityTextResult = { bottom: number; headlineSize: number }
+
 // Nom + headline centrés horizontalement sur centerX, empilés à partir de y.
-// Renvoie le y suivant (après le dernier élément dessiné).
 function drawIdentityText(
   ctx: CanvasRenderingContext2D,
   profile: Profile,
@@ -328,7 +379,7 @@ function drawIdentityText(
   y: number,
   maxWidth: number,
   nameSize: { start: number; min: number },
-): number {
+): IdentityTextResult {
   ctx.textAlign = 'center'
   ctx.textBaseline = 'alphabetic'
 
@@ -337,18 +388,30 @@ function drawIdentityText(
   ctx.fillStyle = colors.fg
   ctx.font = `700 ${size}px "${duo.titleFamily}"`
   ctx.fillText(name, centerX, y)
-  let nextY = y
 
   const headline = [profile.identity.headline, profile.identity.location].filter(Boolean).join(' · ')
-  if (headline) {
-    nextY += Math.round(size * 0.75)
-    const headlineSize = fitFontSize(ctx, headline, duo.titleFamily, 400, Math.round(size * 0.48), 18, maxWidth)
-    ctx.fillStyle = colors.muted
-    ctx.font = `400 ${headlineSize}px "${duo.titleFamily}"`
-    ctx.fillText(headline, centerX, nextY)
-  }
+  if (!headline) return { bottom: y, headlineSize: 0 }
 
-  return nextY
+  const firstLineY = y + Math.round(size * 0.75)
+  // Poste + lieu réunis par ' · ' peuvent rester trop longs pour une seule
+  // ligne lisible — répartis sur deux lignes plutôt qu'écrasés (voir
+  // fitOrWrapLine) : 26px est un plancher de LISIBILITÉ avant de préférer
+  // le retour à la ligne, pas la taille minimale absolue.
+  const { lines, size: headlineSize } = fitOrWrapLine(
+    ctx,
+    headline,
+    duo.titleFamily,
+    400,
+    Math.round(size * 0.48),
+    26,
+    maxWidth,
+  )
+  ctx.fillStyle = colors.muted
+  ctx.font = `400 ${headlineSize}px "${duo.titleFamily}"`
+  const lineHeight = Math.round(headlineSize * 1.35)
+  lines.forEach((line, i) => ctx.fillText(line, centerX, firstLineY + i * lineHeight))
+
+  return { bottom: firstLineY + (lines.length - 1) * lineHeight, headlineSize }
 }
 
 // Découpe une liste de textes déjà joints par un séparateur en plusieurs
@@ -615,8 +678,15 @@ async function drawContentStack(
 ): Promise<number> {
   let y = startY
   let first = true
+  // Le tout premier bloc actif recevait auparavant un gap de ZÉRO (sur
+  // l'idée que l'appelant aurait déjà laissé assez de place avant startY) —
+  // en pratique, l'ascendant d'une grosse police (le chiffre clé, jusqu'à
+  // 170px) déborde largement au-dessus de sa propre baseline et chevauchait
+  // le texte identité juste au-dessus (bug repéré à l'usage, sur les trois
+  // formats). Le gap prévu pour CE bloc s'applique donc toujours, y compris
+  // pour le premier.
   const gap = (base: number) => {
-    y += first ? 0 : base
+    y += base
     first = false
   }
 
@@ -711,7 +781,7 @@ async function composeSquare(
   await drawMedallion(ctx, profile, colors, duo, width / 2, medallionCenterY, 220, fidelity.darkHex, fidelity.accentHex)
 
   let y = medallionCenterY + 110 + 78
-  y = drawIdentityText(ctx, profile, colors, duo, width / 2, y, maxTextWidth, { start: 58, min: 34 })
+  y = drawIdentityText(ctx, profile, colors, duo, width / 2, y, maxTextWidth, { start: 58, min: 34 }).bottom
 
   y += 100
   await drawContentStack(
@@ -758,7 +828,7 @@ async function composePortrait(
   await drawMedallion(ctx, profile, colors, duo, width / 2, medallionCenterY, 260, fidelity.darkHex, fidelity.accentHex)
 
   let y = medallionCenterY + 130 + 90
-  y = drawIdentityText(ctx, profile, colors, duo, width / 2, y, maxTextWidth, { start: 64, min: 36 })
+  y = drawIdentityText(ctx, profile, colors, duo, width / 2, y, maxTextWidth, { start: 64, min: 36 }).bottom
 
   y += 160
   // Filet + pied de carte ancrés à distance fixe du bord bas, à l'intérieur
@@ -888,10 +958,23 @@ async function composeBusinessCard(
   const headline = [profile.identity.headline, profile.identity.location].filter(Boolean).join(' · ')
   if (headline) {
     const headlineY = nameY + Math.round(nameSize * 0.72)
-    const headlineSize = fitFontSize(ctx, headline, duo.titleFamily, 400, Math.round(nameSize * 0.44), 16, leftMaxWidth)
+    // Poste + lieu peuvent rester trop longs pour cette colonne étroite —
+    // répartis sur deux lignes plutôt qu'écrasés à peine lisibles (voir
+    // fitOrWrapLine ; bug repéré à l'usage : ce texte débordait auparavant
+    // dans le cadre du QR).
+    const { lines, size: headlineSize } = fitOrWrapLine(
+      ctx,
+      headline,
+      duo.titleFamily,
+      400,
+      Math.round(nameSize * 0.44),
+      20,
+      leftMaxWidth,
+    )
     ctx.fillStyle = colors.muted
     ctx.font = `400 ${headlineSize}px "${duo.titleFamily}"`
-    ctx.fillText(headline, leftX, headlineY)
+    const lineHeight = Math.round(headlineSize * 1.3)
+    lines.forEach((line, i) => ctx.fillText(line, leftX, headlineY + i * lineHeight))
   }
 
   // Marque + URL ancrées en bas de la colonne gauche — pas drawFooter, pensé
