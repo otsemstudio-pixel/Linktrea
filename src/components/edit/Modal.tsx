@@ -47,9 +47,16 @@ export default function Modal({ open, title, onClose, children, maxWidthClassNam
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: reduced ? 0 : 16 }}
             transition={{ duration: reduced ? 0 : 0.2 }}
-            className={`w-full ${maxWidthClassName} rounded-lg border border-ink-raised bg-ink p-5 text-paper`}
+            className={`w-full ${maxWidthClassName} max-h-[90dvh] overflow-y-auto rounded-lg border border-ink-raised bg-ink p-5 text-paper`}
           >
-            <div className="flex justify-between items-center mb-4">
+            {/* sticky, pas juste en tête du flux : une fois le contenu plus
+                haut que max-h-[90dvh] (voir ci-dessus) et le panneau devenu
+                scrollable, le titre/bouton fermer doivent rester atteignables
+                sans remonter tout en haut — correctif "modale carte de
+                partage" Partie 1, la modale n'avait auparavant AUCUNE limite
+                de hauteur ni zone de scroll, un aperçu plus haut (Portrait)
+                pouvait pousser le reste du contenu hors champ. */}
+            <div className="flex justify-between items-center mb-4 sticky top-0 bg-ink -mt-5 -mx-5 px-5 pt-5 pb-4 z-10">
               <h2 className="font-medium">{title}</h2>
               <button
                 type="button"

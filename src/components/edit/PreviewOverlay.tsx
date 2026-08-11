@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import type { Profile } from '@/types'
 import ProfileView from '@/components/ProfileView'
 import { useMotionPrefs } from '@/lib/motion/MotionPrefsContext'
+import { usePublishStatus } from './usePublishStatus'
 
 type Props = {
   open: boolean
@@ -14,6 +15,8 @@ type Props = {
 // Phase 6, avec le reste du layout deux colonnes.
 export default function PreviewOverlay({ open, profile, onClose }: Props) {
   const { reduced } = useMotionPrefs()
+  // correctif "modale carte de partage" Partie 2 — voir DesktopPreviewPanel.tsx.
+  const { publicUrl } = usePublishStatus()
 
   return (
     <AnimatePresence>
@@ -33,7 +36,7 @@ export default function PreviewOverlay({ open, profile, onClose }: Props) {
             <ArrowLeft size={16} aria-hidden="true" />
             Retour à l'édition
           </button>
-          <ProfileView profile={profile} standalone={false} />
+          <ProfileView profile={profile} standalone={false} publicUrl={publicUrl} />
         </motion.div>
       )}
     </AnimatePresence>

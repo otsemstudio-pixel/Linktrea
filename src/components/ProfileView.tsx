@@ -24,6 +24,20 @@ type Props = {
   // 2) les landmarks <aside>/<main> — EditPage a déjà son propre <main>, on
   //    n'en veut pas un second imbriqué dedans quand on n'est qu'un aperçu.
   standalone?: boolean
+  // URL publique de CE profil (correctif "modale carte de partage" Partie 2)
+  // — undefined = "cette page EST la page publique" (SlugPage/ViewPage,
+  // window.location.href y est déjà correct, voir ActionBar.tsx) ; null =
+  // aperçu éditeur mais profil pas encore publié (aucune URL n'existe) ;
+  // string = l'URL publique réelle, calculée depuis le slug PUBLIÉ (voir
+  // usePublishStatus.ts), jamais depuis window.location dans ce cas — ce
+  // dernier resterait sur /edit.
+  publicUrl?: string | null
+  // correctif "panneau d'aperçu desktop" — true uniquement depuis
+  // DesktopPreviewPanel.tsx : ce panneau est toujours étroit (390px) même
+  // quand la VRAIE page qui l'entoure est bien assez large pour du desktop,
+  // donc le @container ci-dessous ne peut pas s'en rendre compte tout seul
+  // (voir ActionBar.tsx pour le détail du problème que ça cause).
+  staticActionBar?: boolean
 }
 
 type LandmarkProps = { standalone: boolean; children: ReactNode } & HTMLAttributes<HTMLElement>
@@ -37,7 +51,7 @@ function Main({ standalone, children, ...rest }: LandmarkProps) {
   return standalone ? <main {...rest}>{children}</main> : <div {...rest}>{children}</div>
 }
 
-export default function ProfileView({ profile, standalone = true }: Props) {
+export default function ProfileView({ profile, standalone = true, publicUrl, staticActionBar = false }: Props) {
   const resolvedBackground = useAppliedTheme(profile.appearance, profile.theme.accent, standalone)
 
   useDocumentMeta(profile, standalone)
@@ -96,7 +110,7 @@ export default function ProfileView({ profile, standalone = true }: Props) {
             <div className="px-6 @min-[1024px]:px-0 mt-1">
               <SignatureQuote signature={profile.identity.signature} style={signatureStyle} />
             </div>
-            <ActionBar profile={profile} />
+            <ActionBar profile={profile} publicUrl={publicUrl} staticPosition={staticActionBar} />
           </Aside>
 
           <Main standalone={standalone} className="@min-[1024px]:min-w-0">

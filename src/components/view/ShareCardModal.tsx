@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Download } from 'lucide-react'
 import type { Profile } from '@/types'
-import {
-  renderShareCardToCanvas,
-  exportCanvasToBlob,
-  downloadCanvasBlob,
-  SHARE_CARD_DIMENSIONS,
-  type ShareCardFormat,
-} from '@/lib/shareCard'
+import { renderShareCardToCanvas, exportCanvasToBlob, downloadCanvasBlob, type ShareCardFormat } from '@/lib/shareCard'
 import {
   loadShareCardContent,
   saveShareCardContent,
@@ -20,7 +14,9 @@ import Modal from '@/components/edit/Modal'
 type Props = {
   open: boolean
   profile: Profile
-  publicUrl: string
+  // null = profil pas encore publié (correctif "modale carte de partage"
+  // Partie 2) — voir ProfileView.tsx pour la provenance de cette valeur.
+  publicUrl: string | null
   onClose: () => void
 }
 
@@ -68,7 +64,7 @@ export default function ShareCardModal({ open, profile, publicUrl, onClose }: Pr
     if (!canvas) return
     const token = ++renderToken.current
     setRendering(true)
-    renderShareCardToCanvas(canvas, profile, format, content, publicUrl)
+    renderShareCardToCanvas(canvas, profile, format, content, publicUrl ?? undefined)
       .catch(() => {
         // Rien d'affiché de correct si ça échoue — le bouton Télécharger
         // reste désactivé (rendering=true) plutôt que de proposer un export
@@ -96,15 +92,17 @@ export default function ShareCardModal({ open, profile, publicUrl, onClose }: Pr
     downloadCanvasBlob(blob, `ledger-${slugify(profile.identity.fullName) || 'profil'}-${format}.png`)
   }
 
-  const { width, height } = SHARE_CARD_DIMENSIONS[format]
-  // Aperçu réduit à l'écran mais fidèle au pixel près dans ses proportions
-  // (prompt, Phase 3) : seule la taille CSS d'AFFICHAGE change, jamais la
-  // résolution réelle du bitmap (canvas.width/height, posée par
-  // renderShareCardToCanvas d'après le format) — une largeur d'affichage
-  // fixe avec une hauteur calculée depuis le ratio du format garde ça vrai
-  // quel que soit le format choisi.
-  const previewWidth = 260
-  const previewHeight = Math.round((previewWidth * height) / width)
+  // Zone d'aperçu à hauteur CSS CONSTANTE, quel que soit le format choisi
+  // (correctif "modale carte de partage" Partie 1) — avant ce correctif, la
+  // hauteur du conteneur était calculée depuis le ratio du format actif
+  // (previewWidth * height / width), donc changeait à chaque bascule
+  // Carré/Portrait/Paysage et étirait toute la modale en cascade. Le canvas
+  // s'adapte maintenant PAR CSS (max-width/max-height + width/height: auto,
+  // même mécanique que object-fit: contain) à l'intérieur de ce cadre fixe,
+  // sans jamais changer sa taille — seules ses dimensions RÉELLES d'export
+  // (canvas.width/height, posées par renderShareCardToCanvas) suivent le
+  // format, exactement comme avant (Phase 1/3 de la refonte, inchangées).
+  const PREVIEW_BOX_HEIGHT = 300
 
   return (
     <Modal open={open} title="Carte de partage" onClose={onClose} maxWidthClassName="max-w-md">
@@ -126,13 +124,11 @@ export default function ShareCardModal({ open, profile, publicUrl, onClose }: Pr
         </div>
       </div>
 
-      <div className="flex justify-center mb-4">
-        <div
-          className="rounded-md overflow-hidden border border-ink-raised"
-          style={{ width: previewWidth, height: previewHeight }}
-        >
-          <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
-        </div>
+      <div
+        className="flex items-center justify-center mb-4 rounded-md overflow-hidden border border-ink-raised bg-ink-raised/20"
+        style={{ height: PREVIEW_BOX_HEIGHT }}
+      >
+        <canvas ref={canvasRef} style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', display: 'block' }} />
       </div>
 
       <div className="mb-4">
