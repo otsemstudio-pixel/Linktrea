@@ -1,90 +1,117 @@
 # Linktrea
 
-Portfolio personnel à esthétique financière — un profil professionnel présenté
-comme un relevé de portefeuille. 100 % frontend : aucun serveur, aucune base
-de données.
+Portfolio professionnel présenté comme un relevé de portefeuille financier. Chaque personne
+édite son profil dans un éditeur privé, puis le publie sur une URL courte (`/son-slug`) qu'elle
+partage.
 
-Deux modes, deux URLs :
+## Fonctionnalités
 
-- **`/`** — mode consultation (public). C'est ce que tu partages.
-- **`/edit`** — mode éditeur (privé). Formulaire pour saisir tes informations
-  et générer le lien à partager.
+**Édition et personnalisation**
+- Sections structurées : identité, positions, compétences, certificats, réseaux.
+- Système de thème à deux niveaux : 13 thèmes nommés en Galerie (dont "Éclat", à fond animé), ou
+  mode Personnalisé (couleurs, police, style de bouton, mise en page d'en-tête, langage de forme,
+  fond animé libres). 14 duos typographiques, 6 traitements photo, signature personnelle.
+- Indicateur de complétude du profil, avec liens directs vers les sections manquantes.
+- Historique des modifications : consultation et restauration d'une version précédente.
+- Tuto interactif au premier passage dans l'éditeur.
 
-## Installation
+**Publication et partage**
+- Brouillon et version publiée sont séparés : les modifications restent privées tant qu'elles ne
+  sont pas explicitement publiées (voir Architecture ci-dessous).
+- Lien public court, QR code, carte de partage (carré, portrait, paysage, carte de visite),
+  génération de CV en PDF (modèles Classique et Moderne, bilingue FR/EN, photo optionnelle).
+
+**Sécurité et compte**
+- Connexion par lien magique (email), CAPTCHA Turnstile optionnel.
+- Suppression de compte en libre-service.
+- Row Level Security sur toutes les tables, validation structurelle côté base des données écrites
+  (voir [Sécurité](#sécurité)).
+
+**Statistiques**
+- Vues et clics sur les liens du profil, agrégés par jour, réservés au propriétaire du profil.
+
+## Stack technique
+
+- React 18, React Router 7 (`HashRouter`), TypeScript, Vite 8
+- Tailwind CSS 4, Motion (animations)
+- react-hook-form + zod pour les formulaires et leur validation
+- Supabase (base de données Postgres, authentification, RLS)
+- oxlint
+
+## Architecture
+
+Deux modes de stockage, au choix via une variable d'environnement :
+
+- **`local`** — un seul profil, dans le `localStorage` du navigateur. Pour développer sans
+  réseau, sans rien configurer.
+- **`supabase`** — mode multi-utilisateurs, celui utilisé en production.
+
+En mode Supabase, chaque compte a une seule ligne dans `profiles`, avec deux versions du contenu
+qui ne sont **jamais synchronisées automatiquement** :
+
+- `data` — le brouillon, modifié en direct depuis `/edit`. Toujours privé (Row Level Security :
+  lecture réservée au propriétaire).
+- `published_snapshot` — la version publique, créée uniquement au clic sur "Publier" ou "Publier
+  les modifications". La route publique `/:slug` ne lit jamais `data` : elle lit la vue
+  `public_profiles`, qui n'expose que `published_snapshot` des profils publiés.
+
+Une modification du brouillon reste donc invisible publiquement jusqu'à sa publication explicite.
+Chaque écriture du brouillon capture aussi la version précédente dans un historique, consultable
+et restaurable depuis l'éditeur.
+
+Un mode de secours sans Supabase existe également : la racine `/` sert un unique profil statique
+depuis `public/data.json` (voir `npm run seed`), pour un déploiement à profil unique sans backend.
+Ce n'est pas le flux principal du produit.
+
+## Installation et développement local
 
 ```bash
 npm install
+cp .env.example .env
 ```
 
-## Lancement
+Renseigne `.env` :
+
+| Variable | Rôle |
+|---|---|
+| `VITE_STORAGE_MODE` | `local` (défaut, sans réseau) ou `supabase`. |
+| `VITE_SUPABASE_URL` | URL du projet Supabase. Requise seulement en mode `supabase`. |
+| `VITE_SUPABASE_ANON_KEY` | Clé publique (anon/publishable) du projet Supabase. Jamais la clé `service_role`. |
+| `VITE_TURNSTILE_SITE_KEY` | Optionnelle — clé de site Cloudflare Turnstile pour le CAPTCHA de `/login`. Sans elle, la connexion fonctionne quand même, juste sans CAPTCHA. |
 
 ```bash
 npm run dev       # serveur de développement
-npm run build     # build de production dans dist/
+npm run build     # vérification des types + build de production dans dist/
 npm run preview   # sert le build de production localement
+npm run lint      # oxlint
 npm run seed      # régénère public/data.json avec un profil de démonstration
 ```
 
-## Persistance — trois canaux
+En mode `supabase`, le schéma (tables, fonctions, policies RLS) vit dans `supabase/migrations/` —
+chaque fichier est commenté et prévu pour être relu puis exécuté manuellement dans l'éditeur SQL
+de Supabase, dans l'ordre, aucun n'est appliqué automatiquement.
 
-Il n'y a pas de backend, donc pas de base de données. Les données transitent
-par trois canaux complémentaires, chacun avec un rôle différent :
+## Déploiement
 
-1. **`localStorage`** — sauvegarde automatique du brouillon pendant l'édition
-   (clé `ledger:draft`, débounce 500 ms). Purement local à ton navigateur :
-   si tu vides le cache ou changes d'appareil, le brouillon disparaît.
-2. **URL encodée** — dans `/edit`, le bouton "Lien" sérialise ton profil en
-   JSON, le compresse (`lz-string`) et produit une URL du type
-   `https://<domaine>/#/p/<payload>`. C'est le mécanisme de partage
-   principal : toutes les données du profil vivent dans l'URL elle-même, rien
-   n'est stocké ailleurs. Un avertissement s'affiche si le lien dépasse
-   4000 caractères (certains services le tronqueraient).
-3. **Export / Import JSON** — le bouton "Exporter" télécharge
-   `linktrea-data.json` ; "Importer" recharge un fichier dans l'éditeur. C'est
-   à la fois une sauvegarde de secours et le mécanisme pour figer un profil
-   par défaut (voir ci-dessous).
+Le projet est déployé en parallèle sur deux cibles, toutes deux compatibles grâce au routing en
+`HashRouter` (aucune règle de réécriture SPA nécessaire) :
 
-**Ordre de priorité au chargement de `/`** : payload dans l'URL →
-`/public/data.json` → état vide (qui renvoie vers `/edit`).
+- **Vercel** — `vercel.json` ne fait que fixer un cache long sur les fichiers statiques hashés.
+- **GitHub Pages** — via `.github/workflows/deploy.yml`, déclenché à chaque push sur `main`.
 
-## Figer ton profil pour la production
-
-Par défaut, `/` n'affiche rien tant qu'aucun profil n'est trouvé — pas de
-fausses données de démonstration dans le build de production. Pour que ta
-page affiche *ton* profil par défaut (sans dépendre d'un lien partagé) :
-
-1. Remplis ton profil dans `/edit`.
-2. Clique sur "Exporter" pour télécharger `linktrea-data.json`.
-3. Renomme ce fichier en `data.json` et place-le dans `public/`.
-4. `npm run build` (ou déploie directement — voir plus bas).
-
-`public/data.json` n'est **jamais committé** (voir `.gitignore`) : chaque
-déploiement doit y déposer son propre profil, sinon `/` affiche l'état vide.
-
-## Données de démonstration
-
-`npm run seed` régénère `public/data.json` à partir du profil de référence
-(`src/lib/demoProfile.ts`, un exemple réaliste d'analyste financière) — utile
-pour voir le site peuplé en développement local. Ce fichier généré reste
-ignoré par git ; il ne part jamais dans le dépôt ni dans un déploiement à
-moins que tu ne le figes toi-même comme décrit plus haut.
-
-## Déploiement (Vercel)
-
-Le routing (`/`, `/edit`, `/p/:payload`) utilise `HashRouter` : toute la
-navigation se fait après le `#`, qui n'est jamais envoyé au serveur. Il n'y a
-donc **pas besoin de règle de réécriture SPA** — Vercel sert `index.html` à
-la racine par défaut, ce qui suffit pour toutes les routes. Le `vercel.json`
-du dépôt ne fait que fixer un cache long sur les fichiers statiques hashés
-dans `assets/`.
+Pour qu'un déploiement en mode `supabase` fonctionne, configure aussi côté Supabase
+(Authentication → URL Configuration) le "Site URL" et les "Redirect URLs" pour qu'ils
+correspondent au(x) domaine(s) réel(s) du déploiement — sans ça, le lien magique de connexion
+redirige vers la mauvaise adresse.
 
 ## Sécurité
 
-Pour signaler une vulnérabilité, voir [SECURITY.md](SECURITY.md).
+Row Level Security activé sur toutes les tables, accès aux données sensibles exclusivement via
+des fonctions dédiées plutôt qu'un accès direct aux tables, et un garde-fou structurel côté base
+qui rejette les écritures anormales dans `profiles.data` (payload disproportionné, structure
+invalide) — une protection contre un appel direct à l'API qui contournerait la validation côté
+client. Pour signaler une vulnérabilité, voir [SECURITY.md](SECURITY.md).
 
-## Thèmes
+## Licence
 
-Quatre presets (`terminal`, `ledger`, `vault`, `tape`), choisis dans
-`/edit` → Apparence. Chacun a sa propre palette (vérifiée WCAG AA), sa paire
-typographique et son intensité d'animation — voir `/debug/theme` pour un
-aperçu de la palette et de l'échelle typographique de chaque preset.
+Aucune licence n'est déclarée dans ce dépôt.
