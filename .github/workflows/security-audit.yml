@@ -1,0 +1,27 @@
+name: Security audit
+
+# Indépendant de deploy.yml : ce workflow alerte (statut rouge sur GitHub
+# Actions) sans jamais bloquer le déploiement, qui reste son propre
+# mécanisme séparé — voir la Phase 3 du prompt "Durcissement avant
+# ouverture à davantage d'utilisateurs".
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Détecte une vulnérabilité publiée après coup sur une dépendance qui n'a
+  # pas changé depuis longtemps, indépendamment de toute activité git.
+  schedule:
+    - cron: "0 6 * * 1" # tous les lundis à 6h UTC
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high

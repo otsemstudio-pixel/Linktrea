@@ -78,6 +78,10 @@ la racine par défaut, ce qui suffit pour toutes les routes. Le `vercel.json`
 du dépôt ne fait que fixer un cache long sur les fichiers statiques hashés
 dans `assets/`.
 
+## Sécurité
+
+Pour signaler une vulnérabilité, voir [SECURITY.md](SECURITY.md).
+
 ## Thèmes
 
 Quatre presets (`terminal`, `ledger`, `vault`, `tape`), choisis dans
