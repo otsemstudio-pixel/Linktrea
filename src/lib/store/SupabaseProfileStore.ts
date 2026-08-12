@@ -12,7 +12,11 @@ import { ProfileStoreError } from './ProfileStore'
 // pas du tout au schéma (corruption, changement de forme) tombe dans le
 // même repli plutôt que de faire échouer loadMine/loadBySlug : l'interface
 // ProfileStore ne laisse pas de place à un troisième état "corrompu".
-function parseProfileData(raw: unknown): Profile {
+// Exportée : src/lib/profileHistory.ts (Phase 2, doc "Complétude,
+// historique, publication différée") applique exactement le même repli à la
+// plus ancienne entrée d'historique de chaque compte, qui vaut elle aussi
+// '{}' (capturée par le trigger avant le tout premier enregistrement réel).
+export function parseProfileData(raw: unknown): Profile {
   const result = profileSchema.safeParse(raw)
   return result.success ? result.data : createEmptyProfile()
 }
@@ -41,15 +45,21 @@ async function requireUserId(): Promise<string> {
 }
 
 export class SupabaseProfileStore implements ProfileStore {
+  // Lit public_profiles, pas profiles directement (doc "Complétude,
+  // historique, publication différée", Phase 3) — la vue expose
+  // published_snapshot (aliasé `data`), jamais le brouillon en cours
+  // d'édition, et ne liste que les profils is_published = true avec un
+  // snapshot déjà posé. profiles n'a d'ailleurs plus de policy de lecture
+  // publique du tout : un visiteur anonyme ne peut lire QUE cette vue.
   async loadBySlug(slug: string): Promise<Profile | null> {
     const { data, error } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('data')
       .eq('slug', slug.toLowerCase())
       .maybeSingle()
 
     if (error) throw mapError(error, 'Impossible de charger ce profil pour le moment. Réessaie dans un instant.')
-    if (!data) return null
+    if (!data || !data.data) return null
     return parseProfileData(data.data)
   }
 

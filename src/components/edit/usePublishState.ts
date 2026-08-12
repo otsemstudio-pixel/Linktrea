@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { getProfileStore, ProfileStoreError } from '@/lib/store'
 import type { SlugAvailability } from '@/lib/store/ProfileStore'
 import { slugify, isValidSlugFormat } from '@/lib/slug'
+import { publishProfileChanges } from '@/lib/publishDiff'
+
+const STORAGE_MODE = import.meta.env.VITE_STORAGE_MODE === 'supabase' ? 'supabase' : 'local'
 
 const CHECK_DEBOUNCE_MS = 400
 const MAX_SUGGESTION_ATTEMPTS = 30
@@ -110,6 +113,22 @@ export function usePublishState(fullName: string) {
       if (result.ok) {
         setSavedSlug(slugInput)
         setIsPublished(true)
+        // Doc "Complétude, historique, publication différée", Phase 3, Cas 1 :
+        // la toute première publication (et tout changement de slug tant
+        // qu'on est déjà dans ce flux) doit créer/rafraîchir l'instantané
+        // public dans la foulée, sinon la route publique (qui lit
+        // published_snapshot via public_profiles, pas `data`) resterait vide
+        // — réservé au mode Supabase, ce concept n'existe pas en local.
+        if (STORAGE_MODE === 'supabase') {
+          try {
+            await publishProfileChanges()
+          } catch {
+            setActionError(
+              "Le lien a été enregistré, mais la mise à jour du contenu public a échoué. Réessaie dans un instant.",
+            )
+            return
+          }
+        }
         setActionMessage('Profil publié.')
       } else if (result.reason === 'taken') {
         setActionError('Ce lien est déjà pris. Choisis-en un autre.')

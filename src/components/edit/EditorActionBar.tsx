@@ -1,4 +1,4 @@
-import { BarChart3, Eye, Share2, Download, FileDown } from 'lucide-react'
+import { BarChart3, Eye, Share2, Download, FileDown, History } from 'lucide-react'
 import type { Profile } from '@/types'
 import { downloadProfileJson } from '@/lib/exportImport'
 import { useCoachmarkTarget } from '@/lib/coachmark/CoachmarkContext'
@@ -11,16 +11,19 @@ type Props = {
   onShare: () => void
   onDownloadCv: () => void
   onStats: () => void
+  onHistory: () => void
 }
 
-export default function EditorActionBar({ profile, onPreview, onShare, onDownloadCv, onStats }: Props) {
+export default function EditorActionBar({ profile, onPreview, onShare, onDownloadCv, onStats, onHistory }: Props) {
   // Cible "preview-mobile" du tuto (voir steps.ts) — voir DesktopPreviewPanel.tsx
   // pour la cible alternative "preview-desktop", jamais visible en même temps.
   const previewTargetRef = useCoachmarkTarget('preview-mobile')
 
   return (
     <div className="fixed bottom-0 inset-x-0 border-t border-ink-raised bg-ink/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)]">
-      <div className="grid grid-cols-5 lg:grid-cols-4 gap-1 p-2 lg:mx-auto lg:max-w-[1400px] lg:px-8">
+      <div
+        className={`grid gap-1 p-2 lg:mx-auto lg:max-w-[1400px] lg:px-8 ${STORAGE_MODE === 'supabase' ? 'grid-cols-6 lg:grid-cols-5' : 'grid-cols-4 lg:grid-cols-3'}`}
+      >
         {/* Redondant en desktop : l'aperçu est déjà visible en direct dans le panneau de droite. */}
         <button
           ref={previewTargetRef}
@@ -75,6 +78,19 @@ export default function EditorActionBar({ profile, onPreview, onShare, onDownloa
           >
             <BarChart3 size={16} aria-hidden="true" />
             Statistiques
+          </button>
+        )}
+        {/* Historique des versions (doc "Complétude, historique, publication
+            différée", Phase 2) — même garde Supabase que Statistiques : la
+            table profile_history n'existe pas en stockage local. */}
+        {STORAGE_MODE === 'supabase' && (
+          <button
+            type="button"
+            onClick={onHistory}
+            className="min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md text-xs text-muted focus-visible:outline-2 focus-visible:outline-accent"
+          >
+            <History size={16} aria-hidden="true" />
+            Historique
           </button>
         )}
       </div>

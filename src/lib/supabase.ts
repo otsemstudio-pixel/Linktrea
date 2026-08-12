@@ -22,6 +22,15 @@ export type Database = {
           is_published: boolean
           created_at: string
           updated_at: string
+          // Instantané public + horodatage de dernière publication (doc
+          // "Complétude, historique, publication différée", Phase 3) —
+          // colonnes déjà ajoutées côté Supabase, pas de migration ici.
+          // `data` reste le brouillon en cours d'édition, TOUJOURS visible du
+          // propriétaire ; `published_snapshot` est ce que la route publique
+          // sert désormais (via la vue public_profiles), figé au moment du
+          // dernier publish_profile_changes().
+          published_snapshot: Json | null
+          published_at: string | null
         }
         Insert: {
           id: string
@@ -30,6 +39,8 @@ export type Database = {
           is_published?: boolean
           created_at?: string
           updated_at?: string
+          published_snapshot?: Json | null
+          published_at?: string | null
         }
         Update: {
           id?: string
@@ -38,6 +49,8 @@ export type Database = {
           is_published?: boolean
           created_at?: string
           updated_at?: string
+          published_snapshot?: Json | null
+          published_at?: string | null
         }
         Relationships: []
       }
@@ -48,7 +61,23 @@ export type Database = {
         Relationships: []
       }
     }
-    Views: Record<string, never>
+    Views: {
+      // `data` ici = published_snapshot de profiles, jamais le brouillon —
+      // voir la définition réelle de la vue (doc Phase 3) : filtrée à
+      // is_published = true and published_snapshot is not null, donc un
+      // profil non publié ou publié sans snapshot n'y apparaît simplement
+      // pas (loadBySlug le traite alors comme "profil introuvable", sans
+      // cas d'erreur à distinguer côté client).
+      public_profiles: {
+        Row: {
+          id: string
+          slug: string | null
+          data: Json | null
+          published_at: string | null
+        }
+        Relationships: []
+      }
+    }
     Functions: {
       // Voir supabase/migrations/20260810120000_delete_own_account.sql.
       delete_own_account: {
@@ -75,6 +104,35 @@ export type Database = {
       get_my_link_clicks: {
         Args: { p_days?: number }
         Returns: { link_id: string; total_clicks: number }[]
+      }
+      // Voir le schéma réel de profile_history/get_my_profile_history()/
+      // restore_profile_version() confirmé côté Supabase (doc "Complétude,
+      // historique, publication différée", Phase 2) — fonctions
+      // SECURITY DEFINER déjà créées, pas de migration à écrire ici.
+      get_my_profile_history: {
+        Args: Record<string, never>
+        Returns: { id: string; created_at: string }[]
+      }
+      restore_profile_version: {
+        Args: { p_history_id: string }
+        Returns: undefined
+      }
+      // Voir supabase/migrations/20260812120000_get_profile_history_entry.sql
+      // — ajoutée après coup : get_my_profile_history() seule ne suffisait
+      // pas à afficher l'aperçu d'une version (profile_history n'a pas de
+      // policy RLS pour une lecture directe par le propriétaire).
+      get_profile_history_entry: {
+        Args: { p_history_id: string }
+        Returns: Json
+      }
+      // Voir le schéma réel de public_profiles/publish_profile_changes()
+      // confirmé côté Supabase (doc "Complétude, historique, publication
+      // différée", Phase 3) — copie profiles.data dans published_snapshot,
+      // pose published_at = now() et is_published = true ; pas de migration
+      // à écrire ici, déjà en place.
+      publish_profile_changes: {
+        Args: Record<string, never>
+        Returns: undefined
       }
     }
   }

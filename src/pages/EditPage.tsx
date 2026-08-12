@@ -25,8 +25,11 @@ import AccountSection from '@/components/edit/AccountSection'
 import EditorActionBar from '@/components/edit/EditorActionBar'
 import EditorSkeleton from '@/components/edit/EditorSkeleton'
 import ShareProfileModal from '@/components/edit/ShareProfileModal'
+import CompletionRing from '@/components/edit/CompletionRing'
+import UnpublishedChangesBanner from '@/components/edit/UnpublishedChangesBanner'
 import PreviewOverlay from '@/components/edit/PreviewOverlay'
 import StatsOverlay from '@/components/edit/StatsOverlay'
+import HistoryOverlay from '@/components/edit/HistoryOverlay'
 import CvOverlay from '@/components/edit/CvOverlay'
 import DesktopPreviewPanel from '@/components/edit/DesktopPreviewPanel'
 import { useFaviconAndThemeColor } from '@/lib/useDocumentMeta'
@@ -48,6 +51,7 @@ export default function EditPage() {
 
   const {
     control,
+    reset,
     formState: { isLoading },
   } = methods
   const profile = useWatch({ control }) as Profile
@@ -61,6 +65,17 @@ export default function EditPage() {
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
   const [cvOpen, setCvOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+
+  // Recharge le brouillon affiché depuis le store après une restauration
+  // réussie (HistoryOverlay.tsx) — reset() plutôt qu'un simple re-fetch
+  // silencieux : le formulaire entier (tous les champs contrôlés) doit
+  // refléter le contenu restauré, pas seulement `profile` dérivé de useWatch.
+  async function handleHistoryRestored() {
+    const store = await getProfileStore()
+    const restored = await store.loadMine()
+    if (restored) reset(restored)
+  }
 
   const activeAccent = profile.theme?.accent ?? '#E4A93C'
   const activeAppearance: Profile['appearance'] = profile.appearance ?? {
@@ -96,6 +111,7 @@ export default function EditPage() {
                       {saveStatus === 'saved' && 'Enregistré'}
                       {saveStatus === 'error' && saveError}
                     </span>
+                    <CompletionRing profile={profile} />
                     <CoachmarkHelpButton steps={coachmarkSteps} />
                     {STORAGE_MODE === 'supabase' && (
                       <button
@@ -108,6 +124,8 @@ export default function EditPage() {
                     )}
                   </div>
                 </header>
+
+                {STORAGE_MODE === 'supabase' && <UnpublishedChangesBanner saveStatus={saveStatus} />}
 
                 <main>
                   <form onSubmit={(e) => e.preventDefault()} className="lg:border lg:rounded-lg">
@@ -153,10 +171,12 @@ export default function EditPage() {
               onShare={() => setShareModalOpen(true)}
               onDownloadCv={() => setCvOpen(true)}
               onStats={() => setStatsOpen(true)}
+              onHistory={() => setHistoryOpen(true)}
             />
           </div>
 
           <PreviewOverlay open={previewOpen} profile={profile} onClose={() => setPreviewOpen(false)} />
+          <HistoryOverlay open={historyOpen} onClose={() => setHistoryOpen(false)} onRestored={handleHistoryRestored} />
           <ShareProfileModal open={shareModalOpen} onClose={() => setShareModalOpen(false)} />
           <StatsOverlay open={statsOpen} profile={profile} onClose={() => setStatsOpen(false)} />
           <CvOverlay open={cvOpen} profile={profile} onClose={() => setCvOpen(false)} />
