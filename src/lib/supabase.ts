@@ -134,6 +134,37 @@ export type Database = {
         Args: Record<string, never>
         Returns: undefined
       }
+      // Voir supabase/migrations/20260812200000_admin_status.sql (doc
+      // "Tableau de bord admin", Phase 1) — seul point d'accès à la table
+      // admins (RLS activé sans aucune policy directe).
+      am_i_admin: {
+        Args: Record<string, never>
+        Returns: boolean
+      }
+      // Voir supabase/migrations/20260812210000_admin_metrics.sql (doc
+      // "Tableau de bord admin", Phase 2) — chacune vérifie am_i_admin() en
+      // première ligne et lève une exception sinon, jamais de ligne par
+      // profil individuel.
+      admin_signup_trend: {
+        Args: { p_days?: number }
+        Returns: { day: string; signups: number }[]
+      }
+      admin_publish_stats: {
+        Args: Record<string, never>
+        Returns: { total_profiles: number; published_profiles: number; publish_rate: number }[]
+      }
+      admin_theme_popularity: {
+        Args: Record<string, never>
+        Returns: { theme_name: string; profile_count: number }[]
+      }
+      admin_engagement_trend: {
+        Args: { p_days?: number }
+        Returns: { day: string; total_views: number; total_clicks: number }[]
+      }
+      admin_domain_distribution: {
+        Args: Record<string, never>
+        Returns: { domain: string; profile_count: number }[]
+      }
     }
   }
 }
