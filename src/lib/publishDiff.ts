@@ -15,6 +15,13 @@
 export type PublishDiffStatus = {
   publishedAt: string | null
   hasUnpublishedChanges: boolean
+  // Doc "Publication automatique optionnelle + clarification de l'export",
+  // Phase 1 — quand actif, le trigger profiles_sync_auto_publish maintient
+  // published_at collé à updated_at à chaque sauvegarde de `data`, donc
+  // hasUnpublishedChanges reste quasi-toujours faux tout seul ; ce champ
+  // sert à afficher explicitement ce mode plutôt que de compter sur cet
+  // effet de bord (voir UnpublishedChangesBanner.tsx).
+  autoPublish: boolean
 }
 
 export async function getPublishDiffStatus(): Promise<PublishDiffStatus | null> {
@@ -24,7 +31,7 @@ export async function getPublishDiffStatus(): Promise<PublishDiffStatus | null> 
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('updated_at, published_at')
+    .select('updated_at, published_at, auto_publish')
     .eq('id', userData.user.id)
     .maybeSingle()
   if (error) throw error
@@ -33,11 +40,26 @@ export async function getPublishDiffStatus(): Promise<PublishDiffStatus | null> 
   return {
     publishedAt: data.published_at,
     hasUnpublishedChanges: data.published_at !== null && new Date(data.updated_at) > new Date(data.published_at),
+    autoPublish: data.auto_publish,
   }
 }
 
 export async function publishProfileChanges(): Promise<void> {
   const { supabase } = await import('./supabase')
   const { error } = await supabase.rpc('publish_profile_changes')
+  if (error) throw error
+}
+
+// Réglage "Publication automatique" (zone Compte, AccountSection.tsx via
+// useAutoPublishSetting.ts) — n'affecte QUE les modifications futures de
+// `data` (le trigger ne se déclenche que sur une écriture réelle de cette
+// colonne) : l'activer seul ne republie pas rétroactivement un brouillon
+// déjà en attente, cohérent avec le comportement littéral du trigger SQL.
+export async function setAutoPublish(enabled: boolean): Promise<void> {
+  const { supabase } = await import('./supabase')
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+  if (userError || !userData.user) throw new Error('Tu dois être connecté pour faire ça.')
+
+  const { error } = await supabase.from('profiles').update({ auto_publish: enabled }).eq('id', userData.user.id)
   if (error) throw error
 }

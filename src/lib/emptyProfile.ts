@@ -1,4 +1,5 @@
 import type { Profile } from '@/types'
+import { DEFAULT_SHARE_CARD_CONFIG } from './shareCardContent'
 
 export function createEmptyProfile(): Profile {
   return {
@@ -34,5 +35,6 @@ export function createEmptyProfile(): Profile {
       eclatVariant: 'braise',
       motion: 'full',
     },
+    shareCard: { ...DEFAULT_SHARE_CARD_CONFIG },
   }
 }

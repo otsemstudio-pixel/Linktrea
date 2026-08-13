@@ -166,7 +166,6 @@ export default function EditPage() {
             </div>
 
             <EditorActionBar
-              profile={profile}
               onPreview={() => setPreviewOpen(true)}
               onShare={() => setShareModalOpen(true)}
               onDownloadCv={() => setCvOpen(true)}

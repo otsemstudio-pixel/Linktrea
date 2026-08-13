@@ -1,18 +1,10 @@
 // Contenu personnalisable de la carte de partage (refonte carte de partage,
-// Phase 2) — logique pure (modèle, limite par format, persistance),
-// indépendante du dessin canvas (voir shareCard.ts) et de l'UI à cocher
-// (Phase 3 : l'aperçu en direct remplace le bouton "Carte" actuel, pas la
-// peine de construire une UI de cases à cocher jetable ici pour la refaire
-// juste après).
+// Phase 2) — logique pure (modèle, limite par format), indépendante du
+// dessin canvas (voir shareCard.ts) et de l'UI à cocher.
 import type { ShareCardFormat } from './shareCard'
+import type { ShareCardConfig } from '@/types'
 
-export type ShareCardContent = {
-  showKeyMetric: boolean
-  showTopSkills: boolean
-  showCertifications: boolean
-  showSignature: boolean
-  showQrCode: boolean
-}
+export type ShareCardContent = Omit<ShareCardConfig, 'format'>
 
 // Par défaut : chiffre clé + QR seulement — évite une carte surchargée au
 // premier essai (voir le prompt).
@@ -22,6 +14,16 @@ export const DEFAULT_SHARE_CARD_CONTENT: ShareCardContent = {
   showCertifications: false,
   showSignature: false,
   showQrCode: true,
+}
+
+// Configuration complète (format + contenu) — valeur figée par défaut pour
+// un profil dont le propriétaire n'a jamais explicitement configuré sa
+// carte (doc "Publication automatique optionnelle + clarification de
+// l'export", Phase 3), reprise telle quelle par profileSchema.ts en cas
+// d'absence/corruption du champ.
+export const DEFAULT_SHARE_CARD_CONFIG: ShareCardConfig = {
+  format: 'square',
+  ...DEFAULT_SHARE_CARD_CONTENT,
 }
 
 // Nombre maximum d'éléments actifs simultanément selon le format — Portrait
@@ -92,30 +94,3 @@ export function resolveShareCardContent(content: ShareCardContent, format: Share
   return { content: resolved, autoDisabled }
 }
 
-const STORAGE_KEY = 'ledger:share-card-content'
-
-// Persiste le dernier choix de contenu (prompt : "pour ne pas lui faire
-// recocher les mêmes cases à chaque génération") — localStorage suffit,
-// c'est une préférence d'affichage locale, pas une donnée de profil.
-export function loadShareCardContent(): ShareCardContent {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { ...DEFAULT_SHARE_CARD_CONTENT }
-    const parsed = JSON.parse(raw)
-    // Fusionné sur les défauts plutôt que retourné tel quel : un ajout futur
-    // de champ ne doit pas produire un objet incomplet pour qui a déjà une
-    // préférence enregistrée.
-    return { ...DEFAULT_SHARE_CARD_CONTENT, ...parsed }
-  } catch {
-    return { ...DEFAULT_SHARE_CARD_CONTENT }
-  }
-}
-
-export function saveShareCardContent(content: ShareCardContent): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(content))
-  } catch {
-    // Stockage plein ou indisponible : la préférence ne sera simplement pas
-    // retenue pour la prochaine fois, pas une erreur bloquante pour autant.
-  }
-}

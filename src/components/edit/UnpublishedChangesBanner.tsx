@@ -1,4 +1,4 @@
-import { AlertCircle, Check } from 'lucide-react'
+import { AlertCircle, Check, Zap } from 'lucide-react'
 import { usePublishDiffStatus } from './usePublishDiffStatus'
 import type { SaveStatus } from '@/lib/store/useProfileStoreAutosave'
 
@@ -13,10 +13,26 @@ type Props = {
 // hasUnpublishedChanges vaut explicitement false tant que publishedAt est
 // null.
 export default function UnpublishedChangesBanner({ saveStatus }: Props) {
-  const { loading, hasUnpublishedChanges, publishing, publishError, justPublished, publishChanges } =
+  const { loading, hasUnpublishedChanges, publishing, publishError, justPublished, autoPublish, publishedAt, publishChanges } =
     usePublishDiffStatus(saveStatus)
 
   if (loading) return null
+
+  // Doc "Publication automatique optionnelle + clarification de l'export",
+  // Phase 1 — remplace le badge/bouton par une indication discrète et
+  // persistante plutôt que de laisser un bouton "Publier les modifications"
+  // qui n'aurait plus d'effet perceptible (le trigger côté serveur maintient
+  // déjà published_at collé à updated_at). Seulement une fois déjà publié
+  // au moins une fois : la première mise en ligne reste toujours un geste
+  // explicite, quel que soit ce réglage.
+  if (autoPublish && publishedAt !== null) {
+    return (
+      <div className="px-4 py-2.5 lg:px-5 lg:rounded-lg bg-ink-raised/60 border-b border-ink-raised lg:border lg:mb-4 flex items-center gap-2">
+        <Zap size={14} className="text-muted shrink-0" aria-hidden="true" />
+        <p className="text-xs text-muted">Publication automatique activée</p>
+      </div>
+    )
+  }
 
   if (justPublished) {
     return (

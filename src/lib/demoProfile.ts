@@ -1,4 +1,5 @@
 import type { Profile } from '@/types'
+import { DEFAULT_SHARE_CARD_CONFIG } from './shareCardContent'
 
 export const demoProfile: Profile = {
   domain: 'finance',
@@ -129,4 +130,5 @@ export const demoProfile: Profile = {
     eclatVariant: 'braise',
     motion: 'full',
   },
+  shareCard: { ...DEFAULT_SHARE_CARD_CONFIG },
 }

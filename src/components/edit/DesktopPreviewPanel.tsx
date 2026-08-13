@@ -1,4 +1,5 @@
-import type { Profile } from '@/types'
+import { useFormContext } from 'react-hook-form'
+import type { Profile, ShareCardConfig } from '@/types'
 import ProfileView from '@/components/ProfileView'
 import { usePublishStatus } from './usePublishStatus'
 import { useCoachmarkTarget } from '@/lib/coachmark/CoachmarkContext'
@@ -20,6 +21,16 @@ export default function DesktopPreviewPanel({ profile }: Props) {
   // s'en sert pour savoir si c'est LUI ou le bouton "Aperçu" mobile
   // (EditorActionBar.tsx) qui est réellement visible au moment de l'étape.
   const previewTargetRef = useCoachmarkTarget('preview-desktop')
+  // Doc "Publication automatique optionnelle + clarification de l'export",
+  // Phase 3 — ce panneau vit DANS le <FormProvider> de EditPage.tsx, donc
+  // peut écrire directement dans le brouillon ; shouldValidate : ce champ
+  // n'est jamais lié à un register() classique (aucun <input> à côté dont
+  // l'interaction déclencherait sa propre revalidation), donc un setValue
+  // sans ce flag laisserait une éventuelle erreur de validation obsolète.
+  const { setValue } = useFormContext<Profile>()
+  function handleShareCardChange(config: ShareCardConfig) {
+    setValue('shareCard', config, { shouldDirty: true, shouldValidate: true })
+  }
   return (
     <div
       ref={previewTargetRef}
@@ -32,7 +43,13 @@ export default function DesktopPreviewPanel({ profile }: Props) {
           @container) croirait être sur un petit écran et resterait fixed,
           épinglé au bas du VRAI viewport plutôt qu'à l'intérieur de ce
           panneau — voir ActionBar.tsx. */}
-      <ProfileView profile={profile} standalone={false} publicUrl={publicUrl} staticActionBar />
+      <ProfileView
+        profile={profile}
+        standalone={false}
+        publicUrl={publicUrl}
+        staticActionBar
+        onShareCardChange={handleShareCardChange}
+      />
     </div>
   )
 }

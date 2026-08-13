@@ -1,5 +1,5 @@
 import { type ReactNode, type HTMLAttributes } from 'react'
-import type { Profile } from '@/types'
+import type { Profile, ShareCardConfig } from '@/types'
 import { yearsOfExperience, totalPositions, totalHoldings, experienceTrend, isProfileEmpty } from '@/lib/deriveStats'
 import { MotionPrefsProvider } from '@/lib/motion/MotionPrefsContext'
 import { useDocumentMeta, useFaviconAndThemeColor } from '@/lib/useDocumentMeta'
@@ -50,6 +50,10 @@ type Props = {
   // contextes-là ne comptent simplement aucun clic, ce qui est le
   // comportement voulu (ce ne sont pas des visites publiques réelles).
   slug?: string | null
+  // Doc "Publication automatique optionnelle + clarification de l'export",
+  // Phase 3 — simple relais vers ActionBar.tsx → ShareCardModal.tsx, voir
+  // ce dernier pour la raison de fond.
+  onShareCardChange?: (config: ShareCardConfig) => void
 }
 
 type LandmarkProps = { standalone: boolean; children: ReactNode } & HTMLAttributes<HTMLElement>
@@ -63,7 +67,14 @@ function Main({ standalone, children, ...rest }: LandmarkProps) {
   return standalone ? <main {...rest}>{children}</main> : <div {...rest}>{children}</div>
 }
 
-export default function ProfileView({ profile, standalone = true, publicUrl, staticActionBar = false, slug }: Props) {
+export default function ProfileView({
+  profile,
+  standalone = true,
+  publicUrl,
+  staticActionBar = false,
+  slug,
+  onShareCardChange,
+}: Props) {
   const resolvedBackground = useAppliedTheme(profile.appearance, profile.theme.accent, standalone)
 
   useDocumentMeta(profile, standalone)
@@ -154,7 +165,12 @@ export default function ProfileView({ profile, standalone = true, publicUrl, sta
             plutôt qu'un rang de boutons étiré sur toute la largeur (1120px). */}
         <div className="px-6 @min-[1024px]:px-10 @min-[1024px]:mx-auto @min-[1024px]:max-w-[1120px] mt-10 @min-[1024px]:mt-8">
           <div className="@min-[1024px]:max-w-[360px]">
-            <ActionBar profile={profile} publicUrl={publicUrl} staticPosition={staticActionBar} />
+            <ActionBar
+              profile={profile}
+              publicUrl={publicUrl}
+              staticPosition={staticActionBar}
+              onShareCardChange={onShareCardChange}
+            />
             <p className="mt-2 text-xs text-muted text-center @min-[1024px]:text-left">
               Tous droits réservés à Napps de N'nahssé Group - Jean-David Kouamé
             </p>

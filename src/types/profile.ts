@@ -228,6 +228,28 @@ export type AppearanceConfig =
     }
   | { kind: 'custom'; settings: CustomThemeSettings; motion: MotionPreference }
 
+// Format de la carte de partage — sous-ensemble de ShareCardFormat
+// (src/lib/shareCard.ts, qui ajoute 'business' pour le rendu canvas) : la
+// carte de visite a un contenu fixe, jamais piloté par ce réglage figé par
+// le propriétaire (voir ShareCardConfig ci-dessous).
+export type ShareCardPickableFormat = 'square' | 'portrait' | 'landscape'
+
+// Configuration de la carte de partage (doc "Publication automatique
+// optionnelle + clarification de l'export", Phase 3) — attribut du profil
+// au même titre que le reste, plus une préférence locale au navigateur du
+// propriétaire : suit exactement les mêmes règles de brouillon/publication.
+// La route publique ne doit jamais lire que la version figée par le
+// propriétaire (published_snapshot), jamais un brouillon en cours — voir
+// ShareCardModal.tsx.
+export type ShareCardConfig = {
+  format: ShareCardPickableFormat
+  showKeyMetric: boolean
+  showTopSkills: boolean
+  showCertifications: boolean
+  showSignature: boolean
+  showQrCode: boolean
+}
+
 export type Profile = {
   domain: Domain
   identity: Identity
@@ -237,4 +259,5 @@ export type Profile = {
   tickers: Ticker[]
   theme: ThemeConfig
   appearance: AppearanceConfig
+  shareCard: ShareCardConfig
 }

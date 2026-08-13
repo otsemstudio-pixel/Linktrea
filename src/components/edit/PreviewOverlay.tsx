@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react'
 import { ArrowLeft } from 'lucide-react'
-import type { Profile } from '@/types'
+import { useFormContext } from 'react-hook-form'
+import type { Profile, ShareCardConfig } from '@/types'
 import ProfileView from '@/components/ProfileView'
 import { useMotionPrefs } from '@/lib/motion/MotionPrefsContext'
 import { usePublishStatus } from './usePublishStatus'
@@ -17,6 +18,13 @@ export default function PreviewOverlay({ open, profile, onClose }: Props) {
   const { reduced } = useMotionPrefs()
   // correctif "modale carte de partage" Partie 2 — voir DesktopPreviewPanel.tsx.
   const { publicUrl } = usePublishStatus()
+  // Doc "Publication automatique optionnelle + clarification de l'export",
+  // Phase 3 — même raisonnement que DesktopPreviewPanel.tsx : cet overlay
+  // vit aussi dans le <FormProvider> de EditPage.tsx.
+  const { setValue } = useFormContext<Profile>()
+  function handleShareCardChange(config: ShareCardConfig) {
+    setValue('shareCard', config, { shouldDirty: true, shouldValidate: true })
+  }
 
   return (
     <AnimatePresence>
@@ -36,7 +44,12 @@ export default function PreviewOverlay({ open, profile, onClose }: Props) {
             <ArrowLeft size={16} aria-hidden="true" />
             Retour à l'édition
           </button>
-          <ProfileView profile={profile} standalone={false} publicUrl={publicUrl} />
+          <ProfileView
+            profile={profile}
+            standalone={false}
+            publicUrl={publicUrl}
+            onShareCardChange={handleShareCardChange}
+          />
         </motion.div>
       )}
     </AnimatePresence>

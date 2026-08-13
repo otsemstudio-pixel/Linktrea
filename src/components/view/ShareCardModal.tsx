@@ -1,13 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Download } from 'lucide-react'
-import type { Profile } from '@/types'
-import { renderShareCardToCanvas, exportCanvasToBlob, downloadCanvasBlob, type ShareCardFormat } from '@/lib/shareCard'
-import {
-  loadShareCardContent,
-  saveShareCardContent,
-  resolveShareCardContent,
-  type ShareCardContent,
-} from '@/lib/shareCardContent'
+import type { Profile, ShareCardConfig, ShareCardPickableFormat } from '@/types'
+import { renderShareCardToCanvas, exportCanvasToBlob, downloadCanvasBlob } from '@/lib/shareCard'
+import { resolveShareCardContent } from '@/lib/shareCardContent'
 import { slugify } from '@/lib/slug'
 import Modal from '@/components/edit/Modal'
 
@@ -18,21 +13,34 @@ type Props = {
   // Partie 2) — voir ProfileView.tsx pour la provenance de cette valeur.
   publicUrl: string | null
   onClose: () => void
+  // Doc "Publication automatique optionnelle + clarification de l'export",
+  // Phase 3 — présent UNIQUEMENT quand cette modale est ouverte depuis
+  // l'éditeur (voir DesktopPreviewPanel.tsx/PreviewOverlay.tsx, les deux
+  // seuls appelants dans un arbre <FormProvider>) : sa seule présence
+  // décide si l'interface est éditable. Absent sur la route publique réelle
+  // (SlugPage.tsx) et sur les routes de secours sans backend (ViewPage.tsx)
+  // — aucun <FormProvider> à y lire, donc rien à passer, et c'est ce qui
+  // garantit qu'un visiteur ne voit jamais aucun contrôle de format ni case
+  // à cocher : pas un simple style visuel désactivé, l'UI n'est même pas
+  // rendue.
+  onShareCardChange?: (config: ShareCardConfig) => void
 }
 
-const FORMATS: ShareCardFormat[] = ['square', 'portrait', 'landscape']
-const FORMAT_LABELS: Record<ShareCardFormat, string> = {
+const FORMATS: ShareCardPickableFormat[] = ['square', 'portrait', 'landscape']
+const FORMAT_LABELS: Record<ShareCardPickableFormat, string> = {
   square: 'Carré',
   portrait: 'Portrait',
   landscape: 'Paysage',
-  // Jamais affiché ici (FORMATS ci-dessus l'exclut délibérément, voir
-  // BusinessCardModal.tsx — Phase 5) — présent seulement parce que
-  // Record<ShareCardFormat, string> exige une entrée par clé du type.
-  business: 'Carte de visite',
 }
 
-const CONTENT_KEYS: (keyof ShareCardContent)[] = ['showKeyMetric', 'showTopSkills', 'showCertifications', 'showSignature', 'showQrCode']
-const CONTENT_LABELS: Record<keyof ShareCardContent, string> = {
+const CONTENT_KEYS: (keyof Omit<ShareCardConfig, 'format'>)[] = [
+  'showKeyMetric',
+  'showTopSkills',
+  'showCertifications',
+  'showSignature',
+  'showQrCode',
+]
+const CONTENT_LABELS: Record<keyof Omit<ShareCardConfig, 'format'>, string> = {
   showKeyMetric: 'Chiffre clé',
   showTopSkills: 'Compétences principales',
   showCertifications: 'Certificats',
@@ -40,14 +48,20 @@ const CONTENT_LABELS: Record<keyof ShareCardContent, string> = {
   showQrCode: 'QR code',
 }
 
-// Aperçu en direct (refonte carte de partage, Phase 3) — remplace le flux
-// précédent (clic → téléchargement direct) par ce panneau : chaque
-// changement de format ou de contenu redessine le <canvas> visible, la même
-// primitive que l'export final (renderShareCardToCanvas), donc jamais une
+// Aperçu en direct (refonte carte de partage, Phase 3) — chaque changement
+// de format ou de contenu redessine le <canvas> visible, la même primitive
+// que l'export final (renderShareCardToCanvas), donc jamais une
 // approximation qui pourrait diverger de ce qui est réellement téléchargé.
-export default function ShareCardModal({ open, profile, publicUrl, onClose }: Props) {
-  const [format, setFormat] = useState<ShareCardFormat>('square')
-  const [rawContent, setRawContent] = useState<ShareCardContent>(() => loadShareCardContent())
+//
+// Entièrement contrôlé par profile.shareCard depuis la Phase 3 du doc
+// "Publication automatique optionnelle + clarification de l'export" — plus
+// aucun état local de format/contenu (ni useState, ni localStorage) : ce
+// n'est plus une préférence d'appareil, c'est un attribut du profil qui
+// suit ses propres règles de brouillon/publication (voir onShareCardChange
+// ci-dessus, qui écrit directement dans le formulaire de l'éditeur).
+export default function ShareCardModal({ open, profile, publicUrl, onClose, onShareCardChange }: Props) {
+  const editable = Boolean(onShareCardChange)
+  const config = profile.shareCard
   const [rendering, setRendering] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   // Ignore le résultat d'un rendu devenu obsolète (format/contenu changé
@@ -56,7 +70,7 @@ export default function ShareCardModal({ open, profile, publicUrl, onClose }: Pr
   // un rendu plus récent déjà affiché.
   const renderToken = useRef(0)
 
-  const { content, autoDisabled } = resolveShareCardContent(rawContent, format, true)
+  const { content, autoDisabled } = resolveShareCardContent(config, config.format, true)
 
   useEffect(() => {
     if (!open) return
@@ -64,7 +78,7 @@ export default function ShareCardModal({ open, profile, publicUrl, onClose }: Pr
     if (!canvas) return
     const token = ++renderToken.current
     setRendering(true)
-    renderShareCardToCanvas(canvas, profile, format, content, publicUrl ?? undefined)
+    renderShareCardToCanvas(canvas, profile, config.format, content, publicUrl ?? undefined)
       .catch(() => {
         // Rien d'affiché de correct si ça échoue — le bouton Télécharger
         // reste désactivé (rendering=true) plutôt que de proposer un export
@@ -73,23 +87,25 @@ export default function ShareCardModal({ open, profile, publicUrl, onClose }: Pr
       .finally(() => {
         if (token === renderToken.current) setRendering(false)
       })
-    // content est dérivé de rawContent + format à chaque rendu (voir plus
-    // haut) — le comparer par valeur éviterait un objet neuf à chaque appel,
-    // mais rawContent + format suffisent déjà comme dépendances réelles.
+    // content est dérivé de config à chaque rendu (voir plus haut) — le
+    // comparer par valeur éviterait un objet neuf à chaque appel, mais
+    // config + profile suffisent déjà comme dépendances réelles.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, profile, format, rawContent, publicUrl])
+  }, [open, profile, config, publicUrl])
 
-  function toggleContent(key: keyof ShareCardContent) {
-    const next = { ...rawContent, [key]: !rawContent[key] }
-    setRawContent(next)
-    saveShareCardContent(next)
+  function setFormat(format: ShareCardPickableFormat) {
+    onShareCardChange?.({ ...config, format })
+  }
+
+  function toggleContent(key: keyof Omit<ShareCardConfig, 'format'>) {
+    onShareCardChange?.({ ...config, [key]: !config[key] })
   }
 
   async function handleDownload() {
     const canvas = canvasRef.current
     if (!canvas || rendering) return
     const blob = await exportCanvasToBlob(canvas)
-    downloadCanvasBlob(blob, `linktrea-${slugify(profile.identity.fullName) || 'profil'}-${format}.png`)
+    downloadCanvasBlob(blob, `linktrea-${slugify(profile.identity.fullName) || 'profil'}-${config.format}.png`)
   }
 
   // Zone d'aperçu à hauteur CSS CONSTANTE, quel que soit le format choisi
@@ -106,23 +122,25 @@ export default function ShareCardModal({ open, profile, publicUrl, onClose }: Pr
 
   return (
     <Modal open={open} title="Carte de partage" onClose={onClose} maxWidthClassName="max-w-md">
-      <div className="mb-4">
-        <span className="text-label uppercase tracking-label text-muted block mb-2">Format</span>
-        <div className="grid grid-cols-3 gap-2">
-          {FORMATS.map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFormat(f)}
-              aria-pressed={format === f}
-              className="min-h-11 rounded-md border text-sm"
-              style={{ borderColor: format === f ? 'var(--accent)' : 'var(--ink-raised)' }}
-            >
-              {FORMAT_LABELS[f]}
-            </button>
-          ))}
+      {editable && (
+        <div className="mb-4">
+          <span className="text-label uppercase tracking-label text-muted block mb-2">Format</span>
+          <div className="grid grid-cols-3 gap-2">
+            {FORMATS.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setFormat(f)}
+                aria-pressed={config.format === f}
+                className="min-h-11 rounded-md border text-sm"
+                style={{ borderColor: config.format === f ? 'var(--accent)' : 'var(--ink-raised)' }}
+              >
+                {FORMAT_LABELS[f]}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div
         className="flex items-center justify-center mb-4 rounded-md overflow-hidden border border-ink-raised bg-ink-raised/20"
@@ -131,32 +149,34 @@ export default function ShareCardModal({ open, profile, publicUrl, onClose }: Pr
         <canvas ref={canvasRef} style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', display: 'block' }} />
       </div>
 
-      <div className="mb-4">
-        <span className="text-label uppercase tracking-label text-muted block mb-2">Contenu</span>
-        <div className="flex flex-col gap-1">
-          {CONTENT_KEYS.map((key) => {
-            const disabledByPublish = key === 'showQrCode' && !publicUrl
-            return (
-              <label key={key} className="flex items-center gap-2 min-h-11 text-sm">
-                <input
-                  type="checkbox"
-                  checked={rawContent[key]}
-                  disabled={disabledByPublish}
-                  onChange={() => toggleContent(key)}
-                  className="size-4 accent-[var(--accent)]"
-                />
-                <span className={disabledByPublish ? 'text-muted' : undefined}>{CONTENT_LABELS[key]}</span>
-              </label>
-            )
-          })}
+      {editable && (
+        <div className="mb-4">
+          <span className="text-label uppercase tracking-label text-muted block mb-2">Contenu</span>
+          <div className="flex flex-col gap-1">
+            {CONTENT_KEYS.map((key) => {
+              const disabledByPublish = key === 'showQrCode' && !publicUrl
+              return (
+                <label key={key} className="flex items-center gap-2 min-h-11 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={config[key]}
+                    disabled={disabledByPublish}
+                    onChange={() => toggleContent(key)}
+                    className="size-4 accent-[var(--accent)]"
+                  />
+                  <span className={disabledByPublish ? 'text-muted' : undefined}>{CONTENT_LABELS[key]}</span>
+                </label>
+              )
+            })}
+          </div>
+          {autoDisabled.length > 0 && (
+            <p className="text-xs text-muted mt-2" role="status">
+              {autoDisabled.map((k) => CONTENT_LABELS[k]).join(', ')} désactivé{autoDisabled.length > 1 ? 's' : ''} : ce
+              format n'a pas assez de place pour tout afficher proprement.
+            </p>
+          )}
         </div>
-        {autoDisabled.length > 0 && (
-          <p className="text-xs text-muted mt-2" role="status">
-            {autoDisabled.map((k) => CONTENT_LABELS[k]).join(', ')} désactivé{autoDisabled.length > 1 ? 's' : ''} : ce
-            format n'a pas assez de place pour tout afficher proprement.
-          </p>
-        )}
-      </div>
+      )}
 
       <button
         type="button"

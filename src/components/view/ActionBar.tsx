@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Mail, Share2, Image as ImageIcon, IdCard } from 'lucide-react'
-import type { Profile } from '@/types'
+import type { Profile, ShareCardConfig } from '@/types'
 import ShareCardModal from './ShareCardModal'
 import BusinessCardModal from './BusinessCardModal'
 
@@ -13,9 +13,14 @@ type Props = {
   // rendu "statique" (jamais fixed-to-viewport), indépendamment de la
   // largeur du conteneur @container ci-dessous.
   staticPosition?: boolean
+  // Doc "Publication automatique optionnelle + clarification de l'export",
+  // Phase 3 — simple relais vers ShareCardModal.tsx, voir son commentaire
+  // pour la raison de fond (sa seule présence décide si la carte est
+  // éditable).
+  onShareCardChange?: (config: ShareCardConfig) => void
 }
 
-export default function ActionBar({ profile, publicUrl, staticPosition = false }: Props) {
+export default function ActionBar({ profile, publicUrl, staticPosition = false, onShareCardChange }: Props) {
   const [toast, setToast] = useState<string | null>(null)
   const [cardModalOpen, setCardModalOpen] = useState(false)
   // Bouton séparé (Phase 5) — pas mélangé au sélecteur de format de
@@ -137,6 +142,7 @@ export default function ActionBar({ profile, publicUrl, staticPosition = false }
         profile={profile}
         publicUrl={resolvedPublicUrl}
         onClose={() => setCardModalOpen(false)}
+        onShareCardChange={onShareCardChange}
       />
       <BusinessCardModal
         open={businessCardModalOpen}

@@ -8,6 +8,8 @@ type State = {
   publishing: boolean
   publishError: string | null
   justPublished: boolean
+  autoPublish: boolean
+  publishedAt: string | null
 }
 
 // `saveStatus` (useProfileStoreAutosave, EditPage.tsx) sert de signal de
@@ -22,6 +24,8 @@ export function usePublishDiffStatus(saveStatus: SaveStatus) {
     publishing: false,
     publishError: null,
     justPublished: false,
+    autoPublish: false,
+    publishedAt: null,
   })
   const lastSaveStatus = useRef<SaveStatus>('idle')
 
@@ -33,7 +37,14 @@ export function usePublishDiffStatus(saveStatus: SaveStatus) {
       // réapparaître le badge, pas laisser le message de succès affiché
       // indéfiniment — justPublished ne reste vrai que tant qu'aucune
       // sauvegarde ultérieure n'a fait repasser hasUnpublishedChanges à true.
-      setState((s) => ({ ...s, loading: false, hasUnpublishedChanges: has, justPublished: has ? false : s.justPublished }))
+      setState((s) => ({
+        ...s,
+        loading: false,
+        hasUnpublishedChanges: has,
+        justPublished: has ? false : s.justPublished,
+        autoPublish: status?.autoPublish ?? false,
+        publishedAt: status?.publishedAt ?? null,
+      }))
     } catch {
       // Statut non chargé : pas de badge plutôt qu'une erreur visible — ce
       // n'est qu'un encouragement, jamais bloquant (même esprit que

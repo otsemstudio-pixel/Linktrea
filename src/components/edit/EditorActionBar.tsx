@@ -1,12 +1,9 @@
-import { BarChart3, Eye, Share2, Download, FileDown, History } from 'lucide-react'
-import type { Profile } from '@/types'
-import { downloadProfileJson } from '@/lib/exportImport'
+import { BarChart3, Eye, Share2, FileDown, History } from 'lucide-react'
 import { useCoachmarkTarget } from '@/lib/coachmark/CoachmarkContext'
 
 const STORAGE_MODE = import.meta.env.VITE_STORAGE_MODE === 'supabase' ? 'supabase' : 'local'
 
 type Props = {
-  profile: Profile
   onPreview: () => void
   onShare: () => void
   onDownloadCv: () => void
@@ -14,7 +11,7 @@ type Props = {
   onHistory: () => void
 }
 
-export default function EditorActionBar({ profile, onPreview, onShare, onDownloadCv, onStats, onHistory }: Props) {
+export default function EditorActionBar({ onPreview, onShare, onDownloadCv, onStats, onHistory }: Props) {
   // Cible "preview-mobile" du tuto (voir steps.ts) — voir DesktopPreviewPanel.tsx
   // pour la cible alternative "preview-desktop", jamais visible en même temps.
   const previewTargetRef = useCoachmarkTarget('preview-mobile')
@@ -22,7 +19,7 @@ export default function EditorActionBar({ profile, onPreview, onShare, onDownloa
   return (
     <div className="fixed bottom-0 inset-x-0 border-t border-ink-raised bg-ink/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)]">
       <div
-        className={`grid gap-1 p-2 lg:mx-auto lg:max-w-[1400px] lg:px-8 ${STORAGE_MODE === 'supabase' ? 'grid-cols-6 lg:grid-cols-5' : 'grid-cols-4 lg:grid-cols-3'}`}
+        className={`grid gap-1 p-2 lg:mx-auto lg:max-w-[1400px] lg:px-8 ${STORAGE_MODE === 'supabase' ? 'grid-cols-5 lg:grid-cols-4' : 'grid-cols-3 lg:grid-cols-2'}`}
       >
         {/* Redondant en desktop : l'aperçu est déjà visible en direct dans le panneau de droite. */}
         <button
@@ -49,8 +46,9 @@ export default function EditorActionBar({ profile, onPreview, onShare, onDownloa
           Partager
         </button>
         {/* CV PDF (prompt dédié) — visibilité de premier plan voulue, contrairement
-            à l'export JSON resté discret dans la zone Compte : c'est un document
-            que l'utilisateur envoie réellement à un recruteur, pas une sauvegarde. */}
+            à l'export JSON, discret dans la zone Compte (AccountSection.tsx) :
+            c'est un document que l'utilisateur envoie réellement à un
+            recruteur, pas une sauvegarde technique. */}
         <button
           type="button"
           onClick={onDownloadCv}
@@ -58,14 +56,6 @@ export default function EditorActionBar({ profile, onPreview, onShare, onDownloa
         >
           <FileDown size={16} aria-hidden="true" />
           CV
-        </button>
-        <button
-          type="button"
-          onClick={() => downloadProfileJson(profile)}
-          className="min-h-11 flex flex-col items-center justify-center gap-0.5 rounded-md text-xs text-muted focus-visible:outline-2 focus-visible:outline-accent"
-        >
-          <Download size={16} aria-hidden="true" />
-          Exporter
         </button>
         {/* Dashboard de statistiques (Phase 3) — remplace "Importer" à cet
             emplacement (retour utilisateur). Réservé au mode Supabase : les

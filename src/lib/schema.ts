@@ -253,6 +253,34 @@ const appearanceConfigSchema = z.discriminatedUnion('kind', [
   }),
 ])
 
+// .catch() sur le CHAMP ENTIER (pas seulement chaque sous-champ) — doc
+// "Publication automatique optionnelle + clarification de l'export",
+// Phase 3 : shareCard vient d'être ajouté au modèle, donc AUCUN profil
+// existant en base n'a cette clé aujourd'hui (contrairement à
+// shapeLanguageSchema etc., ajoutés après coup mais sur des profils déjà
+// backfillés) — sans ce repli au niveau objet, un payload qui ne contient
+// simplement pas la clé échouerait entièrement la validation de tout le
+// profil, pas seulement de ce champ.
+const shareCardFormatSchema = z.enum(['square', 'portrait', 'landscape']).catch('square')
+
+const shareCardConfigSchema = z
+  .object({
+    format: shareCardFormatSchema,
+    showKeyMetric: z.boolean().catch(true),
+    showTopSkills: z.boolean().catch(false),
+    showCertifications: z.boolean().catch(false),
+    showSignature: z.boolean().catch(false),
+    showQrCode: z.boolean().catch(true),
+  })
+  .catch({
+    format: 'square',
+    showKeyMetric: true,
+    showTopSkills: false,
+    showCertifications: false,
+    showSignature: false,
+    showQrCode: true,
+  })
+
 export const profileSchema = z.object({
   domain: domainSchema,
   identity: identitySchema,
@@ -262,4 +290,5 @@ export const profileSchema = z.object({
   tickers: z.array(tickerSchema),
   theme: themeConfigSchema,
   appearance: appearanceConfigSchema,
+  shareCard: shareCardConfigSchema,
 })

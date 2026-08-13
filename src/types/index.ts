@@ -21,5 +21,7 @@ export type {
   GalleryThemeId,
   CustomThemeSettings,
   AppearanceConfig,
+  ShareCardPickableFormat,
+  ShareCardConfig,
   Profile,
 } from './profile'
