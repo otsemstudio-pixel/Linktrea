@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 
 export type AuthUser = {
   id: string
@@ -47,6 +47,22 @@ function toAuthUser(user: { id: string; email?: string | null } | null | undefin
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>(STORAGE_MODE === 'local' ? 'authenticated' : 'checking')
   const [user, setUser] = useState<AuthUser | null>(STORAGE_MODE === 'local' ? LOCAL_DEV_USER : null)
+  // Diagnostic "lien public redirige vers l'éditeur au second accès" :
+  // capturé UNE SEULE FOIS, à l'évaluation initiale de ce composant — avant
+  // que le SDK Supabase (asynchrone) n'échange ?code=... contre une session
+  // et ne nettoie l'URL. `SIGNED_IN` ne veut PAS dire, contrairement à ce
+  // que supposait ce fichier avant ce correctif, "on vient de finir de se
+  // connecter dans cet onglet" : le SDK émet aussi cet event à chaque
+  // restauration d'une session déjà valide au démarrage (_recoverAndRefresh,
+  // voir auth-js), ET le diffuse à tous les autres onglets de la même
+  // origine via BroadcastChannel — un onglet déjà stable sur un profil
+  // public reçoit alors un SIGNED_IN qui n'a rien à voir avec sa propre
+  // navigation. Seule la présence de `?code=` dans l'URL AU CHARGEMENT de
+  // CETTE page prouve que ce SIGNED_IN précis correspond à un retour de
+  // lien magique réellement traité ici.
+  const isMagicLinkReturnRef = useRef(
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('code'),
+  )
 
   useEffect(() => {
     if (STORAGE_MODE === 'local') return
@@ -73,16 +89,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const nextUser = toAuthUser(session?.user)
         setUser(nextUser)
         setStatus(nextUser ? 'authenticated' : 'anonymous')
-        // SIGNED_IN ne se déclenche ici que quand une session vient d'être
-        // établie DEPUIS L'URL (retour du lien magique) — une restauration
-        // de session existante au chargement ne passe pas par cet event.
-        // C'est le seul endroit où on sait "on vient de finir de se
-        // connecter" ; emailRedirectTo ne peut plus pointer directement
-        // vers #/edit (voir LoginPage), donc la redirection se fait ici.
-        // location.hash plutôt que useNavigate() : AuthProvider est en
-        // dehors du <HashRouter>, HashRouter réagit de toute façon aux
+        // Redirige vers /edit UNIQUEMENT si CE chargement de page était
+        // réellement un retour de lien magique (voir isMagicLinkReturnRef
+        // ci-dessus) — jamais sur la seule foi de event === 'SIGNED_IN',
+        // qui se déclenche aussi pour une restauration de session normale
+        // et pour un SIGNED_IN diffusé depuis un autre onglet. Consommé une
+        // seule fois : un SIGNED_IN ultérieur dans ce même onglet (autre
+        // onglet qui se connecte, refresh...) ne doit plus jamais
+        // déclencher cette redirection. emailRedirectTo ne peut pas pointer
+        // directement vers #/edit (voir LoginPage), donc la redirection se
+        // fait ici. location.hash plutôt que useNavigate() : AuthProvider
+        // est en dehors du <HashRouter>, qui réagit de toute façon aux
         // changements de hash bruts.
-        if (event === 'SIGNED_IN') {
+        if (event === 'SIGNED_IN' && isMagicLinkReturnRef.current) {
+          isMagicLinkReturnRef.current = false
           window.location.hash = '/edit'
         }
       })
