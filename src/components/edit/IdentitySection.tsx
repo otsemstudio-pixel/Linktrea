@@ -15,6 +15,14 @@ const AVAILABILITY_OPTIONS = [
   { value: 'closed', label: 'Non disponible actuellement' },
 ]
 
+// Domaine pilote (prompt dédié) — seules options pour l'instant ; les
+// domaines futurs (Droit, Diplomatie...) s'ajouteront ici au même titre,
+// sans toucher au reste de l'éditeur (voir src/lib/vocabulary.ts).
+const DOMAIN_OPTIONS = [
+  { value: 'finance', label: 'Finance' },
+  { value: 'entrepreneuriat', label: 'Entrepreneuriat' },
+]
+
 export default function IdentitySection() {
   const { register, control, setValue, formState } = useFormContext<Profile>()
   const bio = useWatch({ control, name: 'identity.bio' }) ?? ''
@@ -39,6 +47,8 @@ export default function IdentitySection() {
 
   return (
     <>
+      <SelectField label="Domaine professionnel" registration={register('domain')} options={DOMAIN_OPTIONS} />
+
       <div className="mb-5" ref={photoTargetRef}>
         <span className="text-label uppercase tracking-label text-muted block mb-2">Photo</span>
         <div className="flex items-center gap-3">

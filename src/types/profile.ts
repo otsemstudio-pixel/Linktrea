@@ -113,11 +113,11 @@ export type ThemeConfig = {
   motion: MotionPreference
 }
 
-// Domaine professionnel présenté par le profil (refonte v2, Phase 1) — un
-// seul domaine actif aujourd'hui, la structure existe pour accueillir
-// 'droit' | 'diplomatie' | 'informatique' | 'design' plus tard sans
-// migration de données (voir src/lib/vocabulary.ts).
-export type Domain = 'finance'
+// Domaine professionnel présenté par le profil (refonte v2, Phase 1 ;
+// 'entrepreneuriat' ajouté au pilote domaine — voir le prompt dédié) — la
+// structure existe pour accueillir 'droit' | 'diplomatie' | 'informatique' |
+// 'design' plus tard sans migration de données (voir src/lib/vocabulary.ts).
+export type Domain = 'finance' | 'entrepreneuriat'
 
 // Système de thème à deux niveaux (refonte v2, Phase 1) : soit un thème
 // nommé complet de la Galerie, soit un thème Personnalisé à réglages

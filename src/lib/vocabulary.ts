@@ -47,6 +47,24 @@ export const VOCABULARY: Record<Domain, DomainVocabulary> = {
     cvSkills: { fr: 'Compétences', en: 'Skills' },
     cvCertifications: { fr: 'Certifications', en: 'Certifications' },
   },
+  // Domaine pilote (prompt dédié) — reprend entièrement la famille visuelle
+  // finance (tickers, sparkline, anneau d'allocation) : seul le vocabulaire
+  // change. Les intitulés cv* restent identiques à 'finance' : ce sont des
+  // libellés de candidature standard, pas une métaphore par domaine (voir
+  // le commentaire sur DomainVocabulary ci-dessus).
+  entrepreneuriat: {
+    keyMetric: 'Parcours entrepreneurial',
+    keyMetricUnit: 'ans',
+    expertiseBreakdown: "Domaines d'expertise",
+    history: 'Aventures entrepreneuriales',
+    historyItem: 'Venture',
+    certifications: 'Formations & programmes',
+    networks: 'Réseaux',
+    cvSummary: { fr: 'Résumé', en: 'Summary' },
+    cvExperience: { fr: 'Expérience', en: 'Experience' },
+    cvSkills: { fr: 'Compétences', en: 'Skills' },
+    cvCertifications: { fr: 'Certifications', en: 'Certifications' },
+  },
   // Les entrées 'droit', 'diplomatie', 'informatique', 'design' viendront
   // plus tard, avec leur propre vocabulaire et leur propre famille de
   // motifs graphiques (Phases 6/7 du prompt v2) — pas implémentées

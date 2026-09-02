@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import type { Profile } from '@/types'
 import { profileSchema } from '@/lib/schema'
 import { createEmptyProfile } from '@/lib/emptyProfile'
+import { VOCABULARY } from '@/lib/vocabulary'
 import { getProfileStore } from '@/lib/store'
 import { useProfileStoreAutosave } from '@/lib/store/useProfileStoreAutosave'
 import { MotionPrefsProvider } from '@/lib/motion/MotionPrefsContext'
@@ -59,6 +60,7 @@ export default function EditPage() {
   // ?? 'finance' — même garde que activeAccent/activeAppearance ci-dessous :
   // useWatch peut renvoyer un profil encore incomplet pendant un bref
   // instant après que isLoading passe à faux.
+  const vocabulary = VOCABULARY[profile.domain ?? 'finance']
   const coachmarkSteps = buildCoachmarkSteps(profile.domain ?? 'finance')
 
   const [previewOpen, setPreviewOpen] = useState(false)
@@ -135,16 +137,16 @@ export default function EditPage() {
                     <CollapsibleSection title="Publier" coachmarkId="publish">
                       <PublishSection />
                     </CollapsibleSection>
-                    <CollapsibleSection title="Positions" count={profile.positions?.length ?? 0} coachmarkId="positions">
+                    <CollapsibleSection title={vocabulary.history} count={profile.positions?.length ?? 0} coachmarkId="positions">
                       <PositionsSection />
                     </CollapsibleSection>
-                    <CollapsibleSection title="Compétences" count={profile.holdings?.length ?? 0} coachmarkId="holdings">
+                    <CollapsibleSection title={vocabulary.expertiseBreakdown} count={profile.holdings?.length ?? 0} coachmarkId="holdings">
                       <HoldingsSection />
                     </CollapsibleSection>
-                    <CollapsibleSection title="Certificats" count={profile.certificates?.length ?? 0} coachmarkId="certificates">
+                    <CollapsibleSection title={vocabulary.certifications} count={profile.certificates?.length ?? 0} coachmarkId="certificates">
                       <CertificatesSection />
                     </CollapsibleSection>
-                    <CollapsibleSection title="Réseaux" count={profile.tickers?.length ?? 0} coachmarkId="tickers">
+                    <CollapsibleSection title={vocabulary.networks} count={profile.tickers?.length ?? 0} coachmarkId="tickers">
                       <TickersSection />
                     </CollapsibleSection>
                     <CollapsibleSection title="Apparence" coachmarkId="appearance">

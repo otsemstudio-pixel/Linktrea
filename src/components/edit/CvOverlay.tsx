@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { ArrowLeft } from 'lucide-react'
 import type { Profile } from '@/types'
+import { VOCABULARY } from '@/lib/vocabulary'
 import { useMotionPrefs } from '@/lib/motion/MotionPrefsContext'
 import CvClassicTemplate from '@/components/cv/CvClassicTemplate'
 import CvModernTemplate from '@/components/cv/CvModernTemplate'
@@ -42,6 +43,7 @@ export default function CvOverlay({ open, profile, onClose }: Props) {
   // includePhoto dans CvClassicTemplate.tsx : jamais un ajout automatique.
   const [includePhoto, setIncludePhoto] = useState(false)
   const hasPhoto = Boolean(profile.identity.photo)
+  const vocabulary = VOCABULARY[profile.domain]
 
   // Portail direct sur <body>, en dehors de #root (voir index.html) — pas
   // seulement pour raison de style. #root porte aussi la (longue) page
@@ -103,7 +105,7 @@ export default function CvOverlay({ open, profile, onClose }: Props) {
                 utile à certains utilisateurs. */}
             {profile.positions.length === 0 && (
               <p className="px-4 pb-3 text-xs text-muted">
-                Ton CV sera plus convaincant avec au moins une expérience renseignée dans la section « Positions ».
+                Ton CV sera plus convaincant avec au moins une expérience renseignée dans la section « {vocabulary.history} ».
               </p>
             )}
           </div>

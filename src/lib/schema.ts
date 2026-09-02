@@ -167,7 +167,7 @@ const themeConfigSchema = z.object({
   motion: motionPreferenceSchema,
 })
 
-const domainSchema = z.enum(['finance'])
+const domainSchema = z.enum(['finance', 'entrepreneuriat'])
 
 const galleryThemeIdSchema = z.enum([
   'ledger',

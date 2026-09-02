@@ -3,6 +3,7 @@ import { Download } from 'lucide-react'
 import type { Profile, ShareCardConfig, ShareCardPickableFormat } from '@/types'
 import { renderShareCardToCanvas, exportCanvasToBlob, downloadCanvasBlob } from '@/lib/shareCard'
 import { resolveShareCardContent } from '@/lib/shareCardContent'
+import { VOCABULARY } from '@/lib/vocabulary'
 import { slugify } from '@/lib/slug'
 import Modal from '@/components/edit/Modal'
 
@@ -40,13 +41,6 @@ const CONTENT_KEYS: (keyof Omit<ShareCardConfig, 'format'>)[] = [
   'showSignature',
   'showQrCode',
 ]
-const CONTENT_LABELS: Record<keyof Omit<ShareCardConfig, 'format'>, string> = {
-  showKeyMetric: 'Chiffre clé',
-  showTopSkills: 'Compétences principales',
-  showCertifications: 'Certificats',
-  showSignature: 'Signature',
-  showQrCode: 'QR code',
-}
 
 // Aperçu en direct (refonte carte de partage, Phase 3) — chaque changement
 // de format ou de contenu redessine le <canvas> visible, la même primitive
@@ -62,6 +56,19 @@ const CONTENT_LABELS: Record<keyof Omit<ShareCardConfig, 'format'>, string> = {
 export default function ShareCardModal({ open, profile, publicUrl, onClose, onShareCardChange }: Props) {
   const editable = Boolean(onShareCardChange)
   const config = profile.shareCard
+  const vocabulary = VOCABULARY[profile.domain]
+  // Signature et QR code n'ont pas d'équivalent dans DomainVocabulary : ce
+  // sont des notions universelles, pas une métaphore propre à un domaine
+  // (contrairement aux 3 autres, alignées ci-dessous) — voir le prompt
+  // pilote, qui demande de montrer toute extension de la table avant de
+  // l'ajouter plutôt que d'en inventer une pour ces deux-là.
+  const contentLabels: Record<keyof Omit<ShareCardConfig, 'format'>, string> = {
+    showKeyMetric: vocabulary.keyMetric,
+    showTopSkills: vocabulary.expertiseBreakdown,
+    showCertifications: vocabulary.certifications,
+    showSignature: 'Signature',
+    showQrCode: 'QR code',
+  }
   const [rendering, setRendering] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   // Ignore le résultat d'un rendu devenu obsolète (format/contenu changé
@@ -164,14 +171,14 @@ export default function ShareCardModal({ open, profile, publicUrl, onClose, onSh
                     onChange={() => toggleContent(key)}
                     className="size-4 accent-[var(--accent)]"
                   />
-                  <span className={disabledByPublish ? 'text-muted' : undefined}>{CONTENT_LABELS[key]}</span>
+                  <span className={disabledByPublish ? 'text-muted' : undefined}>{contentLabels[key]}</span>
                 </label>
               )
             })}
           </div>
           {autoDisabled.length > 0 && (
             <p className="text-xs text-muted mt-2" role="status">
-              {autoDisabled.map((k) => CONTENT_LABELS[k]).join(', ')} désactivé{autoDisabled.length > 1 ? 's' : ''} : ce
+              {autoDisabled.map((k) => contentLabels[k]).join(', ')} désactivé{autoDisabled.length > 1 ? 's' : ''} : ce
               format n'a pas assez de place pour tout afficher proprement.
             </p>
           )}
