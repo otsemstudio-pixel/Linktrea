@@ -2,7 +2,10 @@ import { Check, X, Loader2 } from 'lucide-react'
 import { type CheckStatus } from './usePublishState'
 import QrCodeSection from './QrCodeSection'
 
-const STATUS_COPY: Record<CheckStatus, { label: string; className: string }> = {
+// 'error' n'a volontairement pas d'entrée fixe ici : son libellé vient du
+// message réel remonté par usePublishState (checkErrorMessage), jamais
+// d'un texte générique — voir le rendu plus bas.
+const STATUS_COPY: Record<Exclude<CheckStatus, 'error'>, { label: string; className: string }> = {
   idle: { label: '', className: '' },
   checking: { label: 'Vérification…', className: 'text-muted' },
   available: { label: 'Disponible', className: 'text-up' },
@@ -21,6 +24,7 @@ type Props = {
   savedSlug: string | null
   isPublished: boolean
   checkStatus: CheckStatus
+  checkErrorMessage: string | null
   actionPending: boolean
   actionError: string | null
   actionMessage: string | null
@@ -39,6 +43,7 @@ export default function PublishForm({
   savedSlug,
   isPublished,
   checkStatus,
+  checkErrorMessage,
   actionPending,
   actionError,
   actionMessage,
@@ -62,11 +67,18 @@ export default function PublishForm({
         />
       </label>
 
-      {checkStatus !== 'idle' && (
-        <p className={`text-xs mb-3 flex items-center gap-1.5 ${STATUS_COPY[checkStatus].className}`}>
-          <StatusIcon size={12} aria-hidden="true" className={checkStatus === 'checking' ? 'animate-spin' : ''} />
-          {STATUS_COPY[checkStatus].label}
+      {checkStatus === 'error' ? (
+        <p className="text-xs mb-3 flex items-center gap-1.5 text-down">
+          <X size={12} aria-hidden="true" />
+          {checkErrorMessage ?? 'La vérification a échoué. Réessaie dans un instant.'}
         </p>
+      ) : (
+        checkStatus !== 'idle' && (
+          <p className={`text-xs mb-3 flex items-center gap-1.5 ${STATUS_COPY[checkStatus].className}`}>
+            <StatusIcon size={12} aria-hidden="true" className={checkStatus === 'checking' ? 'animate-spin' : ''} />
+            {STATUS_COPY[checkStatus].label}
+          </p>
+        )
       )}
 
       <p className="text-xs text-muted mb-4 break-all font-mono">{previewUrl(slugInput)}</p>

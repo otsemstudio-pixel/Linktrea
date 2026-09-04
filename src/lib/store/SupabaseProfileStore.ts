@@ -144,17 +144,18 @@ export class SupabaseProfileStore implements ProfileStore {
     }
     if (reserved) return 'invalid'
 
-    const { data: userData } = await supabase.auth.getUser()
-
-    const { data: existing, error: existingError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('slug', normalized)
-      .maybeSingle()
-    if (existingError) {
-      throw mapError(existingError, 'Impossible de vérifier ce slug pour le moment. Réessaie dans un instant.')
+    // `profiles` n'a plus de policy de lecture publique (voir loadBySlug
+    // ci-dessus) : un SELECT direct ne verrait jamais la ligne d'un AUTRE
+    // utilisateur, donc ne pourrait jamais détecter un slug déjà pris par
+    // quelqu'un d'autre. is_slug_taken() (SECURITY DEFINER, migration
+    // 20260905090000) contourne cette restriction de façon étroite — un
+    // booléen, aucune donnée de profil exposée, `auth.uid()` exclut déjà le
+    // propriétaire actuel côté fonction.
+    const { data: taken, error: takenError } = await supabase.rpc('is_slug_taken', { p_slug: normalized })
+    if (takenError) {
+      throw mapError(takenError, 'Impossible de vérifier ce slug pour le moment. Réessaie dans un instant.')
     }
-    if (existing && existing.id !== userData.user?.id) return 'taken'
+    if (taken) return 'taken'
 
     return 'available'
   }

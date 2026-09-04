@@ -9,7 +9,12 @@ const STORAGE_MODE = import.meta.env.VITE_STORAGE_MODE === 'supabase' ? 'supabas
 const CHECK_DEBOUNCE_MS = 400
 const MAX_SUGGESTION_ATTEMPTS = 30
 
-export type CheckStatus = 'idle' | 'checking' | SlugAvailability
+// 'error' est distinct de 'invalid' : 'invalid' signifie que le format est
+// réellement rejeté (voir isValidSlugFormat), 'error' signifie que la
+// vérification elle-même a échoué (réseau, session, permissions...) — les
+// deux affichaient auparavant le même statut 'invalid', masquant la vraie
+// cause derrière un message de format toujours faux dans ce second cas.
+export type CheckStatus = 'idle' | 'checking' | SlugAvailability | 'error'
 
 // Toute la logique d'état de la section "Publier" : chargement du statut,
 // proposition automatique de slug, vérification de disponibilité débattue
@@ -21,6 +26,7 @@ export function usePublishState(fullName: string) {
   const [savedSlug, setSavedSlug] = useState<string | null>(null)
   const [isPublished, setIsPublished] = useState(false)
   const [checkStatus, setCheckStatus] = useState<CheckStatus>('idle')
+  const [checkErrorMessage, setCheckErrorMessage] = useState<string | null>(null)
   const [actionPending, setActionPending] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const [actionMessage, setActionMessage] = useState<string | null>(null)
@@ -87,17 +93,28 @@ export function usePublishState(fullName: string) {
     }
     if (!isValidSlugFormat(slugInput)) {
       setCheckStatus('invalid')
+      setCheckErrorMessage(null)
       return
     }
     setCheckStatus('checking')
+    setCheckErrorMessage(null)
     const requestId = ++checkRequestId.current
     const timer = setTimeout(async () => {
       try {
         const store = await getProfileStore()
         const result = await store.checkSlugAvailability(slugInput)
         if (checkRequestId.current === requestId) setCheckStatus(result)
-      } catch {
-        if (checkRequestId.current === requestId) setCheckStatus('invalid')
+      } catch (e) {
+        // Le format est déjà confirmé valide au-dessus : une exception ici
+        // vient forcément de la vérification elle-même (réseau, session,
+        // permissions...), jamais du format — 'error' avec le vrai message
+        // plutôt que de retomber sur 'invalid', qui mentirait sur la cause.
+        if (checkRequestId.current === requestId) {
+          setCheckStatus('error')
+          setCheckErrorMessage(
+            e instanceof ProfileStoreError ? e.message : 'La vérification a échoué. Réessaie dans un instant.',
+          )
+        }
       }
     }, CHECK_DEBOUNCE_MS)
     return () => clearTimeout(timer)
@@ -164,6 +181,7 @@ export function usePublishState(fullName: string) {
     savedSlug,
     isPublished,
     checkStatus,
+    checkErrorMessage,
     actionPending,
     actionError,
     actionMessage,

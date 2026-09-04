@@ -165,6 +165,14 @@ export type Database = {
         Args: Record<string, never>
         Returns: { domain: string; profile_count: number }[]
       }
+      // Voir supabase/migrations/20260905090000_slug_availability_rpc.sql —
+      // contourne l'absence de policy de lecture publique sur `profiles`
+      // pour la vérification de collision de slug (SupabaseProfileStore.
+      // checkSlugAvailability) : un booléen, jamais une ligne de profil.
+      is_slug_taken: {
+        Args: { p_slug: string }
+        Returns: boolean
+      }
     }
   }
 }
