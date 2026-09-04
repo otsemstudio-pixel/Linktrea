@@ -1,53 +1,27 @@
 import { useEffect, useRef, useState } from 'react'
-import { getPublishDiffStatus, publishProfileChanges } from '@/lib/publishDiff'
+import { getPublishDiffStatus } from '@/lib/publishDiff'
 import type { SaveStatus } from '@/lib/store/useProfileStoreAutosave'
 
 type State = {
   loading: boolean
-  hasUnpublishedChanges: boolean
-  publishing: boolean
-  publishError: string | null
-  justPublished: boolean
-  autoPublish: boolean
   publishedAt: string | null
 }
 
 // `saveStatus` (useProfileStoreAutosave, EditPage.tsx) sert de signal de
-// rafraîchissement : chaque sauvegarde réussie avance profiles.updated_at
-// côté serveur, donc c'est le seul moment où "des modifications non
-// publiées" peut redevenir vrai après une publication. Pas de polling —
-// juste une re-lecture à chaque transition vers 'saved'.
+// rafraîchissement : une sauvegarde réussie est le seul moment où
+// `publishedAt` peut passer de null à une valeur (première publication
+// suivie d'une modification) — pas de polling.
 export function usePublishDiffStatus(saveStatus: SaveStatus) {
-  const [state, setState] = useState<State>({
-    loading: true,
-    hasUnpublishedChanges: false,
-    publishing: false,
-    publishError: null,
-    justPublished: false,
-    autoPublish: false,
-    publishedAt: null,
-  })
+  const [state, setState] = useState<State>({ loading: true, publishedAt: null })
   const lastSaveStatus = useRef<SaveStatus>('idle')
 
   async function refresh() {
     try {
       const status = await getPublishDiffStatus()
-      const has = status?.hasUnpublishedChanges ?? false
-      // Une nouvelle modification après une publication réussie doit faire
-      // réapparaître le badge, pas laisser le message de succès affiché
-      // indéfiniment — justPublished ne reste vrai que tant qu'aucune
-      // sauvegarde ultérieure n'a fait repasser hasUnpublishedChanges à true.
-      setState((s) => ({
-        ...s,
-        loading: false,
-        hasUnpublishedChanges: has,
-        justPublished: has ? false : s.justPublished,
-        autoPublish: status?.autoPublish ?? false,
-        publishedAt: status?.publishedAt ?? null,
-      }))
+      setState({ loading: false, publishedAt: status?.publishedAt ?? null })
     } catch {
-      // Statut non chargé : pas de badge plutôt qu'une erreur visible — ce
-      // n'est qu'un encouragement, jamais bloquant (même esprit que
+      // Statut non chargé : pas d'indication plutôt qu'une erreur visible —
+      // ce n'est qu'un encouragement, jamais bloquant (même esprit que
       // CompletionRing.tsx).
       setState((s) => ({ ...s, loading: false }))
     }
@@ -63,19 +37,5 @@ export function usePublishDiffStatus(saveStatus: SaveStatus) {
     lastSaveStatus.current = saveStatus
   }, [saveStatus])
 
-  async function publishChanges() {
-    setState((s) => ({ ...s, publishing: true, publishError: null }))
-    try {
-      await publishProfileChanges()
-      setState((s) => ({ ...s, publishing: false, hasUnpublishedChanges: false, justPublished: true }))
-    } catch {
-      setState((s) => ({
-        ...s,
-        publishing: false,
-        publishError: 'La publication des modifications a échoué. Réessaie dans un instant.',
-      }))
-    }
-  }
-
-  return { ...state, publishChanges }
+  return state
 }

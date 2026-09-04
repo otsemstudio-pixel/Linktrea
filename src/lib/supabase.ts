@@ -31,11 +31,6 @@ export type Database = {
           // dernier publish_profile_changes().
           published_snapshot: Json | null
           published_at: string | null
-          // Publication automatique optionnelle (doc "Publication automatique
-          // optionnelle + clarification de l'export", Phase 1) — false par
-          // défaut, jamais actif tant que le propriétaire ne l'a pas
-          // explicitement activé dans la zone Compte.
-          auto_publish: boolean
         }
         Insert: {
           id: string
@@ -46,7 +41,6 @@ export type Database = {
           updated_at?: string
           published_snapshot?: Json | null
           published_at?: string | null
-          auto_publish?: boolean
         }
         Update: {
           id?: string
@@ -57,7 +51,6 @@ export type Database = {
           updated_at?: string
           published_snapshot?: Json | null
           published_at?: string | null
-          auto_publish?: boolean
         }
         Relationships: []
       }

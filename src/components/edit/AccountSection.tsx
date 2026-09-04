@@ -7,7 +7,6 @@ import { getProfileStore, ProfileStoreError } from '@/lib/store'
 import { clearLastEmail } from '@/lib/auth/lastEmail'
 import { markAccountDeleted } from '@/lib/auth/accountDeletedFlag'
 import { downloadProfileJson } from '@/lib/exportImport'
-import { useAutoPublishSetting } from './useAutoPublishSetting'
 import Modal from './Modal'
 
 // Compte (refonte sécurité, Phases 4-5) : déconnexion globale et suppression
@@ -17,13 +16,6 @@ export default function AccountSection() {
   const { signOutEverywhere } = useAuth()
   const { control } = useFormContext<Profile>()
   const profile = useWatch({ control }) as Profile
-  const {
-    loading: autoPublishLoading,
-    enabled: autoPublishEnabled,
-    pending: autoPublishPending,
-    error: autoPublishError,
-    toggle: toggleAutoPublish,
-  } = useAutoPublishSetting()
 
   const [slug, setSlug] = useState<string | null>(null)
   const [loadingSlug, setLoadingSlug] = useState(true)
@@ -108,31 +100,10 @@ export default function AccountSection() {
     }
   }
 
-  if (loadingSlug || autoPublishLoading) return null
+  if (loadingSlug) return null
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <label className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            checked={autoPublishEnabled}
-            disabled={autoPublishPending}
-            onChange={(e) => void toggleAutoPublish(e.target.checked)}
-            className="mt-0.5"
-          />
-          <span>
-            <span className="block text-sm">Publication automatique</span>
-            <span className="block text-xs text-muted mt-1">
-              Une fois activée, chaque modification enregistrée devient immédiatement visible sur ton profil public,
-              sans avoir à cliquer sur Publier. Désactivée, tu gardes le contrôle avant que tes changements soient
-              visibles.
-            </span>
-          </span>
-        </label>
-        {autoPublishError && <p className="text-xs text-down mt-2">{autoPublishError}</p>}
-      </div>
-
       {/* Export JSON brut (retour utilisateur, doc "Publication automatique
           optionnelle + clarification de l'export", Phase 2) — obligation de
           portabilité des données, format technique et réutilisable par une
@@ -141,7 +112,7 @@ export default function AccountSection() {
           sans ambiguïté possible avec ce dernier, ici discret dans la zone
           Compte plutôt qu'au même niveau que Partager/CV dans la barre
           principale (voir EditorActionBar.tsx). */}
-      <div className="pt-6 border-t border-ink-raised">
+      <div>
         <button
           type="button"
           onClick={() => downloadProfileJson(profile)}
