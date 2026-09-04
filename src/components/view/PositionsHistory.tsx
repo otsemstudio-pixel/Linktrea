@@ -2,18 +2,27 @@ import type { Position, Domain } from '@/types'
 import { sortedPositions, displayYearRange } from '@/lib/deriveStats'
 import { useMotionPrefs } from '@/lib/motion/MotionPrefsContext'
 import { VOCABULARY } from '@/lib/vocabulary'
+import { resolveVisualFamily } from '@/lib/theme/visualFamily'
+import { sealOutlinePath } from '@/lib/svg/guilloche'
 
 type Props = {
   domain: Domain
   positions: Position[]
 }
 
-const RAIL_X = 5 // position horizontale (px) du rail et du centre des pastilles
+// Position horizontale (px) du rail/ruban et du centre des marqueurs — plus
+// large en "protocole" pour laisser la place au ruban (voir RIBBON_WIDTH)
+// sans empiéter sur le texte (pl-7 = 28px de marge par <li>, voir plus bas).
+const RAIL_X_MARCHE = 5
+const RAIL_X_PROTOCOLE = 9
+const RIBBON_WIDTH = 14
 
 export default function PositionsHistory({ domain, positions }: Props) {
   const { reduced } = useMotionPrefs()
   const sorted = sortedPositions(positions)
   const vocabulary = VOCABULARY[domain]
+  const family = resolveVisualFamily(domain)
+  const railX = family === 'protocole' ? RAIL_X_PROTOCOLE : RAIL_X_MARCHE
 
   return (
     <section className="px-6 py-6 border-t border-ink-raised @min-[1024px]:px-0">
@@ -23,25 +32,50 @@ export default function PositionsHistory({ domain, positions }: Props) {
         <p className="text-sm text-muted">Aucune position renseignée pour le moment.</p>
       ) : (
         <ol className="relative">
-          {/* Rail continu : un seul trait qui traverse toute la frise, sous les
-              pastilles et les cartes — pas un trait par élément. */}
-          <div
-            aria-hidden="true"
-            className="absolute top-2 bottom-2 w-px bg-ink-raised"
-            style={{ left: RAIL_X }}
-          />
+          {/* Rail/ruban continu : un seul tracé qui traverse toute la frise,
+              sous les marqueurs et les cartes — pas un tracé par élément.
+              "Protocole" (Diplomatie, prompt dédié) remplace le simple trait
+              par un ruban plus large à pli central en dégradé, dans l'esprit
+              d'un ruban de décoration officielle — "marché" est inchangé. */}
+          {family === 'protocole' ? (
+            <div
+              aria-hidden="true"
+              className="absolute top-2 bottom-2 rounded-full text-accent"
+              style={{
+                left: railX - RIBBON_WIDTH / 2,
+                width: RIBBON_WIDTH,
+                background:
+                  'linear-gradient(to right, transparent, currentColor 35%, currentColor 65%, transparent)',
+                opacity: 0.3,
+              }}
+            />
+          ) : (
+            <div aria-hidden="true" className="absolute top-2 bottom-2 w-px bg-ink-raised" style={{ left: railX }} />
+          )}
           {sorted.map((position) => {
             const current = position.endDate === null
             return (
               <li key={position.id} className="relative pl-7 pb-6 last:pb-0">
-                <span
-                  aria-hidden="true"
-                  className={
-                    'absolute top-1.5 size-2.5 rounded-full ' +
-                    (current ? 'bg-accent' : 'bg-ink border-2 border-ink-raised')
-                  }
-                  style={{ left: RAIL_X - 5 }}
-                />
+                {family === 'protocole' ? (
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    className={'absolute top-0 size-3.5 ' + (current ? 'text-accent' : 'text-ink-raised')}
+                    style={{ left: railX - 7 }}
+                  >
+                    <path d={sealOutlinePath(12, 12, 11, 9, 8)} fill="var(--ink)" stroke="currentColor" strokeWidth="1.5" />
+                    <circle cx="12" cy="12" r="3" fill="currentColor" />
+                  </svg>
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className={
+                      'absolute top-1.5 size-2.5 rounded-full ' +
+                      (current ? 'bg-accent' : 'bg-ink border-2 border-ink-raised')
+                    }
+                    style={{ left: railX - 5 }}
+                  />
+                )}
 
                 <div
                   className={

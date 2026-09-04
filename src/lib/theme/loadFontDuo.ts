@@ -1,10 +1,10 @@
 // Chargement effectif des polices d'un duo (refonte design Phase 2) —
 // séparé de fontDuos.ts pour que le sélecteur (qui n'a besoin que des
-// métadonnées) n'entraîne jamais les 14 paires dans le bundle. Chaque entrée
+// métadonnées) n'entraîne jamais les 15 paires dans le bundle. Chaque entrée
 // est un import() statique explicite (pas de chemin interpolé) : Vite ne
 // peut découper le bundle par paire que si le spécificateur est analysable
 // à la compilation — une seule paire est donc réellement récupérée, au
-// moment de la sélection, jamais les 14.
+// moment de la sélection, jamais les 15.
 import type { FontDuoId } from '@/types'
 
 // Une seule url de préchargement par rôle (titre + mono) et par duo — le
@@ -23,6 +23,7 @@ import bitterWoff from '@fontsource/bitter/files/bitter-latin-700-normal.woff2?u
 import bigShouldersWoff from '@fontsource/big-shoulders/files/big-shoulders-latin-700-normal.woff2?url'
 import poppinsWoff from '@fontsource/poppins/files/poppins-latin-700-normal.woff2?url'
 import workSansWoff from '@fontsource/work-sans/files/work-sans-latin-700-normal.woff2?url'
+import ebGaramondWoff from '@fontsource/eb-garamond/files/eb-garamond-latin-700-normal.woff2?url'
 
 import ibmPlexMonoWoff from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url'
 import jetbrainsMonoWoff from '@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2?url'
@@ -143,6 +144,14 @@ const LOADERS: Record<FontDuoId, () => Promise<unknown>> = {
       import('@fontsource/dm-mono/latin-400.css'),
       import('@fontsource/dm-mono/latin-500.css'),
     ]),
+  chancellerie: () =>
+    Promise.all([
+      import('@fontsource/eb-garamond/latin-400.css'),
+      import('@fontsource/eb-garamond/latin-600.css'),
+      import('@fontsource/eb-garamond/latin-700.css'),
+      import('@fontsource/dm-mono/latin-400.css'),
+      import('@fontsource/dm-mono/latin-500.css'),
+    ]),
 }
 
 // Poids principal (titre + mono) de chaque duo, pour <link rel="preload">
@@ -162,6 +171,7 @@ export const FONT_DUO_PRELOAD_URLS: Record<FontDuoId, [title: string, mono: stri
   machine: [bigShouldersWoff, courierPrimeWoff],
   geometrique: [poppinsWoff, spaceMonoWoff],
   humaniste: [workSansWoff, dmMonoWoff],
+  chancellerie: [ebGaramondWoff, dmMonoWoff],
 }
 
 const loaded = new Set<FontDuoId>()

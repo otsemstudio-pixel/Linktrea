@@ -273,6 +273,63 @@ export const GALLERY_THEMES: Record<GalleryThemeId, GalleryThemeMeta> = {
     platformIconStyle: 'brand',
     animationKind: 'braise',
   },
+  // Les 3 thèmes suivants (prompt domaine Diplomatie "Protocole", Phase 4)
+  // introduisent le registre lexical diplomatique — palette de la Phase 1
+  // (Nuit de chancellerie, Bordeaux du sceau, Or vieilli, Ivoire), duo
+  // "Chancellerie" (EB Garamond) et layout "Sceau" pour l'un des trois. Pas
+  // d'accent fixé ici : la couleur reste un choix de thème indépendant de
+  // la famille visuelle (voir GalleryThemeMeta ci-dessus et
+  // src/lib/theme/visualFamily.ts) — ces thèmes restent utilisables par
+  // n'importe quel domaine, pas seulement Diplomatie.
+  chancellerie: {
+    id: 'chancellerie',
+    name: 'Chancellerie',
+    background: { kind: 'texture', base: '#0F1A2E' },
+    fontDuo: 'chancellerie',
+    buttonStyle: 'outline',
+    // Le nom du thème et celui du layout coïncident, comme pour "Sceau" en
+    // finance — le pairing le plus évident du registre "document officiel".
+    headerLayout: 'seal',
+    shape: 'sharp',
+    signatureStyle: 'stamp',
+    photoTreatment: 'sepia',
+    platformIconStyle: 'white',
+    animationKind: null,
+  },
+  // Seul thème diplomatique à fond clair — même rôle que "Titre" en finance
+  // (l'unique fond clair de toute la Galerie) : une lettre/missive sur
+  // papier vélin plutôt qu'un document relié.
+  missive: {
+    id: 'missive',
+    name: 'Missive',
+    background: { kind: 'flat', base: '#F1E7D2' },
+    fontDuo: 'chancellerie',
+    buttonStyle: 'outline',
+    headerLayout: 'classic',
+    shape: 'soft',
+    // 'plain', pas 'stamp' : une lettre personnelle, pas un acte scellé —
+    // seule variation de signature des 3 thèmes, pour ne pas systématiser
+    // le tampon partout où le registre est "officiel".
+    signatureStyle: 'plain',
+    photoTreatment: 'muted',
+    // Seul fond clair de ces 3 thèmes — 'black' est le seul choix lisible
+    // ici, jamais 'white' (même garde de contraste que "Titre" en finance).
+    platformIconStyle: 'black',
+    animationKind: null,
+  },
+  ambassade: {
+    id: 'ambassade',
+    name: 'Ambassade',
+    background: { kind: 'gradient', from: '#5C1420', to: '#0F1A2E' },
+    fontDuo: 'chancellerie',
+    buttonStyle: 'elevated',
+    headerLayout: 'banner',
+    shape: 'sharp',
+    signatureStyle: 'stamp',
+    photoTreatment: 'sepia',
+    platformIconStyle: 'accent',
+    animationKind: null,
+  },
 }
 
 export const GALLERY_THEME_IDS = Object.keys(GALLERY_THEMES) as GalleryThemeId[]

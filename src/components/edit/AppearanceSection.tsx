@@ -68,6 +68,12 @@ function SignaturePreview({ style }: { style: SignatureStyle }) {
   )
 }
 
+// Fonds "flat" assez clairs pour exiger un texte sombre dans la vignette de
+// la grille ci-dessous — 'Titre' (finance) puis 'Missive' (prompt domaine
+// Diplomatie, Phase 4) : un ensemble plutôt qu'une seule comparaison figée,
+// pour qu'un futur thème clair s'y ajoute sans nouvelle branche de logique.
+const LIGHT_FLAT_BACKGROUNDS = new Set(['#EDE8DE', '#F1E7D2'])
+
 function treatmentPreviewStyle(treatment: BackgroundTreatment): React.CSSProperties {
   if (treatment.kind === 'flat') return { background: treatment.base }
   if (treatment.kind === 'gradient') return { background: `linear-gradient(to bottom, ${treatment.from}, ${treatment.to})` }
@@ -213,7 +219,8 @@ function ThemeGallerySection() {
             {GALLERY_THEME_IDS.map((id) => {
               const meta = GALLERY_THEMES[id]
               const selected = appearance.themeId === id
-              const textOnPreview = meta.background.kind === 'flat' && meta.background.base === '#EDE8DE' ? '#13110F' : '#E7E8E7'
+              const textOnPreview =
+                meta.background.kind === 'flat' && LIGHT_FLAT_BACKGROUNDS.has(meta.background.base) ? '#13110F' : '#E7E8E7'
               return (
                 <button
                   key={id}

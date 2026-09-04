@@ -202,7 +202,7 @@ export default function IdentityHeader({
     return (
       <motion.header {...motionProps} className="relative overflow-hidden @min-[1024px]:rounded-[var(--radius-lg)]">
         <div className="relative h-32 overflow-hidden bg-ink-raised">
-          <GuillochePattern />
+          <GuillochePattern domain={domain} />
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-accent-subtle to-transparent" />
           {showAmbientSparkline && <AmbientSparkline />}
           <div className="absolute inset-x-0 top-0">
@@ -223,7 +223,7 @@ export default function IdentityHeader({
   // sparkline ambiante optionnelle (thème Placement).
   return (
     <motion.header {...motionProps} className="relative overflow-hidden bg-ink-raised @min-[1024px]:rounded-[var(--radius-lg)]">
-      <GuillochePattern />
+      <GuillochePattern domain={domain} />
       <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-accent-subtle to-transparent" />
       {showAmbientSparkline && <AmbientSparkline />}
 

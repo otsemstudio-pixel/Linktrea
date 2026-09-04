@@ -156,6 +156,7 @@ const fontDuoIdSchema = z.enum([
   'machine',
   'geometrique',
   'humaniste',
+  'chancellerie',
 ])
 
 const motionPreferenceSchema = z.enum(['full', 'reduced'])
@@ -167,7 +168,7 @@ const themeConfigSchema = z.object({
   motion: motionPreferenceSchema,
 })
 
-const domainSchema = z.enum(['finance', 'entrepreneuriat'])
+const domainSchema = z.enum(['finance', 'entrepreneuriat', 'diplomatie'])
 
 const galleryThemeIdSchema = z.enum([
   'ledger',
@@ -183,6 +184,9 @@ const galleryThemeIdSchema = z.enum([
   'placement',
   'guilde',
   'eclat',
+  'chancellerie',
+  'missive',
+  'ambassade',
 ])
 
 // .catch('braise') — même raison que shapeLanguageSchema plus bas : un

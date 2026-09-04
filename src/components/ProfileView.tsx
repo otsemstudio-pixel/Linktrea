@@ -102,7 +102,7 @@ export default function ProfileView({
   return (
     <MotionPrefsProvider themeMotion={profile.theme.motion}>
       <div className="relative @container min-h-dvh bg-ink text-paper font-sans pb-24 @min-[1024px]:pb-10">
-        <AppliedBackgroundLayer treatment={resolvedBackground.treatment} resolvedAnimation={resolvedAnimation} />
+        <AppliedBackgroundLayer treatment={resolvedBackground.treatment} resolvedAnimation={resolvedAnimation} domain={profile.domain} />
         <div className="@min-[1024px]:mx-auto @min-[1024px]:max-w-[1120px] @min-[1024px]:grid @min-[1024px]:grid-cols-[360px_1fr] @min-[1024px]:items-start @min-[1024px]:gap-10 @min-[1024px]:px-10 @min-[1024px]:pt-10">
           <Aside
             standalone={standalone}

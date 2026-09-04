@@ -34,7 +34,7 @@ export default function CertificatesRail({ domain, certificates, slug }: Props) 
                 boxShadow: 'var(--card-shadow)',
               }}
             >
-              <CertificateSeal />
+              <CertificateSeal domain={domain} />
               <p className="mt-2 font-medium text-sm leading-snug">{cert.title}</p>
               <p className="text-xs mt-0.5 font-mono" style={{ color: 'var(--card-fg-muted)' }}>
                 {cert.institution} · {cert.year}

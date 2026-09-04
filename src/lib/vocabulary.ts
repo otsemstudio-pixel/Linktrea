@@ -65,8 +65,25 @@ export const VOCABULARY: Record<Domain, DomainVocabulary> = {
     cvSkills: { fr: 'Compétences', en: 'Skills' },
     cvCertifications: { fr: 'Certifications', en: 'Certifications' },
   },
-  // Les entrées 'droit', 'diplomatie', 'informatique', 'design' viendront
-  // plus tard, avec leur propre vocabulaire et leur propre famille de
-  // motifs graphiques (Phases 6/7 du prompt v2) — pas implémentées
+  // Domaine "famille visuelle Protocole" (prompt dédié) — première entrée à
+  // introduire une vraie nouvelle famille de motifs structurels (voir
+  // src/lib/theme/visualFamily.ts), pas seulement du vocabulaire. Les
+  // intitulés cv* restent identiques aux autres domaines, pour la même
+  // raison qu'en Entrepreneuriat (voir le commentaire sur DomainVocabulary).
+  diplomatie: {
+    keyMetric: 'Parcours diplomatique',
+    keyMetricUnit: 'ans',
+    expertiseBreakdown: "Zones d'expertise",
+    history: 'Missions',
+    historyItem: 'Mission',
+    certifications: 'Accréditations',
+    networks: 'Réseaux',
+    cvSummary: { fr: 'Résumé', en: 'Summary' },
+    cvExperience: { fr: 'Expérience', en: 'Experience' },
+    cvSkills: { fr: 'Compétences', en: 'Skills' },
+    cvCertifications: { fr: 'Certifications', en: 'Certifications' },
+  },
+  // Les entrées 'droit', 'informatique', 'design' viendront plus tard, avec
+  // leur propre vocabulaire (Phases 6/7 du prompt v2) — pas implémentées
   // maintenant, seule la structure doit exister.
 }

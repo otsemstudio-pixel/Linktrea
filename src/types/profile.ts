@@ -104,6 +104,7 @@ export type FontDuoId =
   | 'machine'
   | 'geometrique'
   | 'humaniste'
+  | 'chancellerie'
 export type MotionPreference = 'full' | 'reduced'
 
 export type ThemeConfig = {
@@ -114,10 +115,12 @@ export type ThemeConfig = {
 }
 
 // Domaine professionnel présenté par le profil (refonte v2, Phase 1 ;
-// 'entrepreneuriat' ajouté au pilote domaine — voir le prompt dédié) — la
-// structure existe pour accueillir 'droit' | 'diplomatie' | 'informatique' |
-// 'design' plus tard sans migration de données (voir src/lib/vocabulary.ts).
-export type Domain = 'finance' | 'entrepreneuriat'
+// 'entrepreneuriat' ajouté au pilote domaine, 'diplomatie' par le prompt
+// dédié "famille visuelle Protocole", Phase 3 — voir src/lib/vocabulary.ts
+// pour le vocabulaire et src/lib/theme/visualFamily.ts pour la famille de
+// motifs structurels associée) — la structure existe pour accueillir
+// 'droit' | 'informatique' | 'design' plus tard sans migration de données.
+export type Domain = 'finance' | 'entrepreneuriat' | 'diplomatie'
 
 // Système de thème à deux niveaux (refonte v2, Phase 1) : soit un thème
 // nommé complet de la Galerie, soit un thème Personnalisé à réglages
@@ -152,6 +155,11 @@ export type EclatVariant = 'braise' | 'maree' | 'crepuscule' | 'eclipse' | 'nebu
 // financier, jamais descriptif de sa couleur. "Éclat" (13e) ajouté par le
 // prompt dédié : plus expressif, mais un choix parmi d'autres de la Galerie,
 // jamais un remplacement du fond par défaut ni superposable aux autres.
+// "Chancellerie", "Missive" et "Ambassade" (prompt domaine Diplomatie,
+// Phase 4) ajoutent le registre lexical diplomatique — utilisables par
+// N'IMPORTE QUEL domaine comme les 13 précédents : seule la famille
+// visuelle des motifs structurels (filigrane, sceau, ruban) suit le domaine,
+// jamais le thème choisi (voir src/lib/theme/visualFamily.ts).
 export type GalleryThemeId =
   | 'ledger'
   | 'bourse'
@@ -166,6 +174,9 @@ export type GalleryThemeId =
   | 'placement'
   | 'guilde'
   | 'eclat'
+  | 'chancellerie'
+  | 'missive'
+  | 'ambassade'
 
 // Langage de forme (personnalisation avancée, Phase 1) — un seul réglage
 // pilote le rayon de tous les coins de l'application publique (cartes,

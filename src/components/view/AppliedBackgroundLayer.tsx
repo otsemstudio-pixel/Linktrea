@@ -1,4 +1,4 @@
-import type { EclatVariant } from '@/types'
+import type { Domain, EclatVariant } from '@/types'
 import type { BackgroundTreatment } from '@/lib/theme/galleryThemes'
 import type { ResolvedAnimation } from '@/lib/theme/resolveAppearance'
 import { useBackgroundAnimation } from '@/lib/motion/useBackgroundAnimation'
@@ -16,6 +16,10 @@ type Props = {
   // pas, puisque c'est lui qui pose le Provider). Chaque composant qui a
   // besoin du résultat final l'appelle donc lui-même.
   resolvedAnimation: ResolvedAnimation
+  // Famille visuelle du filigrane "texture" (prompt domaine Diplomatie,
+  // Phase 2) — voir GuillochePattern.tsx, seul point qui lit réellement
+  // resolveVisualFamily pour ce motif.
+  domain: Domain
 }
 
 // Décore le fond de page selon le traitement du thème actif (refonte v2,
@@ -26,7 +30,7 @@ type Props = {
 // couleur DE RÉFÉRENCE pour le contraste (voir resolveAppearanceBackground)
 // — cette couche est purement décorative, elle ne change aucun calcul de
 // lisibilité, animée ou non.
-export default function AppliedBackgroundLayer({ treatment, resolvedAnimation }: Props) {
+export default function AppliedBackgroundLayer({ treatment, resolvedAnimation, domain }: Props) {
   const animation = useBackgroundAnimation(resolvedAnimation)
 
   if (treatment.kind === 'flat') {
@@ -84,6 +88,7 @@ export default function AppliedBackgroundLayer({ treatment, resolvedAnimation }:
       style={{ background: treatment.base }}
     >
       <GuillochePattern
+        domain={domain}
         className={`text-paper ${animation.kind === 'guilloche' && animation.active ? 'animate-guilloche-pulse' : 'opacity-[0.05]'}`}
       />
       {animation.kind === 'noise' && <NoiseCanvas active={animation.active} />}

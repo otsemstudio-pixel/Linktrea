@@ -39,6 +39,7 @@ const DUOS = [
   { id: 'machine', name: 'Machine', sample: '01 234 567,89', title: fontFile('big-shoulders', 900), mono: fontFile('courier-prime', 700) },
   { id: 'geometrique', name: 'Géométrique', sample: '01 234 567,89', title: fontFile('poppins', 700), mono: fontFile('space-mono', 700) },
   { id: 'humaniste', name: 'Humaniste', sample: '01 234 567,89', title: fontFile('work-sans', 700), mono: fontFile('dm-mono', 500) },
+  { id: 'chancellerie', name: 'Chancellerie', sample: '01 234 567,89', title: fontFile('eb-garamond', 700), mono: fontFile('dm-mono', 500) },
 ]
 
 const WIDTH = 280

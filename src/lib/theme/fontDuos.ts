@@ -1,4 +1,5 @@
-// Les 14 duos typographiques (refonte design Phase 2). Ce fichier ne charge
+// Les 15 duos typographiques (refonte design Phase 2 ; 15e ajouté par le
+// prompt domaine Diplomatie, voir 'chancellerie' plus bas). Ce fichier ne charge
 // AUCUNE police — uniquement les métadonnées nécessaires au sélecteur
 // (nom, intention, aperçu statique). Le chargement réel d'un duo se fait via
 // loadFontDuo.ts, séparé exprès : importer fontDuos.ts pour afficher le
@@ -148,6 +149,20 @@ export const FONT_DUOS: Record<FontDuoId, FontDuoDefinition> = {
     character: 'Sans organique, chaleureux',
     titleFamily: 'Work Sans',
     titleFallback: SANS_FALLBACK,
+    monoFamily: 'DM Mono',
+    monoFallback: MONO_FALLBACK,
+  },
+  // Ajouté par le prompt domaine Diplomatie (famille visuelle "Protocole") —
+  // seul duo sérif "Garamond-revival" du registre, distinct des 5 autres
+  // sérifs déjà réclamés par Finance (Source Serif 4, Newsreader, Lora,
+  // Playfair Display, Bitter). DM Mono réutilisé tel quel : la reprise d'un
+  // mono entre duos est déjà la norme (classique/compact/elegant/humaniste).
+  chancellerie: {
+    id: 'chancellerie',
+    name: 'Chancellerie',
+    character: 'Garamond-revival, traité et certificat',
+    titleFamily: 'EB Garamond',
+    titleFallback: SERIF_FALLBACK,
     monoFamily: 'DM Mono',
     monoFallback: MONO_FALLBACK,
   },

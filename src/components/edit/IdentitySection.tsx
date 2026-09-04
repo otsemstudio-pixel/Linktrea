@@ -15,12 +15,13 @@ const AVAILABILITY_OPTIONS = [
   { value: 'closed', label: 'Non disponible actuellement' },
 ]
 
-// Domaine pilote (prompt dédié) — seules options pour l'instant ; les
-// domaines futurs (Droit, Diplomatie...) s'ajouteront ici au même titre,
-// sans toucher au reste de l'éditeur (voir src/lib/vocabulary.ts).
+// Domaines disponibles — les domaines futurs (Droit, Informatique...)
+// s'ajouteront ici au même titre, sans toucher au reste de l'éditeur (voir
+// src/lib/vocabulary.ts et, pour Diplomatie, src/lib/theme/visualFamily.ts).
 const DOMAIN_OPTIONS = [
   { value: 'finance', label: 'Finance' },
   { value: 'entrepreneuriat', label: 'Entrepreneuriat' },
+  { value: 'diplomatie', label: 'Diplomatie' },
 ]
 
 export default function IdentitySection() {

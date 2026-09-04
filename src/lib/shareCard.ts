@@ -27,6 +27,8 @@ import type { Profile, PhotoTreatment, ShapeLanguage, SignatureStyle } from '@/t
 import type { ShareCardContent } from './shareCardContent'
 import { sortedHoldings, yearsOfExperience, initials } from './deriveStats'
 import { guillochePaths, GUILLOCHE_EXTENT } from './svg/guilloche'
+import { rosettePaths, ROSETTE_EXTENT } from './svg/rosette'
+import { resolveVisualFamily } from './theme/visualFamily'
 import { FONT_DUOS, type FontDuoDefinition } from './theme/fontDuos'
 import { resolveAppearanceBackground, resolveAppearanceFontDuo, resolveAppearanceSignatureStyle } from './theme/resolveAppearance'
 import { resolveAppearanceShape } from './theme/shape'
@@ -170,16 +172,19 @@ function readCardColors(): CardColors {
 // dessinait avant sur TOUTES les cartes sans distinction. La carte doit
 // reflèter ce que CE thème affiche vraiment — un thème à fond plat ou en
 // dégradé n'a aucun guillochis sur la page publique, sa carte non plus.
-function drawGuillocheTexture(ctx: CanvasRenderingContext2D, colors: CardColors, width: number, height: number): void {
+function drawGuillocheTexture(ctx: CanvasRenderingContext2D, colors: CardColors, width: number, height: number, domain: Profile['domain']): void {
+  const family = resolveVisualFamily(domain)
+  const paths = family === 'protocole' ? rosettePaths() : guillochePaths()
+  const extent = family === 'protocole' ? ROSETTE_EXTENT : GUILLOCHE_EXTENT
   ctx.save()
   ctx.globalAlpha = 0.05
   ctx.strokeStyle = colors.fg
   ctx.lineWidth = 2.2
   ctx.translate(width / 2, height / 2)
   const radius = Math.max(width, height) / 2
-  const scale = (radius / GUILLOCHE_EXTENT) * 1.15
+  const scale = (radius / extent) * 1.15
   ctx.scale(scale, scale)
-  for (const d of guillochePaths()) {
+  for (const d of paths) {
     ctx.stroke(new Path2D(d))
   }
   ctx.restore()
@@ -232,7 +237,7 @@ function drawBackground(ctx: CanvasRenderingContext2D, profile: Profile, colors:
   } else if (appearance.kind === 'custom' && appearance.settings.animatedBackground) {
     drawChromaticArcOverlay(ctx, appearance.settings.animatedColors, ECLAT_OPACITY[appearance.settings.animationStyle], width, height)
   } else if (backgroundTreatment.kind === 'texture') {
-    drawGuillocheTexture(ctx, colors, width, height)
+    drawGuillocheTexture(ctx, colors, width, height, profile.domain)
   }
 }
 
