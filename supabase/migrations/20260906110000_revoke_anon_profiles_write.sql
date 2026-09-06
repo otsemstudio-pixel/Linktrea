@@ -1,0 +1,17 @@
+-- Découvert en auditant l'état actuel des privilèges après le nettoyage de
+-- ce matin (information_schema.role_table_grants) : `profiles` accorde
+-- encore à `anon` DELETE, INSERT, SELECT, UPDATE — un visiteur non connecté
+-- ne devrait avoir AUCUN privilège sur cette table, la lecture publique
+-- passe exclusivement par la vue public_profiles (déjà correctement limitée
+-- à SELECT pour anon/authenticated). Neutralisé aujourd'hui par RLS (les
+-- quatre policies profiles_owner_* sont toutes `to authenticated`, aucune
+-- ne s'applique à anon), mais reste un privilège de base inutile et
+-- risqué : toute policy future mal restreinte (`using (true)` sans
+-- `to authenticated` explicite) le rendrait immédiatement exploitable. Ne
+-- pas exécuter automatiquement : à relire puis lancer soi-même dans
+-- l'éditeur SQL de Supabase.
+--
+-- `authenticated` n'est volontairement pas touché : ses quatre privilèges
+-- correspondent exactement aux policies profiles_owner_insert/read/update/
+-- delete déjà en place.
+revoke all on public.profiles from anon;

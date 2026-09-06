@@ -1,0 +1,16 @@
+-- Corrige une régression du nettoyage de privilèges effectué aujourd'hui
+-- (REVOKE ALL sur plusieurs tables pour anon/authenticated) : reserved_slugs
+-- a perdu son GRANT SELECT de base, cassant checkSlugAvailability() côté
+-- client avec "permission denied for table reserved_slugs" (code Postgres
+-- 42501 — confirmé en interrogeant la vraie base anonymement, pas une
+-- supposition). Ne pas exécuter automatiquement : à relire puis lancer soi-
+-- même dans l'éditeur SQL de Supabase, comme pour toutes les précédentes.
+--
+-- reserved_slugs n'a jamais eu vocation à être protégée par un GRANT
+-- restreint : c'est une liste de mots interdits, sans donnée sensible,
+-- volontairement lisible par n'importe qui pour permettre la vérification
+-- de disponibilité d'un slug avant même publication (voir le commentaire
+-- d'origine dans 20260806120000_create_profiles.sql). La policy RLS
+-- "reserved_slugs_public_read" (to anon, authenticated using (true)) existe
+-- toujours — c'est uniquement le GRANT de base, sous elle, qui manquait.
+grant select on public.reserved_slugs to anon, authenticated;
