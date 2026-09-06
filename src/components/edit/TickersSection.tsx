@@ -2,29 +2,18 @@ import { useEffect, useState } from 'react'
 import { useFormContext, useFieldArray, useWatch } from 'react-hook-form'
 import { Trash2, Plus } from 'lucide-react'
 import type { Profile, Ticker, TickerPlatform } from '@/types'
-import { buildTickerUrl } from '@/lib/tickerUrl'
+import { buildTickerUrl, TICKER_PLATFORM_LABELS } from '@/lib/tickerUrl'
 import { detectPlatformFromUrl } from '@/lib/detectPlatform'
 import { resolveAppearancePlatformIconStyle } from '@/lib/theme/resolveAppearance'
 import PlatformIcon from '@/components/PlatformIcon'
 import TextField from './fields/TextField'
 import SelectField from './fields/SelectField'
 
-const PLATFORM_OPTIONS: { value: TickerPlatform; label: string }[] = [
-  { value: 'linkedin', label: 'LinkedIn' },
-  { value: 'github', label: 'GitHub' },
-  { value: 'x', label: 'X' },
-  { value: 'behance', label: 'Behance' },
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'tiktok', label: 'TikTok' },
-  { value: 'youtube', label: 'YouTube' },
-  { value: 'email', label: 'Email' },
-  { value: 'website', label: 'Site web' },
-]
+const PLATFORM_OPTIONS: { value: TickerPlatform; label: string }[] = Object.entries(TICKER_PLATFORM_LABELS).map(
+  ([value, label]) => ({ value: value as TickerPlatform, label }),
+)
 
-const PLATFORM_LABELS = Object.fromEntries(PLATFORM_OPTIONS.map((o) => [o.value, o.label])) as Record<
-  TickerPlatform,
-  string
->
+const PLATFORM_LABELS = TICKER_PLATFORM_LABELS
 
 // 'website' plutôt que 'linkedin' : le nouveau flux (collage d'URL, prompt
 // "Icônes de plateformes...", Partie 2) n'a plus besoin d'une plateforme

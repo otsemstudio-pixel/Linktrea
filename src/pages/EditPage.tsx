@@ -32,6 +32,7 @@ import PreviewOverlay from '@/components/edit/PreviewOverlay'
 import StatsOverlay from '@/components/edit/StatsOverlay'
 import HistoryOverlay from '@/components/edit/HistoryOverlay'
 import CvOverlay from '@/components/edit/CvOverlay'
+import ValidationErrorActivator from '@/components/edit/ValidationErrorActivator'
 import DesktopPreviewPanel from '@/components/edit/DesktopPreviewPanel'
 import { useFaviconAndThemeColor } from '@/lib/useDocumentMeta'
 import { useAppliedTheme } from '@/lib/theme/useAppliedTheme'
@@ -56,7 +57,7 @@ export default function EditPage() {
     formState: { isLoading },
   } = methods
   const profile = useWatch({ control }) as Profile
-  const { status: saveStatus, error: saveError } = useProfileStoreAutosave(profile)
+  const { status: saveStatus, error: saveError, errorSection } = useProfileStoreAutosave(profile)
   // ?? 'finance' — même garde que activeAccent/activeAppearance ci-dessous :
   // useWatch peut renvoyer un profil encore incomplet pendant un bref
   // instant après que isLoading passe à faux.
@@ -185,6 +186,7 @@ export default function EditPage() {
 
         <CoachmarkAutoStart steps={coachmarkSteps} />
         <CoachmarkOverlay />
+        <ValidationErrorActivator section={errorSection} />
       </CoachmarkProvider>
     </MotionPrefsProvider>
   )

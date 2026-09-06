@@ -2,7 +2,9 @@
 // payload venant d'une source non fiable (hash d'URL, fichier JSON importé) :
 // on ne fait jamais confiance à un JSON.parse() brut sur ces canaux.
 import { z } from 'zod'
+import type { Profile } from '@/types'
 import { ECLAT_ARC_ORANGE, ECLAT_ARC_RED, ECLAT_ARC_VIOLET } from './theme/eclatGradients'
+import { TICKER_PLATFORM_LABELS } from './tickerUrl'
 
 // Assainissement du contenu public (refonte sécurité, Phase 6) — vérifie le
 // protocole RÉEL tel que le navigateur le comprendrait (new URL().protocol),
@@ -296,3 +298,83 @@ export const profileSchema = z.object({
   appearance: appearanceConfigSchema,
   shareCard: shareCardConfigSchema,
 })
+
+// Section top-level responsable de chaque clé du schéma ci-dessus — sert
+// uniquement de repli quand describeProfileIssue() ne reconnaît pas le
+// champ précis en cause : au moins nommer la section évite un silence total
+// (voir useProfileStoreAutosave.ts, qui affichait littéralement rien avant
+// ce correctif).
+const SECTION_LABELS: Partial<Record<keyof Profile, string>> = {
+  identity: 'Identité',
+  positions: 'Historique des positions',
+  holdings: 'Compétences',
+  certificates: 'Certificats',
+  tickers: 'Réseaux',
+  appearance: 'Apparence',
+  shareCard: 'Carte de partage',
+}
+
+export type ProfileValidationError = {
+  message: string
+  // Clé de Profile portant le premier champ fautif — null si le chemin de
+  // l'erreur ne commence pas par une clé connue (ne devrait pas arriver en
+  // pratique, profileSchema n'a pas d'autre racine). Sert à rouvrir
+  // automatiquement la bonne section dans l'éditeur (voir EditPage.tsx),
+  // même si elle est actuellement repliée.
+  section: keyof Profile | null
+}
+
+// Décrit UNE erreur zod en une phrase actionnable — désigne le champ et,
+// quand c'est possible, l'élément précis (plateforme du réseau, titre du
+// certificat, intitulé du poste) plutôt qu'une position d'index abstraite.
+// Ne couvre explicitement que les champs qui peuvent réellement devenir
+// invalides en usage normal (URL saisies/importées, dates de poste) — tout
+// le reste (longueurs de champ, enums) retombe sur le libellé de section,
+// jamais sur le message brut de zod, technique et en anglais par défaut.
+function describeProfileIssue(profile: Profile, issue: z.ZodIssue): ProfileValidationError {
+  const [section, index, field] = issue.path
+  const sectionKey = typeof section === 'string' ? (section as keyof Profile) : null
+
+  if (section === 'tickers' && typeof index === 'number' && field === 'url') {
+    const platform = profile.tickers[index]?.platform
+    const label = platform ? TICKER_PLATFORM_LABELS[platform] : null
+    const message = label ? `Le lien de ton réseau ${label} n'est pas valide.` : "Le lien d'un de tes réseaux n'est pas valide."
+    return { message, section: sectionKey }
+  }
+
+  if (section === 'certificates' && typeof index === 'number' && (field === 'credentialUrl' || field === 'fileUrl')) {
+    const title = profile.certificates[index]?.title
+    const what = field === 'credentialUrl' ? 'de vérification' : 'du fichier'
+    const message = title
+      ? `Le lien ${what} du certificat « ${title} » n'est pas valide.`
+      : `Le lien ${what} d'un de tes certificats n'est pas valide.`
+    return { message, section: sectionKey }
+  }
+
+  if (section === 'positions' && typeof index === 'number' && field === 'endDate') {
+    const role = profile.positions[index]?.role
+    const message = role
+      ? `La date de fin du poste « ${role} » est antérieure à sa date de début.`
+      : 'La date de fin d’un poste est antérieure à sa date de début.'
+    return { message, section: sectionKey }
+  }
+
+  const sectionLabel = sectionKey ? SECTION_LABELS[sectionKey] : undefined
+  const message = sectionLabel
+    ? `Une information de la section « ${sectionLabel} » ne respecte pas le format attendu.`
+    : 'Une information du profil ne respecte pas le format attendu.'
+  return { message, section: sectionKey }
+}
+
+// Message + section affichés par useProfileStoreAutosave.ts quand
+// safeParse échoue, AVANT même de tenter l'enregistrement — remplace un
+// simple booléon de succès/échec (qui ne menait qu'à un `return` silencieux,
+// sans rien afficher) par une phrase désignant le premier champ fautif, plus
+// un compte des autres problèmes s'il y en a, et la section à rouvrir.
+export function describeProfileValidationError(profile: Profile, error: z.ZodError): ProfileValidationError {
+  const [first, ...rest] = error.issues
+  const { message: base, section } = describeProfileIssue(profile, first)
+  if (rest.length === 0) return { message: base, section }
+  const suffix = rest.length === 1 ? '1 autre problème' : `${rest.length} autres problèmes`
+  return { message: `${base} (+ ${suffix})`, section }
+}

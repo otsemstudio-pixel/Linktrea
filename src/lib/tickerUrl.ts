@@ -32,3 +32,18 @@ export function buildTickerUrl(platform: TickerPlatform, handle: string): string
   if (!handle) return ''
   return URL_TEMPLATES[platform](handle.trim())
 }
+
+// Libellés affichés (TickersSection.tsx pour le sélecteur, schema.ts pour
+// les messages de validation) — une seule source pour ne pas laisser les
+// deux dériver l'un de l'autre au fil des plateformes ajoutées.
+export const TICKER_PLATFORM_LABELS: Record<TickerPlatform, string> = {
+  linkedin: 'LinkedIn',
+  github: 'GitHub',
+  x: 'X',
+  behance: 'Behance',
+  instagram: 'Instagram',
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+  email: 'Email',
+  website: 'Site web',
+}
